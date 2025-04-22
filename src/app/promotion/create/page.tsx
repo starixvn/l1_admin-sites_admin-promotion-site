@@ -1,6 +1,5 @@
 'use client';
 import PromotionForm from './PromotionForm';
-import "@/styles/globals.css";
 
 export default function PromotionCreatePage() {
   return (
