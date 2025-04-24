@@ -24,10 +24,10 @@ import {
 } from "@/components/ui/select";
 import BetSettingsDialog from "./BetSettingsDialog";
 import { useOperators } from "@/hooks/useOperators";
-import { useGames } from "@/hooks/useGames";
+import { useFilteredGames } from "@/hooks/useFilteredGames";
 import type { Game } from "@/types/game";
 import type { Operator } from "@/types/operator";
-
+import { GAME_TYPES, type GameType } from "@/constants/gameTypes";
 
 const promotionSchema = z.object({
   name: z
@@ -50,10 +50,7 @@ const promotionSchema = z.object({
   allPlayers: z.boolean(),
   offeredPlayerIds: z.array(z.string()).optional(),
   uploadedFile: z.any().optional(),
-  gameConfigType: z
-    .union([z.literal(2), z.literal(3)])
-    .default(2)
-    .optional(),
+  gameConfigType:  z.nativeEnum(GAME_TYPES),
   createdAt: z.date(),
   updatedAt: z.date(),
   betLevels: z
@@ -84,14 +81,14 @@ export default function PromotionForm() {
       bonusItemCount: 0,
       startDate: undefined,
       endDate: undefined,
-      operatorId: "",
+      operatorId: undefined,
       offeredSiteNames: [],
       gameIds: [],
       currencyGroups: [],
       allPlayers: true,
       offeredPlayerIds: [],
       uploadedFile: undefined,
-      gameConfigType: 2,
+      gameConfigType: GAME_TYPES.CLASSIC,
       createdAt: new Date(),
       updatedAt: new Date(),
       betLevels: [],
@@ -108,8 +105,11 @@ export default function PromotionForm() {
   const watchOperatorId = watch("operatorId");
 
   const { data: operators = [] } = useOperators();
-  const { data: games = [] } = useGames(watchGameType);
-
+  const {
+    data: games = [],
+    isLoading,
+    error,
+  } = useFilteredGames(watchOperatorId, watchGameType);
 
   useEffect(() => {
     if (!codeEdited && name) {
@@ -163,16 +163,24 @@ export default function PromotionForm() {
 
           <div>
             <Label>Game Type</Label>
+
             <Select
               defaultValue="2"
-              onValueChange={(val) => setValue("gameConfigType", Number(val))}
+              onValueChange={(val) => {
+                const parsed = Number(val) as GameType;
+                setValue("gameConfigType", parsed);
+              }}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select game type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="2">Classic Slot</SelectItem>
-                <SelectItem value="3">Cascading Slot</SelectItem>
+                <SelectItem value={String(GAME_TYPES.CLASSIC)}>
+                  Classic Slot
+                </SelectItem>
+                <SelectItem value={String(GAME_TYPES.CASCADING)}>
+                  Cascading Slot
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -303,26 +311,28 @@ export default function PromotionForm() {
         </div>
 
         <div>
-  <Label className="mb-2 block">* Games</Label>
-  <div className="border p-4 max-w-md">
-    
-    {/* Check All */}
-    <div className="flex items-center space-x-2 mb-2">
-      <Checkbox
-        id="game-check-all"
-        checked={games.length > 0 && gameIds.length === games.length}
-        onCheckedChange={(checked) => {
-          const allGameIds = games.map((g: Game) => g.GameId);
-          setValue("gameIds", checked ? allGameIds : []);
-        }}
-      />
-      <label htmlFor="game-check-all" className="text-sm font-semibold">
-        Check All
-      </label>
-    </div>
+          <Label className="mb-2 block">* Games</Label>
+          {isLoading && <p>Loading games...</p>}
+          {error && <p className="text-red-500">Failed to load games</p>}
 
-    {/* Game list */}
-    {games.map((game: Game) => (
+          <div className="border p-4 max-w-md">
+            {/* Check All */}
+            <div className="flex items-center space-x-2 mb-2">
+              <Checkbox
+                id="game-check-all"
+                checked={games.length > 0 && gameIds.length === games.length}
+                onCheckedChange={(checked) => {
+                  const allGameIds = games.map((g: Game) => g.GameId);
+                  setValue("gameIds", checked ? allGameIds : []);
+                }}
+              />
+              <label htmlFor="game-check-all" className="text-sm font-semibold">
+                Check All
+              </label>
+            </div>
+
+            {/* Game list */}
+            {games.map((game: Game) => (
               <div key={game.GameId} className="flex items-center space-x-2">
                 <Checkbox
                   id={`game-${game.GameId}`}
@@ -334,14 +344,14 @@ export default function PromotionForm() {
                 </label>
               </div>
             ))}
-  </div>
+          </div>
 
-  {errors.gameIds && (
-    <p className="text-red-500 text-sm mt-1">
-      {errors.gameIds.message}
-    </p>
-  )}
-</div>
+          {errors.gameIds && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.gameIds.message}
+            </p>
+          )}
+        </div>
 
         <div>
           <Label className="mb-2 block">Members</Label>

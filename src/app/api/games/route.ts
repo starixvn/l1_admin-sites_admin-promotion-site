@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAccessToken } from "../token/route";
 import axios from "axios";
 import config from "../../../config";
+import { Game } from "@/types/game";
 
 export async function GET(req: NextRequest) {
   try {
@@ -23,9 +24,8 @@ export async function GET(req: NextRequest) {
     const games = res.data;
 
     const filtered = type
-      ? games.filter((g: any) => g.Type === Number(type))
+      ? games.filter((g: Game) => g.Type === Number(type))
       : games;
-    console.log("games", filtered);
     return NextResponse.json(filtered);
   } catch (error) {
     console.error("Error fetching games:", error);
