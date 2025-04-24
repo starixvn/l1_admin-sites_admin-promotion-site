@@ -5,14 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -28,40 +20,60 @@ import { useFilteredGames } from "@/hooks/useFilteredGames";
 import type { Game } from "@/types/game";
 import type { Operator } from "@/types/operator";
 import { GAME_TYPES, type GameType } from "@/constants/gameTypes";
+import DateTimePicker from "@/components/custom/datetimepicker";
+import { useCreatePromotion } from "@/hooks/useCreatePromotion";
 
-const promotionSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Promotion name is required")
-    .max(50)
-    .regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores allowed"),
-  code: z
-    .string()
-    .min(1, "Promotion code is required")
-    .max(50)
-    .regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores allowed"),
-  bonusItemCount: z.coerce.number().min(1, "Free spins must be greater than 0"),
-  startDate: z.date({ required_error: "Start date is required" }),
-  endDate: z.date({ required_error: "End date is required" }),
-  operatorId: z.string().min(1, "Operator is required"),
-  offeredSiteNames: z.array(z.string()).optional(),
-  gameIds: z.array(z.coerce.number()).min(1, "Select at least one game"),
-  currencyGroups: z.array(z.string()).min(1, "Select at least one game"),
-  allPlayers: z.boolean(),
-  offeredPlayerIds: z.array(z.string()).optional(),
-  uploadedFile: z.any().optional(),
-  gameConfigType:  z.nativeEnum(GAME_TYPES),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  betLevels: z
-    .array(
-      z.object({
-        currencyGroup: z.string().min(1, "Currency Group is required"),
-        betLevel: z.coerce.number().min(1, "Bet Level must be greater than 0"),
-      })
-    )
-    .optional(),
-});
+const promotionSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "Promotion name is required")
+      .max(50)
+      .regex(
+        /^[a-zA-Z0-9_]+$/,
+        "Only letters, numbers, and underscores allowed"
+      ),
+    code: z
+      .string()
+      .min(1, "Promotion code is required")
+      .max(50)
+      .regex(
+        /^[a-zA-Z0-9_]+$/,
+        "Only letters, numbers, and underscores allowed"
+      ),
+    bonusItemCount: z.coerce
+      .number()
+      .min(1, "Free spins must be greater than 0"),
+    startDate: z.coerce.date({ required_error: "Start date is required" }),
+    endDate: z.coerce.date({ required_error: "End date is required" }),
+
+    operatorId: z.string().min(1, "Operator is required"),
+    offeredSiteNames: z.array(z.string()).optional(),
+    gameIds: z.array(z.coerce.number()).min(1, "Select at least one game"),
+    currencyGroups: z
+      .array(z.string().nonempty("Currency group cannot be empty"))
+      .min(1, "Select at least one currency group"),
+    allPlayers: z.boolean(),
+    offeredPlayerIds: z.array(z.string()).optional(),
+    uploadedFile: z.any().optional(),
+    gameConfigType: z.nativeEnum(GAME_TYPES),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+    betLevels: z
+      .array(
+        z.object({
+          currencyGroup: z.string().min(1, "Currency Group is required"),
+          betLevel: z.coerce
+            .number()
+            .min(1, "Bet Level must be greater than 0"),
+        })
+      )
+      .optional(),
+  })
+  .refine((data) => data.endDate > data.startDate, {
+    message: "End date must be after start date",
+    path: ["endDate"],
+  });
 
 export type PromotionFormValues = z.infer<typeof promotionSchema>;
 
@@ -70,7 +82,6 @@ export default function PromotionForm() {
     register,
     handleSubmit,
     setValue,
-    getValues,
     watch,
     formState: { errors },
   } = useForm<PromotionFormValues>({
@@ -96,8 +107,6 @@ export default function PromotionForm() {
   });
 
   const [codeEdited, setCodeEdited] = useState(false);
-  const [openStart, setOpenStart] = useState(false);
-  const [openEnd, setOpenEnd] = useState(false);
 
   const name = watch("name");
   const gameIds = watch("gameIds");
@@ -128,8 +137,20 @@ export default function PromotionForm() {
     setValue("gameIds", updated);
   };
 
+  const { mutate: createPromotion, isPending } = useCreatePromotion();
+
   const onSubmit = (data: PromotionFormValues) => {
-    console.log("Submitting...", data);
+    console.log("on submit", data);
+    createPromotion(data, {
+      onSuccess: (res) => {
+        console.log("Promotion created:", res);
+        // toast.success("Created successfully!");
+      },
+      onError: (err) => {
+        console.error("Failed to create promotion", err);
+        // toast.error("Failed to create promotion");
+      },
+    });
   };
 
   return (
@@ -198,60 +219,19 @@ export default function PromotionForm() {
 
         {/* Date Range */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <Label>* Start Date</Label>
-            <Popover open={openStart} onOpenChange={setOpenStart}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left"
-                  onClick={() => setOpenStart(true)}
-                >
-                  {getValues("startDate")
-                    ? format(getValues("startDate"), "dd-MM-yyyy HH:mm")
-                    : "Pick start date"}
-                  <CalendarIcon className="ml-auto h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-white rounded-lg shadow-lg">
-                <Calendar
-                  mode="single"
-                  selected={getValues("startDate")}
-                  onSelect={(date) => {
-                    setValue("startDate", date!);
-                    setOpenStart(false);
-                  }}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-          <div>
-            <Label>* End Date</Label>
-            <Popover open={openEnd} onOpenChange={setOpenEnd}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left"
-                  onClick={() => setOpenEnd(true)}
-                >
-                  {getValues("endDate")
-                    ? format(getValues("endDate"), "dd-MM-yyyy HH:mm")
-                    : "Pick end date"}
-                  <CalendarIcon className="ml-auto h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-white rounded-lg shadow-lg">
-                <Calendar
-                  mode="single"
-                  selected={getValues("endDate")}
-                  onSelect={(date) => {
-                    setValue("endDate", date!);
-                    setOpenEnd(false);
-                  }}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+          <DateTimePicker
+            label="* Start Date"
+            value={watch("startDate")}
+            onChange={(val) => setValue("startDate", val)}
+            error={errors.startDate?.message}
+          />
+
+          <DateTimePicker
+            label="* End Date"
+            value={watch("endDate")}
+            onChange={(val) => setValue("endDate", val)}
+            error={errors.endDate?.message}
+          />
         </div>
 
         <div className="bg-white rounded-md border p-4 shadow-sm">
@@ -289,7 +269,7 @@ export default function PromotionForm() {
               <div className="relative flex items-end">
                 <Label className="mr-2">* Bet Settings</Label>
                 <div className="z-50">
-                  <BetSettingsDialog />
+                  <BetSettingsDialog partnerId={watchOperatorId} />
                 </div>
               </div>
 
@@ -419,8 +399,12 @@ export default function PromotionForm() {
           <Button variant="ghost" type="button">
             Close
           </Button>
-          <Button type="submit" className="bg-red-600 hover:bg-red-700">
-            Save
+          <Button
+            type="submit"
+            className="bg-red-600 hover:bg-red-700"
+            disabled={isPending}
+          >
+            {isPending ? "Saving..." : "Save"}
           </Button>
         </div>
       </form>

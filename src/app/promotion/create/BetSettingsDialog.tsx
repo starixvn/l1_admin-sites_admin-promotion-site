@@ -11,7 +11,8 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Info } from "lucide-react";
-import { useState } from "react";
+import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
+import { useEffect, useState } from "react";
 
 const mockData = [
   { currency: "Cash_INH", bet: 0.01 },
@@ -26,7 +27,10 @@ const mockData = [
   { currency: "Cash_5Base" },
 ];
 
-export default function BetSettingsDialog() {
+interface BetSettingsDialogProps {
+  partnerId: string | undefined;
+}
+export default function BetSettingsDialog({ partnerId }: BetSettingsDialogProps) {
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState(
     mockData.map((item) => ({
@@ -35,7 +39,18 @@ export default function BetSettingsDialog() {
       level: item.bet || "",
     }))
   );
+  const [shouldFetch, setShouldFetch] = useState(false);
 
+  const { data: currencyGroups = [], isLoading } = useCurrencyGroups(
+    shouldFetch && partnerId ? partnerId : undefined
+  );
+
+  useEffect(() => {
+    if (open && partnerId) {
+      setShouldFetch(true);
+    }
+  }, [open, partnerId]);
+  
   const toggleAll = (checked: boolean) => {
     setRows((r) =>
       r.map((row) => ({
