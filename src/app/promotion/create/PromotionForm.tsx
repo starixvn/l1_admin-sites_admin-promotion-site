@@ -23,7 +23,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import BetSettingsDialog from "./BetSettingsDialog";
-import axios from "axios";
+import { useOperators } from "@/hooks/useOperators";
+import { useGames } from "@/hooks/useGames";
+import type { Game } from "@/types/game";
+import type { Operator } from "@/types/operator";
+
 
 const promotionSchema = z.object({
   name: z
@@ -36,28 +40,33 @@ const promotionSchema = z.object({
     .min(1, "Promotion code is required")
     .max(50)
     .regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers, and underscores allowed"),
-  freeSpins: z.coerce.number().min(1, "Free spins must be greater than 0"),
+  bonusItemCount: z.coerce.number().min(1, "Free spins must be greater than 0"),
   startDate: z.date({ required_error: "Start date is required" }),
   endDate: z.date({ required_error: "End date is required" }),
-  operator: z.string().min(1, "Operator is required"),
-  siteOffering: z.string().optional(),
-  selectedGames: z.array(z.string()).min(1, "Select at least one game"),
+  operatorId: z.string().min(1, "Operator is required"),
+  offeredSiteNames: z.array(z.string()).optional(),
+  gameIds: z.array(z.coerce.number()).min(1, "Select at least one game"),
+  currencyGroups: z.array(z.string()).min(1, "Select at least one game"),
   allPlayers: z.boolean(),
+  offeredPlayerIds: z.array(z.string()).optional(),
   uploadedFile: z.any().optional(),
+  gameConfigType: z
+    .union([z.literal(2), z.literal(3)])
+    .default(2)
+    .optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  betLevels: z
+    .array(
+      z.object({
+        currencyGroup: z.string().min(1, "Currency Group is required"),
+        betLevel: z.coerce.number().min(1, "Bet Level must be greater than 0"),
+      })
+    )
+    .optional(),
 });
 
 export type PromotionFormValues = z.infer<typeof promotionSchema>;
-
-const gameList = [
-  { id: "1", name: "Four Guardians" },
-  { id: "2", name: "Dragon Ball" },
-  { id: "3", name: "One Piece" },
-  { id: "4", name: "Transformers" },
-  { id: "5", name: "BlackPink" },
-  { id: "6", name: "Mission Impossible" },
-  { id: "7", name: "Fortune Cat" },
-  { id: "8", name: "Happy Fish" },
-];
 
 export default function PromotionForm() {
   const {
@@ -72,13 +81,20 @@ export default function PromotionForm() {
     defaultValues: {
       name: "",
       code: "",
-      freeSpins: 0,
+      bonusItemCount: 0,
       startDate: undefined,
       endDate: undefined,
-      operator: "",
-      siteOffering: "",
-      selectedGames: [],
+      operatorId: "",
+      offeredSiteNames: [],
+      gameIds: [],
+      currencyGroups: [],
       allPlayers: true,
+      offeredPlayerIds: [],
+      uploadedFile: undefined,
+      gameConfigType: 2,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      betLevels: [],
     },
   });
 
@@ -87,22 +103,13 @@ export default function PromotionForm() {
   const [openEnd, setOpenEnd] = useState(false);
 
   const name = watch("name");
-  const selectedGames = watch("selectedGames");
+  const gameIds = watch("gameIds");
+  const watchGameType = watch("gameConfigType");
+  const watchOperatorId = watch("operatorId");
 
-  const [games, setGames] = useState<{ id: string; name: string }[]>([]);
+  const { data: operators = [] } = useOperators();
+  const { data: games = [] } = useGames(watchGameType);
 
-/*   useEffect(() => {
-    const fetchGames = async () => {
-      try {
-        const res = await axios.get("/api/games");
-        setGames(res.data);
-      } catch (err) {
-        console.error("Failed to fetch games", err);
-      }
-    };
-
-    fetchGames();
-  }, []); */
 
   useEffect(() => {
     if (!codeEdited && name) {
@@ -114,11 +121,11 @@ export default function PromotionForm() {
     }
   }, [name, codeEdited, setValue]);
 
-  const toggleGame = (id: string) => {
-    const updated = selectedGames.includes(id)
-      ? selectedGames.filter((gid) => gid !== id)
-      : [...selectedGames, id];
-    setValue("selectedGames", updated);
+  const toggleGame = (id: number) => {
+    const updated = gameIds.includes(id)
+      ? gameIds.filter((gid) => gid !== id)
+      : [...gameIds, id];
+    setValue("gameIds", updated);
   };
 
   const onSubmit = (data: PromotionFormValues) => {
@@ -155,10 +162,28 @@ export default function PromotionForm() {
           </div>
 
           <div>
+            <Label>Game Type</Label>
+            <Select
+              defaultValue="2"
+              onValueChange={(val) => setValue("gameConfigType", Number(val))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select game type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="2">Classic Slot</SelectItem>
+                <SelectItem value="3">Cascading Slot</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
             <Label>No. of Free Spins</Label>
-            <Input type="number" {...register("freeSpins")} />
-            {errors.freeSpins && (
-              <p className="text-red-500 text-sm">{errors.freeSpins.message}</p>
+            <Input type="number" {...register("bonusItemCount")} />
+            {errors.bonusItemCount && (
+              <p className="text-red-500 text-sm">
+                {errors.bonusItemCount.message}
+              </p>
             )}
           </div>
         </div>
@@ -227,18 +252,28 @@ export default function PromotionForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <Label>* Operator Name</Label>
-                <Select onValueChange={(val) => setValue("operator", val)}>
+                <Select
+                  value={watch("operatorId")}
+                  onValueChange={(val) => setValue("operatorId", val)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Operator" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="operator1">Operator 1</SelectItem>
-                    <SelectItem value="operator2">Operator 2</SelectItem>
+                    {operators.length === 0 ? (
+                      <p className="text-sm px-2 py-1">Loading...</p>
+                    ) : (
+                      operators.map((op: Operator) => (
+                        <SelectItem key={op.PartnerId} value={op.PartnerId}>
+                          {op.Name}
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
-                {errors.operator && (
+                {errors.operatorId && (
                   <p className="text-red-500 text-sm">
-                    {errors.operator.message}
+                    {errors.operatorId.message}
                   </p>
                 )}
               </div>
@@ -253,7 +288,7 @@ export default function PromotionForm() {
               <div className="md:col-span-2">
                 <Label>Site Offering</Label>
                 <Input
-                  {...register("siteOffering")}
+                  {...register("offeredSiteNames")}
                   placeholder="e.g. site1;site2"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
@@ -268,39 +303,45 @@ export default function PromotionForm() {
         </div>
 
         <div>
-          <Label className="mb-2 block">* Games</Label>
-          <div className="border p-4 max-w-md">
-               {gameList.map((game) => (
-              <div key={game.id} className="flex items-center space-x-2">
+  <Label className="mb-2 block">* Games</Label>
+  <div className="border p-4 max-w-md">
+    
+    {/* Check All */}
+    <div className="flex items-center space-x-2 mb-2">
+      <Checkbox
+        id="game-check-all"
+        checked={games.length > 0 && gameIds.length === games.length}
+        onCheckedChange={(checked) => {
+          const allGameIds = games.map((g: Game) => g.GameId);
+          setValue("gameIds", checked ? allGameIds : []);
+        }}
+      />
+      <label htmlFor="game-check-all" className="text-sm font-semibold">
+        Check All
+      </label>
+    </div>
+
+    {/* Game list */}
+    {games.map((game: Game) => (
+              <div key={game.GameId} className="flex items-center space-x-2">
                 <Checkbox
-                  id={`game-${game.id}`}
-                  checked={selectedGames.includes(game.id)}
-                  onCheckedChange={() => toggleGame(game.id)}
+                  id={`game-${game.GameId}`}
+                  checked={gameIds.includes(game.GameId)}
+                  onCheckedChange={() => toggleGame(game.GameId)}
                 />
-                <label htmlFor={`game-${game.id}`} className="text-sm">
-                  {game.name}
+                <label htmlFor={`game-${game.GameId}`} className="text-sm">
+                  {game.DisplayName}
                 </label>
               </div>
             ))}
-          {/*   {games.map((game) => (
-              <div key={game.id} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`game-${game.id}`}
-                  checked={selectedGames.includes(game.id)}
-                  onCheckedChange={() => toggleGame(game.id)}
-                />
-                <label htmlFor={`game-${game.id}`} className="text-sm">
-                  {game.name}
-                </label>
-              </div>
-            ))} */}
-          </div>
-          {errors.selectedGames && (
-            <p className="text-red-500 text-sm mt-1">
-              {errors.selectedGames.message}
-            </p>
-          )}
-        </div>
+  </div>
+
+  {errors.gameIds && (
+    <p className="text-red-500 text-sm mt-1">
+      {errors.gameIds.message}
+    </p>
+  )}
+</div>
 
         <div>
           <Label className="mb-2 block">Members</Label>
