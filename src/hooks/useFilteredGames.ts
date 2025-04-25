@@ -3,7 +3,7 @@ import type { Game } from "@/types/game";
 import type { GameType } from "@/constants/gameTypes";
 
 export const useFilteredGames = (
-  partnerId: string | undefined,
+  partnerId: string,
   gameType: GameType | undefined
 ) => {
   return useQuery<Game[]>({

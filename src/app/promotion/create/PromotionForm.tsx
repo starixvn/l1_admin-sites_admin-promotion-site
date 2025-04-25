@@ -20,8 +20,22 @@ import { useFilteredGames } from "@/hooks/useFilteredGames";
 import type { Game } from "@/types/game";
 import type { Operator } from "@/types/operator";
 import { GAME_TYPES, type GameType } from "@/constants/gameTypes";
-import DateTimePicker from "@/components/custom/datetimepicker";
+import DateTimePicker from "@/components/custom/date-time-picker";
 import { useCreatePromotion } from "@/hooks/useCreatePromotion";
+import { Pencil } from "lucide-react";
+import { Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+const getNowInGMT7 = () => {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  return new Date(utc + 7 * 60 * 60 * 1000);
+};
 
 const promotionSchema = z
   .object({
@@ -52,8 +66,7 @@ const promotionSchema = z
       required_error: "End date is required",
       invalid_type_error: "Invalid end date",
     }),
-
-    operatorId: z.string().min(1, { message: "Operator is required" }),
+    operatorId: z.coerce.string().min(1, { message: "Operator is required" }),
     offeredSiteNames: z.array(z.string()).optional(),
     gameIds: z.array(z.coerce.number()).min(1, "Select at least one game"),
     currencyGroups: z
@@ -81,7 +94,7 @@ const promotionSchema = z
 
 export type PromotionFormValues = z.infer<typeof promotionSchema>;
 
-export default function PromotionForm() {
+export default function PromotionForm({ onClose }: { onClose?: () => void }) {
   const {
     register,
     handleSubmit,
@@ -94,9 +107,9 @@ export default function PromotionForm() {
       name: "",
       code: "",
       bonusItemCount: 0,
-      startDate: undefined,
-      endDate: undefined,
-      operatorId: undefined,
+      startDate: getNowInGMT7(),
+      endDate: getNowInGMT7(),
+      operatorId: "",
       offeredSiteNames: [],
       gameIds: [],
       currencyGroups: [],
@@ -173,36 +186,85 @@ export default function PromotionForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10 px-4">
+    <div className="h-full overflow-y-auto py-10 px-8">
       <form
-        className="max-w-5xl mx-auto bg-white rounded-md shadow p-6 space-y-6"
+        className="w-full bg-gray-200 rounded-xl shadow-md p-8 space-y-8"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <h1 className="text-2xl font-bold border-b pb-4">Add New Promotion</h1>
+        <h1 className="text-3xl font-bold border-b pb-6 text-gray-800">
+          Add New Promotion
+        </h1>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
-            <Label>Promotion Name</Label>
-            <Input {...register("name")} maxLength={50} />
+            <div className="flex items-center gap-2 mb-2">
+              <Label
+                htmlFor="name"
+                className="text-lg font-semibold text-gray-700"
+              >
+                Promotion Name
+              </Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="w-4 h-4 text-blue-500" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      Each promotion must have a name. Can include letters,
+                      numbers, or underscores. No special characters allowed.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <Input
+              {...register("name")}
+              maxLength={50}
+              className="bg-white mt-1"
+            />
             {errors.name && (
-              <p className="text-red-500 text-sm">{errors.name.message}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
             )}
           </div>
 
           <div>
-            <Label>Promotion Code</Label>
+            <div className="flex items-center gap-2 mb-2">
+              <Label
+                htmlFor="code"
+                className="text-lg font-semibold text-gray-700"
+              >
+                Promotion Code
+              </Label>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="w-4 h-4 text-blue-500" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>
+                      Automatically generated from Promotion Name. Must be
+                      unique. Only letters, numbers, or underscores allowed.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <Input
               {...register("code")}
               maxLength={50}
               onChange={() => setCodeEdited(true)}
+              className="bg-white mt-1"
             />
             {errors.code && (
-              <p className="text-red-500 text-sm">{errors.code.message}</p>
+              <p className="text-red-500 text-sm mt-1">{errors.code.message}</p>
             )}
           </div>
 
           <div>
-            <Label>Game Type</Label>
+            <Label className="text-lg font-semibold text-gray-700">
+              Game Type
+            </Label>
 
             <Select
               defaultValue="2"
@@ -211,10 +273,10 @@ export default function PromotionForm() {
                 setValue("gameConfigType", parsed);
               }}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-white border-gray-300 focus:ring-2 focus:ring-primary/50">
                 <SelectValue placeholder="Select game type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 <SelectItem value={String(GAME_TYPES.CLASSIC)}>
                   Classic Slot
                 </SelectItem>
@@ -226,9 +288,12 @@ export default function PromotionForm() {
           </div>
 
           <div>
-            <Label>No. of Free Spins</Label>
+            <Label className="text-lg font-semibold text-gray-700">
+              No. of Free Spins
+            </Label>
             <Input
               type="number"
+              className="bg-white mt-1"
               {...register("bonusItemCount", {
                 valueAsNumber: true,
               })}
@@ -243,7 +308,7 @@ export default function PromotionForm() {
         </div>
 
         {/* Date Range */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <DateTimePicker
             label="* Start Date"
             value={watch("startDate")}
@@ -254,82 +319,89 @@ export default function PromotionForm() {
             label="* End Date"
             value={watch("endDate")}
             onChange={(val) => setValue("endDate", val)}
-            error={errors.startDate?.message}
+            error={errors.endDate?.message}
           />
         </div>
 
-        <div className="bg-white rounded-md border p-4 shadow-sm">
-          <fieldset className="border p-4">
-            <legend className="font-semibold">Operator Settings</legend>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <Label htmlFor="operatorId">* Operator Name</Label>
-                <Select
-                  value={watch("operatorId") ?? ""}
-                  onValueChange={(val) => setValue("operatorId", val)}
+        <fieldset className="bg-white rounded-md border p-6 shadow-sm">
+          <legend className="text-lg font-semibold">Operator Settings</legend>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <div className="col-span-1 md:col-span-2 flex items-center gap-4">
+              <Label
+                htmlFor="operatorId"
+                className="text-lg font-semibold text-gray-700"
+              >
+                * Operator Name
+              </Label>
+              <Select
+                value={watch("operatorId") ?? ""}
+                onValueChange={(val) => setValue("operatorId", val)}
+              >
+                <SelectTrigger
+                  id="operatorId"
+                  className="bg-white border-gray-300 focus:ring-2 focus:ring-primary/50"
                 >
-                  <SelectTrigger id="operatorId">
-                    <SelectValue placeholder="Select Operator" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {operators.length === 0 ? (
-                      <p className="text-sm px-2 py-1">Loading...</p>
-                    ) : (
-                      operators.map((op: Operator) => (
-                        <SelectItem key={op.PartnerId} value={op.PartnerId}>
-                          {op.Name}
-                        </SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
-
-                {errors.operatorId && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.operatorId.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="relative flex items-end">
-                <Label className="mr-2">* Bet Settings</Label>
-                <div className="z-50">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setOpenBetSettings(true)}
-                  >
-                    Configure
-                  </Button>
-                </div>
-              </div>
-
-              <div className="md:col-span-2">
-                <Label>Site Offering</Label>
-                <Input
-                  {...register("offeredSiteNames")}
-                  placeholder="e.g. site1;site2"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  ** Enter the site names to offer the promotion (Separate
-                  multiple names with a semicolon ;). Leave the field empty to
-                  offer the promotion to all sites associated with the selected
-                  Operator.
+                  <SelectValue placeholder="Select Operator" />
+                </SelectTrigger>
+                <SelectContent>
+                  {operators.map((op: Operator) => (
+                    <SelectItem key={op.PartnerId} value={op.PartnerId}>
+                      {op.Name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.operatorId && (
+                <p className="text-red-500 text-sm mt-1 md:col-span-2">
+                  {errors.operatorId.message}
                 </p>
-              </div>
+              )}
             </div>
-          </fieldset>
-        </div>
+            <div className="col-span-1 md:col-span-2 flex items-center gap-2 mt-2">
+              <Label className="text-lg font-semibold text-gray-700">
+                * Bet Settings
+              </Label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setOpenBetSettings(true)}
+                className="h-8 w-8"
+              >
+                <Pencil className="h-4 w-4 text-muted-foreground" />
+              </Button>
+              {errors.currencyGroups && (
+                <p className="text-red-500 text-sm mt-1 md:col-span-2">
+                  {errors.currencyGroups.message}
+                </p>
+              )}
+            </div>
+            <div className="md:col-span-2">
+              <Label className="text-lg font-semibold text-gray-700">
+                Site Offering
+              </Label>
+              <Input
+                className="mt-1"
+                {...register("offeredSiteNames")}
+                placeholder="e.g. site1;site2"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                ** Enter the site names to offer the promotion (Separate
+                multiple names with a semicolon ;). Leave the field empty to
+                offer the promotion to all sites associated with the selected
+                Operator.
+              </p>
+            </div>
+          </div>
+        </fieldset>
 
         <div>
-          <Label className="mb-2 block">* Games</Label>
+          <Label className="text-lg font-semibold mb-3 block">* Games</Label>
           {isLoading && <p>Loading games...</p>}
           {error && <p className="text-red-500">Failed to load games</p>}
 
-          <div className="border p-4 max-w-md">
-            {/* Check All */}
-            <div className="flex items-center space-x-2 mb-2">
+          <div className="border p-4 max-w-md rounded-md bg-white">
+            <div className="flex items-center space-x-2 mb-4">
               <Checkbox
                 id="game-check-all"
                 checked={games.length > 0 && gameIds.length === games.length}
@@ -342,38 +414,39 @@ export default function PromotionForm() {
                 Check All
               </label>
             </div>
-
-            {/* Game list */}
-            {games.map((game: Game) => (
-              <div key={game.GameId} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`game-${game.GameId}`}
-                  checked={gameIds.includes(game.GameId)}
-                  onCheckedChange={() => toggleGame(game.GameId)}
-                />
-                <label htmlFor={`game-${game.GameId}`} className="text-sm">
-                  {game.DisplayName}
-                </label>
-              </div>
-            ))}
+            <div className="border-b mb-3" />
+            <div className="max-h-[18rem] overflow-y-auto pr-2 space-y-2">
+              {games.map((game: Game) => (
+                <div key={game.GameId} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`game-${game.GameId}`}
+                    checked={gameIds.includes(game.GameId)}
+                    onCheckedChange={() => toggleGame(game.GameId)}
+                  />
+                  <label htmlFor={`game-${game.GameId}`} className="text-sm">
+                    {game.DisplayName}
+                  </label>
+                </div>
+              ))}
+            </div>
           </div>
 
           {errors.gameIds && (
-            <p className="text-red-500 text-sm mt-1">
+            <p className="text-red-500 text-sm mt-2">
               {errors.gameIds.message}
             </p>
           )}
         </div>
 
         <div>
-          <Label className="mb-2 block">Members</Label>
+          <Label className="text-lg font-semibold mb-2 block">Members</Label>
           <RadioGroup
             value={watch("allPlayers") ? "true" : "false"}
             onValueChange={(val) => setValue("allPlayers", val === "true")}
             className="space-y-2"
           >
             <div className="flex items-start gap-2">
-              <RadioGroupItem value="true" id="all" />
+              <RadioGroupItem value="true" id="all" className="bg-white" />
               <div>
                 <label htmlFor="all" className="text-sm font-medium">
                   All Players
@@ -386,7 +459,7 @@ export default function PromotionForm() {
             </div>
 
             <div className="flex items-start gap-2">
-              <RadioGroupItem value="false" id="file" />
+              <RadioGroupItem value="false" id="file" className="bg-white" />
               <div>
                 <label htmlFor="file" className="text-sm font-medium">
                   Players from the file
@@ -401,19 +474,25 @@ export default function PromotionForm() {
 
           {!watch("allPlayers") && (
             <div className="mt-4 space-y-1">
-              <Input
-                type="file"
-                accept=".csv"
-                {...register("uploadedFile")}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file && file.size > 2 * 1024 * 1024) {
-                    alert("File size exceeds 2MB limit");
-                    e.target.value = "";
-                    return;
-                  }
-                }}
-              />
+              <label className="inline-flex items-center gap-2 cursor-pointer">
+                <span className="bg-white border border-gray-300 px-3 py-1 text-sm rounded shadow-sm">
+                  Choose File
+                </span>
+                <input
+                  type="file"
+                  accept=".csv"
+                  {...register("uploadedFile")}
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file && file.size > 2 * 1024 * 1024) {
+                      alert("File size exceeds 2MB limit");
+                      e.target.value = "";
+                      return;
+                    }
+                  }}
+                />
+              </label>
               {watch("uploadedFile")?.[0]?.name && (
                 <p className="text-sm text-blue-600 underline cursor-pointer">
                   {watch("uploadedFile")[0].name} (click to preview)
@@ -428,9 +507,14 @@ export default function PromotionForm() {
         </div>
 
         <div className="flex justify-between">
-          <Button variant="ghost" type="button">
+          <Button
+            type="button"
+            onClick={onClose}
+            className="bg-gray-600 hover:bg-gray-700"
+          >
             Close
           </Button>
+
           <Button
             type="submit"
             className="bg-red-600 hover:bg-red-700"
