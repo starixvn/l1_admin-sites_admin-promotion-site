@@ -10,7 +10,7 @@ type Params = {
 };
 
 export async function GET(request: Request, { params }: Params) {
-  const { partnerId } = params;
+  const { partnerId } = await params;
 
   try {
     const token = await getAccessToken();

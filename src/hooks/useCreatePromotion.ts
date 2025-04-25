@@ -1,17 +1,25 @@
 import { useMutation } from "@tanstack/react-query";
-import type { PromotionFormValues } from "@/app/promotion/create/PromotionForm"; // hoặc đường dẫn tới type dữ liệu gửi lên
-import type { Promotion } from "@/types/promotion"; // hoặc schema bạn dùng để mô tả promotion trả về
+type PromotionPayload = {
+  name: string;
+  operatorId: string;
+  offeredSiteNames: string[];
+  currencyGroups: string[];
+  startDate: string;
+  endDate: string;
+  bonusItemCount: number;
+  offeredPlayerIds: string[];
+  gameConfigType: number;
+  gameIds: number[];
+  betLevels: { currencyGroup: string; betLevel: number }[];
+};
 
 export const useCreatePromotion = () => {
   return useMutation({
     mutationKey: ["createPromotion"],
-    mutationFn: async (data: PromotionFormValues): Promise<Promotion> => {
-        debugger
+    mutationFn: async (data: PromotionPayload): Promise<any> => {
       const res = await fetch(`/api/promotions`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 

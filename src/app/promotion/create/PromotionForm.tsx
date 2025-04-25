@@ -30,7 +30,7 @@ const promotionSchema = z
       .min(1, "Promotion name is required")
       .max(50)
       .regex(
-        /^[a-zA-Z0-9_]+$/,
+        /^[a-zA-Z0-9_ ]+$/,
         "Only letters, numbers, and underscores allowed"
       ),
     code: z
@@ -44,28 +44,32 @@ const promotionSchema = z
     bonusItemCount: z.coerce
       .number()
       .min(1, "Free spins must be greater than 0"),
-    startDate: z.coerce.date({ required_error: "Start date is required" }),
-    endDate: z.coerce.date({ required_error: "End date is required" }),
+    startDate: z.coerce.date({
+      required_error: "Start date is required",
+      invalid_type_error: "Invalid start date",
+    }),
+    endDate: z.coerce.date({
+      required_error: "End date is required",
+      invalid_type_error: "Invalid end date",
+    }),
 
-    operatorId: z.string().min(1, "Operator is required"),
+    operatorId: z.string().min(1, { message: "Operator is required" }),
     offeredSiteNames: z.array(z.string()).optional(),
     gameIds: z.array(z.coerce.number()).min(1, "Select at least one game"),
     currencyGroups: z
       .array(z.string().nonempty("Currency group cannot be empty"))
-      .min(1, "Select at least one currency group"),
+      .min(1, "At least one currency group is required"),
     allPlayers: z.boolean(),
     offeredPlayerIds: z.array(z.string()).optional(),
     uploadedFile: z.any().optional(),
     gameConfigType: z.nativeEnum(GAME_TYPES),
-    createdAt: z.date(),
-    updatedAt: z.date(),
     betLevels: z
       .array(
         z.object({
           currencyGroup: z.string().min(1, "Currency Group is required"),
           betLevel: z.coerce
             .number()
-            .min(1, "Bet Level must be greater than 0"),
+            .min(0.01, "Bet Level must be greater than 0"),
         })
       )
       .optional(),
@@ -100,14 +104,12 @@ export default function PromotionForm() {
       offeredPlayerIds: [],
       uploadedFile: undefined,
       gameConfigType: GAME_TYPES.CLASSIC,
-      createdAt: new Date(),
-      updatedAt: new Date(),
       betLevels: [],
     },
   });
 
   const [codeEdited, setCodeEdited] = useState(false);
-
+  const [openBetSettings, setOpenBetSettings] = useState(false);
   const name = watch("name");
   const gameIds = watch("gameIds");
   const watchGameType = watch("gameConfigType");
@@ -119,6 +121,10 @@ export default function PromotionForm() {
     isLoading,
     error,
   } = useFilteredGames(watchOperatorId, watchGameType);
+
+  useEffect(() => {
+    console.log("Validation errors:", errors);
+  }, [errors]);
 
   useEffect(() => {
     if (!codeEdited && name) {
@@ -140,15 +146,28 @@ export default function PromotionForm() {
   const { mutate: createPromotion, isPending } = useCreatePromotion();
 
   const onSubmit = (data: PromotionFormValues) => {
-    console.log("on submit", data);
-    createPromotion(data, {
+    const payload = {
+      name: data.name,
+      operatorId: data.operatorId,
+      offeredSiteNames: data.offeredSiteNames ?? [],
+      currencyGroups: data.currencyGroups,
+      startDate: new Date(data.startDate).toISOString(),
+      endDate: new Date(data.endDate).toISOString(),
+      bonusItemCount: data.bonusItemCount,
+      offeredPlayerIds: data.offeredPlayerIds ?? [],
+      gameConfigType: data.gameConfigType,
+      gameIds: data.gameIds,
+      betLevels: data.betLevels ?? [],
+    };
+
+    console.log("Sending payload:", payload);
+
+    createPromotion(payload, {
       onSuccess: (res) => {
         console.log("Promotion created:", res);
-        // toast.success("Created successfully!");
       },
       onError: (err) => {
         console.error("Failed to create promotion", err);
-        // toast.error("Failed to create promotion");
       },
     });
   };
@@ -208,7 +227,13 @@ export default function PromotionForm() {
 
           <div>
             <Label>No. of Free Spins</Label>
-            <Input type="number" {...register("bonusItemCount")} />
+            <Input
+              type="number"
+              {...register("bonusItemCount", {
+                valueAsNumber: true,
+              })}
+            />
+
             {errors.bonusItemCount && (
               <p className="text-red-500 text-sm">
                 {errors.bonusItemCount.message}
@@ -225,12 +250,11 @@ export default function PromotionForm() {
             onChange={(val) => setValue("startDate", val)}
             error={errors.startDate?.message}
           />
-
           <DateTimePicker
             label="* End Date"
             value={watch("endDate")}
             onChange={(val) => setValue("endDate", val)}
-            error={errors.endDate?.message}
+            error={errors.startDate?.message}
           />
         </div>
 
@@ -239,12 +263,12 @@ export default function PromotionForm() {
             <legend className="font-semibold">Operator Settings</legend>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label>* Operator Name</Label>
+                <Label htmlFor="operatorId">* Operator Name</Label>
                 <Select
-                  value={watch("operatorId")}
+                  value={watch("operatorId") ?? ""}
                   onValueChange={(val) => setValue("operatorId", val)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger id="operatorId">
                     <SelectValue placeholder="Select Operator" />
                   </SelectTrigger>
                   <SelectContent>
@@ -259,8 +283,9 @@ export default function PromotionForm() {
                     )}
                   </SelectContent>
                 </Select>
+
                 {errors.operatorId && (
-                  <p className="text-red-500 text-sm">
+                  <p className="text-red-500 text-sm mt-1">
                     {errors.operatorId.message}
                   </p>
                 )}
@@ -269,7 +294,14 @@ export default function PromotionForm() {
               <div className="relative flex items-end">
                 <Label className="mr-2">* Bet Settings</Label>
                 <div className="z-50">
-                  <BetSettingsDialog partnerId={watchOperatorId} />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setOpenBetSettings(true)}
+                  >
+                    Configure
+                  </Button>
                 </div>
               </div>
 
@@ -408,6 +440,16 @@ export default function PromotionForm() {
           </Button>
         </div>
       </form>
+      <BetSettingsDialog
+        open={openBetSettings}
+        onClose={() => setOpenBetSettings(false)}
+        partnerId={watchOperatorId}
+        gameType={watchGameType}
+        onSave={({ currencyGroups, betLevels }) => {
+          setValue("currencyGroups", currencyGroups);
+          setValue("betLevels", betLevels);
+        }}
+      />
     </div>
   );
 }

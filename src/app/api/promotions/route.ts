@@ -1,43 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
-import axios from 'axios';
-import config from '@/config';
-import { getAccessToken } from '@/app/api/token/route';
-
-export async function GET(req: NextRequest) {
-  try {
-    const url = new URL(req.url);
-    const params = url.searchParams;
-    const token = await getAccessToken();
-
-    const response = await axios.get(`${config.apiPromotionUrl}/promotions`, {
-      headers: { Authorization: `Bearer ${token}` },
-      params: {
-        operatorIds: params.getAll('operatorIds'),
-        status: params.get('status'),
-        code: params.get('code'),
-      },
-    });
-
-    return NextResponse.json(response.data);
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
+import { NextRequest, NextResponse } from "next/server";
+import axios from "axios";
+import config from "@/config";
+import { getAccessToken } from "@/app/api/token/route";
 
 export async function POST(req: NextRequest) {
   try {
+    console.log("Request body:", req);
     const body = await req.json();
-    const token = await getAccessToken();
+    console.log("Request body:", body);
+    //const token = await getAccessToken();
 
-    const response = await axios.post(`${config.apiPromotionUrl}/promotions`, body, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    const response = await axios.post(
+      `${config.apiPromotionUrl}/promotions`,
+      body
+    );
 
     return NextResponse.json(response.data, { status: 201 });
   } catch (error: any) {
+    console.error("Error in POST /api/promotions:", error); // 👈 THÊM DÒNG NÀY
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -1,165 +1,187 @@
 "use client";
+
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Info } from "lucide-react";
-import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 import { useEffect, useState } from "react";
+import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
+import { Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { GAME_TYPES } from "@/constants/gameTypes";
+import { CurrencyGroup } from "@/types/currencyGroup";
 
-const mockData = [
-  { currency: "Cash_INH", bet: 0.01 },
-  { currency: "Cash_10Base", bet: 0.1 },
-  { currency: "Cash_EURO", bet: 0.5 },
-  { currency: "Cash_Indo", bet: 1 },
-  { currency: "Cash_Thai", bet: 0.1 },
-  { currency: "Cash_Korea", bet: 10 },
-  { currency: "Cash_Asia" },
-  { currency: "Cash_0.1Base" },
-  { currency: "Cash_2Base" },
-  { currency: "Cash_5Base" },
-];
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  partnerId: string;
+  gameType: number;
+  onSave: (data: {
+    currencyGroups: string[];
+    betLevels: { currencyGroup: string; betLevel: number }[];
+  }) => void;
+};
 
-interface BetSettingsDialogProps {
-  partnerId: string | undefined;
-}
-export default function BetSettingsDialog({ partnerId }: BetSettingsDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [rows, setRows] = useState(
-    mockData.map((item) => ({
-      ...item,
-      enabled: false,
-      level: item.bet || "",
-    }))
-  );
-  const [shouldFetch, setShouldFetch] = useState(false);
+type RowState = {
+  id: string;
+  name: string;
+  enabled: boolean;
+  betLevel: number;
+};
 
-  const { data: currencyGroups = [], isLoading } = useCurrencyGroups(
-    shouldFetch && partnerId ? partnerId : undefined
-  );
+export default function BetSettingsDialog({
+  open,
+  onClose,
+  partnerId,
+  gameType,
+  onSave,
+}: Props) {
+  const { data: currencyGroups = [] } = useCurrencyGroups(partnerId);
+  const [rows, setRows] = useState<RowState[]>([]);
 
   useEffect(() => {
-    if (open && partnerId) {
-      setShouldFetch(true);
+    if (currencyGroups.length > 0) {
+      setRows(
+        currencyGroups.map((cg: CurrencyGroup) => ({
+          id: cg.Id,
+          name: cg.Name,
+          enabled: false,
+          betLevel: getSuggestedBetLevel(gameType),
+        }))
+      );
     }
-  }, [open, partnerId]);
-  
-  const toggleAll = (checked: boolean) => {
-    setRows((r) =>
-      r.map((row) => ({
-        ...row,
-        enabled: checked,
-        level: checked && row.bet ? row.bet : "",
-      }))
-    );
+  }, [currencyGroups, gameType]);
+
+  const getSuggestedBetLevel = (type: number) => {
+    return type === GAME_TYPES.CASCADING ? 1 : 0.1;
   };
 
-  const updateLevel = (idx: number, value: string) => {
-    setRows((r) => {
-      const copy = [...r];
-      copy[idx].level = value;
-      return copy;
+  const getTotalBet = (betLevel: number) => {
+    return gameType === GAME_TYPES.CASCADING
+      ? 1 * betLevel * 20
+      : betLevel * 25;
+  };
+
+  const handleToggle = (index: number, enabled: boolean) => {
+    setRows((prev) => {
+      const updated = [...prev];
+      updated[index].enabled = enabled;
+      if (enabled && !updated[index].betLevel) {
+        updated[index].betLevel = getSuggestedBetLevel(gameType);
+      }
+      return updated;
     });
   };
 
-  const getTotal = (level: string | number) => {
-    const val = parseFloat(level as string);
-    return isNaN(val) ? "" : (val * 25).toFixed(2); // Classic: x25
+  const handleChangeBet = (index: number, value: string) => {
+    const num = parseFloat(value);
+    setRows((prev) => {
+      const updated = [...prev];
+      updated[index].betLevel = isNaN(num) ? 0 : num;
+      return updated;
+    });
+  };
+
+  const handleSave = () => {
+    const enabledRows = rows.filter((r) => r.enabled);
+    onSave({
+      currencyGroups: enabledRows.map((r) => r.id),
+      betLevels: enabledRows.map((r) => ({
+        currencyGroup: r.id,
+        betLevel: r.betLevel,
+      })),
+    });
+    onClose();
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-          Configure
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="fixed inset-0 flex items-center justify-center z-[9999]">
-        <div className="bg-background rounded-lg shadow-lg w-full max-w-4xl p-6">
-          <DialogHeader>
-            <DialogTitle>Bet Setting pop-up for Classic Slot</DialogTitle>
-          </DialogHeader>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>
+            Bet Setting pop-up for {gameType === 2 ? "Classic Slot" : "Cascading Slot"}
+          </DialogTitle>
+        </DialogHeader>
 
-          <div className="text-sm text-muted-foreground">
-            <p>
-              <strong>**</strong> Turn ON the Promotion for the currency group
-              which you want to offer the Free Spin Bonus.
-            </p>
-            <p>
-              The suggested Bet Level amount is based on the default setting
-              currently displayed in the game for each currency group.
-            </p>
-          </div>
-
-          <div className="border rounded mt-4 overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="p-2 text-left">Operators</th>
-                  <th className="p-2 text-left">Currency Group</th>
-                  <th className="p-2 text-center">
-                    Status
-                    <div className="text-xs font-normal">
-                      <Switch onCheckedChange={toggleAll} /> Enable All
-                    </div>
-                  </th>
-                  <th className="p-2 text-center">Bet Level</th>
-                  <th className="p-2 text-center">
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            <strong>**</strong> Turn ON the Promotion for the currency group
+            which you want to offer the Free Spin Bonus.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full border text-sm">
+              <thead>
+                <tr className="bg-gray-100">
+                  <th className="px-2 py-2 text-left">Currency Group</th>
+                  <th className="px-2 py-2">Status</th>
+                  <th className="px-2 py-2">Bet Level</th>
+                  <th className="px-2 py-2 flex items-center gap-1 justify-center">
                     Total Bet
-                    <Info className="inline ml-1 w-4 h-4 text-gray-400 cursor-pointer" />
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="w-3 h-3" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {gameType === 2
+                            ? "Classic: Bet Level x 25 = Total Bet"
+                            : "Cascading: Coin Value x Bet Level x Multiplier = Total Bet"}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, i) => (
-                  <tr key={row.currency} className="border-t">
-                    <td className="p-2">ONEworksVGCash</td>
-                    <td className="p-2">{row.currency}</td>
-                    <td className="p-2 text-center">
+                {rows.map((row, index) => (
+                  <tr key={row.id} className="border-t">
+                    <td className="px-2 py-2">{row.name}</td>
+                    <td className="text-center">
                       <Switch
                         checked={row.enabled}
-                        onCheckedChange={(v) => {
-                          const updated = [...rows];
-                          updated[i].enabled = v;
-                          updated[i].level = v && row.bet ? row.bet : "";
-                          setRows(updated);
-                        }}
+                        onCheckedChange={(val) => handleToggle(index, val)}
                       />
                     </td>
-                    <td className="p-2 text-center">
-                      <Input
-                        type="number"
-                        className="h-8 w-24 text-center"
-                        disabled={!row.enabled}
-                        value={row.level}
-                        onChange={(e) => updateLevel(i, e.target.value)}
-                      />
+                    <td className="text-center">
+                      {row.enabled ? (
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={row.betLevel}
+                          onChange={(e) =>
+                            handleChangeBet(index, e.target.value)
+                          }
+                          className="w-24 mx-auto"
+                        />
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
                     </td>
-                    <td className="p-2 text-center">
-                      {row.enabled ? getTotal(row.level) : ""}
+                    <td className="text-center">
+                      {row.enabled ? getTotalBet(row.betLevel).toFixed(2) : "-"}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-
-          <DialogFooter className="flex justify-between pt-4">
-            <Button variant="ghost" onClick={() => setOpen(false)}>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={onClose}>
               Close
             </Button>
-            <div className="space-x-2">
-              <Button variant="secondary">Save & Continue</Button>
-              <Button type="submit">Save</Button>
-            </div>
-          </DialogFooter>
+            <Button onClick={handleSave}>Save</Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
