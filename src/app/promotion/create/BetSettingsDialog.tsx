@@ -173,32 +173,35 @@ export default function BetSettingsDialog({
                       <div
                         className={`w-10 h-6 rounded-full flex items-center transition-colors duration-300 px-1 cursor-pointer ${
                           row.enabled
-                            ? "bg-green-500 justify-end"
-                            : "bg-gray-300 justify-start"
+                            ? "bg-green-500 justify-end mx-auto"
+                            : "bg-gray-300 justify-start mx-auto"
                         }`}
                         onClick={() => handleToggle(index, !row.enabled)}
                       >
-                        <div className="w-4 h-4 bg-white rounded-full shadow-md text-[10px] flex items-center justify-center">
+                        <div className="w-4 h-4 bg-white rounded-full shadow-md flex items-center justify-center">
                           {row.enabled && "✔"}
                         </div>
                       </div>
                     </td>
                     <td className="text-center border-r">
                       {row.enabled ? (
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={row.betLevel}
-                          onChange={(e) =>
-                            handleChangeBet(index, e.target.value)
-                          }
-                          className="w-24 mx-auto bg-white"
-                        />
+                        <div className="flex justify-center">
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={row.betLevel}
+                            onChange={(e) =>
+                              handleChangeBet(index, e.target.value)
+                            }
+                            className="w-24 h-9 bg-white text-center no-spinner px-0 text-sm rounded-md border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                          />
+                        </div>
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
+
                     <td className="text-center">
                       {row.enabled ? getTotalBet(row.betLevel).toFixed(2) : "-"}
                     </td>

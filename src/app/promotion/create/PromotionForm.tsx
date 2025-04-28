@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { cn } from "@/lib/utils";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
@@ -161,6 +162,7 @@ export default function PromotionForm({ onClose }: { onClose?: () => void }) {
   const onSubmit = (data: PromotionFormValues) => {
     const payload = {
       name: data.name,
+      code: data.code,
       operatorId: data.operatorId,
       offeredSiteNames: data.offeredSiteNames ?? [],
       currencyGroups: data.currencyGroups,
@@ -184,17 +186,13 @@ export default function PromotionForm({ onClose }: { onClose?: () => void }) {
       },
     });
   };
-
+  const [siteInput, setSiteInput] = useState("");
   return (
-    <div className="h-full overflow-y-auto py-10 px-8">
+    <div>
       <form
-        className="w-full bg-gray-200 rounded-xl shadow-md p-8 space-y-8"
+        className="max-w-5xl mx-auto bg-gray-100 rounded-md shadow p-6 space-y-6"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <h1 className="text-3xl font-bold border-b pb-6 text-gray-800">
-          Add New Promotion
-        </h1>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -277,10 +275,22 @@ export default function PromotionForm({ onClose }: { onClose?: () => void }) {
                 <SelectValue placeholder="Select game type" />
               </SelectTrigger>
               <SelectContent className="bg-white">
-                <SelectItem value={String(GAME_TYPES.CLASSIC)}>
+                <SelectItem
+                  value={String(GAME_TYPES.CLASSIC)}
+                  className={cn(
+                    "text-base py-3 hover:bg-gray-100 cursor-pointer",
+                    "bg-white"
+                  )}
+                >
                   Classic Slot
                 </SelectItem>
-                <SelectItem value={String(GAME_TYPES.CASCADING)}>
+                <SelectItem
+                  value={String(GAME_TYPES.CASCADING)}
+                  className={cn(
+                    "text-base py-3 hover:bg-gray-100 cursor-pointer",
+                    "bg-gray-50"
+                  )}
+                >
                   Cascading Slot
                 </SelectItem>
               </SelectContent>
@@ -343,9 +353,16 @@ export default function PromotionForm({ onClose }: { onClose?: () => void }) {
                 >
                   <SelectValue placeholder="Select Operator" />
                 </SelectTrigger>
-                <SelectContent>
-                  {operators.map((op: Operator) => (
-                    <SelectItem key={op.PartnerId} value={op.PartnerId}>
+                <SelectContent className="bg-white border text-gray-800 shadow-lg text-base">
+                  {operators.map((op: Operator, index: number) => (
+                    <SelectItem
+                      key={op.PartnerId}
+                      value={op.PartnerId}
+                      className={cn(
+                        "text-base py-3 hover:bg-gray-100 cursor-pointer",
+                        index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                      )}
+                    >
                       {op.Name}
                     </SelectItem>
                   ))}
@@ -382,9 +399,26 @@ export default function PromotionForm({ onClose }: { onClose?: () => void }) {
               </Label>
               <Input
                 className="mt-1"
-                {...register("offeredSiteNames")}
                 placeholder="e.g. site1;site2"
+                value={siteInput}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSiteInput(value); // vẫn cho gõ tự do
+
+                  // 👉 Parse array: tách theo dấu ;, trim, bỏ rỗng, remove duplicate
+                  const array = Array.from(
+                    new Set(
+                      value
+                        .split(";")
+                        .map((s) => s.trim())
+                        .filter(Boolean)
+                    )
+                  );
+
+                  setValue("offeredSiteNames", array); // cập nhật vào form
+                }}
               />
+
               <p className="text-xs text-muted-foreground mt-1">
                 ** Enter the site names to offer the promotion (Separate
                 multiple names with a semicolon ;). Leave the field empty to

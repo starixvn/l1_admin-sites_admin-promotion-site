@@ -1,29 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { format } from "date-fns";
-import { DayPicker } from "react-day-picker";
-import "react-day-picker/dist/style.css";
-import { CalendarIcon, Clock } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
+import { CalendarIcon } from "lucide-react";
 import {
   Popover,
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/dist/style.css";
 
-type Props = {
+interface DateTimePickerProps {
   label?: string;
   value?: Date;
   onChange: (val: Date) => void;
   error?: string;
-};
+}
 
-// 🔁 Get current date in GMT+7
 const getNowInGMT7 = () => {
   const now = new Date();
   const utc = now.getTime() + now.getTimezoneOffset() * 60000;
@@ -35,48 +31,57 @@ export default function DateTimePicker({
   value,
   onChange,
   error,
-}: Props) {
-  const defaultDate = value ?? getNowInGMT7();
+}: DateTimePickerProps) {
   const [open, setOpen] = useState(false);
-  const [localDate, setLocalDate] = useState<Date>(defaultDate);
-  const [time, setTime] = useState("00:00");
+  const [date, setDate] = useState<Date>(value ?? getNowInGMT7());
+  const [hour, setHour] = useState("00");
+  const [minute, setMinute] = useState("00");
 
-  // ⏰ Sync time with date
   useEffect(() => {
-    const val = value ?? getNowInGMT7();
-    const hh = val.getHours().toString().padStart(2, "0");
-    const mm = val.getMinutes().toString().padStart(2, "0");
-    setLocalDate(val);
-    setTime(`${hh}:${mm}`);
+    if (value) {
+      const hh = value.getHours().toString().padStart(2, "0");
+      const mm = value.getMinutes().toString().padStart(2, "0");
+      setDate(value);
+      setHour(hh);
+      setMinute(mm);
+    }
   }, [value]);
 
-  const handleDateChange = (date?: Date) => {
-    if (!date) return;
-    const [hh, mm] = time.split(":").map(Number);
-    date.setHours(hh);
-    date.setMinutes(mm);
-    setLocalDate(date);
-    onChange(date);
-  };
-
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const [hh, mm] = e.target.value.split(":").map(Number);
-    setTime(e.target.value);
-    const base = localDate ?? getNowInGMT7();
-    const newDate = new Date(base);
-    newDate.setHours(hh);
-    newDate.setMinutes(mm);
-    setLocalDate(newDate);
+  const handleDateChange = (selected?: Date) => {
+    if (!selected) return;
+    const newDate = new Date(selected);
+    newDate.setHours(Number(hour));
+    newDate.setMinutes(Number(minute));
+    setDate(newDate);
     onChange(newDate);
   };
 
+  const handleTimeChange = (h: string, m: string) => {
+    setHour(h);
+    setMinute(m);
+    const newDate = new Date(date);
+    newDate.setHours(Number(h));
+    newDate.setMinutes(Number(m));
+    setDate(newDate);
+    onChange(newDate);
+  };
+
+  const hourOptions = Array.from({ length: 24 }, (_, i) =>
+    i.toString().padStart(2, "0")
+  );
+  const minuteOptions = Array.from({ length: 60 }, (_, i) =>
+    i.toString().padStart(2, "0")
+  );
+
   return (
     <div className="space-y-1">
-      {label && <Label className="text-lg font-semibold text-gray-700">{label}</Label>}
-      <p className="text-xs text-muted-foreground mb-1">Date & Time (GMT +7)</p>
+      {label && (
+        <label className="text-lg font-semibold text-gray-700">{label}</label>
+      )}
+      <p className="text-xs text-muted-foreground mb-1">Date & Time (GMT+7)</p>
 
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild className="bg-white">
+        <PopoverTrigger asChild className="bg-white mt-1">
           <Button
             variant="outline"
             className={cn(
@@ -85,34 +90,62 @@ export default function DateTimePicker({
             )}
           >
             <span>
-              {value instanceof Date && !isNaN(value.getTime())
-                ? format(value, "dd-MM-yyyy HH:mm")
-                : "DD-MM-YYYY   hh:mm"}
+              {date instanceof Date && !isNaN(date.getTime())
+                ? format(date, "dd-MM-yyyy HH:mm")
+                : "DD-MM-YYYY hh:mm"}
             </span>
             <CalendarIcon className="h-4 w-4 text-gray-500" />
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className="w-auto p-4 space-y-4 bg-white dark:bg-slate-900">
+        <PopoverContent className="w-auto p-4 flex flex-col items-center gap-4 bg-white">
           <DayPicker
             mode="single"
-            selected={localDate}
+            selected={date}
             onSelect={handleDateChange}
+            className="border rounded-md"
           />
+
           <div className="flex items-center gap-2">
-            <div className="rounded-md bg-gray-100 dark:bg-slate-800 p-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <Input
-              type="time"
-              className="w-28 appearance-none leading-tight px-2 py-1 text-sm"
-              value={time}
-              onChange={handleTimeChange}
-            />
+            <select
+              value={hour}
+              onChange={(e) => handleTimeChange(e.target.value, minute)}
+              className="border rounded-md px-2 py-1"
+            >
+              {hourOptions.map((h) => (
+                <option key={h} value={h}>
+                  {h}
+                </option>
+              ))}
+            </select>
+            <span>:</span>
+            <select
+              value={minute}
+              onChange={(e) => handleTimeChange(hour, e.target.value)}
+              className="border rounded-md px-2 py-1"
+            >
+              {minuteOptions.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex gap-4 pt-2">
+            <Button type="button" className="bg-gray-600 hover:bg-gray-700" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => setOpen(false)}
+              type="submit"
+              className="bg-red-600 hover:bg-red-700"
+            >
+              OK
+            </Button>
           </div>
         </PopoverContent>
       </Popover>
-
       {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );

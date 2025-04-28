@@ -1,6 +1,6 @@
 import qs from "qs";
 import axios, { AxiosError } from "axios";
-import config from "../../../config";
+import configs from "../../../configs";
 
 interface TokenResponse {
   access_token: string;
@@ -15,7 +15,6 @@ let tokenExpiresAt: number = 0;
 
 export async function getAccessToken(): Promise<string> {
   const now = Date.now();
-  // Return cached token if still valid (with 1 min buffer)
   if (cachedToken && now < tokenExpiresAt - 60_000) {
     return cachedToken;
   }
@@ -23,14 +22,13 @@ export async function getAccessToken(): Promise<string> {
   try {
     const rawBody = qs.stringify({
       grant_type: "client_credentials",
-      client_id: config.clientId,
-      client_secret: config.clientSecret,
-      scope: config.scope,
+      client_id: configs.clientId,
+      client_secret: configs.clientSecret,
+      scope: configs.scope,
     });
-    console.log("identityUrl: ", config.identityUrl);
 
     const response = await axios.post<TokenResponse>(
-      config.identityUrl,
+      configs.identityUrl,
       rawBody,
       {
         headers: {

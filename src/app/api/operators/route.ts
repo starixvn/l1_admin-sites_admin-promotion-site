@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { getAccessToken } from "../token/route";
+import { getAccessToken } from "@/lib/auth/getAccessToken";
 import axios from "axios";
-import config from "../../../config";
+import configs from "../../../../configs";
 
 export async function GET() {
   try {
     const token = await getAccessToken();
   
-    const res = await axios.get(`${config.apiBaseUrl}/partner`, {
+    const res = await axios.get(`${configs.apiBaseUrl}/partner`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

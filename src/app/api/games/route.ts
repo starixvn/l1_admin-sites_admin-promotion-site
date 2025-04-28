@@ -1,8 +1,8 @@
 // src/app/api/games/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getAccessToken } from "../token/route";
+import { getAccessToken } from "@/lib/auth/getAccessToken";
 import axios from "axios";
-import config from "../../../config";
+import configs from "../../../../configs";
 import { Game } from "@/types/game";
 
 export async function GET(req: NextRequest) {
@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const token = await getAccessToken();
 
     const res = await axios.get(
-      `${config.apiBaseUrl}/general_game_settings/getAll`,
+      `${configs.apiBaseUrl}/general_game_settings/getAll`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

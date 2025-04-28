@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import type { CreatePromotionResponse } from "@/types/promotion";
 type PromotionPayload = {
   name: string;
   operatorId: string;
@@ -16,7 +17,7 @@ type PromotionPayload = {
 export const useCreatePromotion = () => {
   return useMutation({
     mutationKey: ["createPromotion"],
-    mutationFn: async (data: PromotionPayload): Promise<any> => {
+    mutationFn: async (data: PromotionPayload): Promise<CreatePromotionResponse> => {
       const res = await fetch(`/api/promotions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

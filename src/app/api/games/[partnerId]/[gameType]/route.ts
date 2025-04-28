@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-import config from "@/config";
-import { getAccessToken } from "@/app/api/token/route";
+import configs from "../../../../../../configs";
+import { getAccessToken } from "@/lib/auth/getAccessToken";
+
 
 export async function GET(
   _req: NextRequest,
   context: { params: Promise<{ partnerId: string; gameType: string }> }
 ) {
-  const { partnerId, gameType } = await context.params; // ✅ BẮT BUỘC phải await
+  const { partnerId, gameType } = await context.params;
 
   try {
     const token = await getAccessToken();
 
     const response = await axios.get(
-      `${config.apiBaseUrl}/general_game_settings/games/${partnerId}/${gameType}`,
+      `${configs.apiBaseUrl}/general_game_settings/games/${partnerId}/${gameType}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

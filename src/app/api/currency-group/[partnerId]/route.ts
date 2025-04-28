@@ -1,22 +1,19 @@
-import { NextResponse } from "next/server";
-import { getAccessToken } from "../../token/route";
+import { NextRequest, NextResponse } from "next/server";
+import { getAccessToken } from "@/lib/auth/getAccessToken";
 import axios from "axios";
-import config from "@/config";
+import configs from "../../../../../configs";
 
-type Params = {
-  params: {
-    partnerId: string;
-  };
-};
-
-export async function GET(request: Request, { params }: Params) {
-  const { partnerId } = await params;
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<{ partnerId: string; }> }
+) {
+  const { partnerId } = await context.params;
 
   try {
     const token = await getAccessToken();
 
     const res = await axios.get(
-      `${config.apiBaseUrl}/currency_group/partner/${partnerId}`, // GỌI API có path param
+      `${configs.apiBaseUrl}/currency_group/partner/${partnerId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

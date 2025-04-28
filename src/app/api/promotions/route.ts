@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-import config from "@/config";
-import { getAccessToken } from "@/app/api/token/route";
+import configs from "../../../../configs";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,13 +10,16 @@ export async function POST(req: NextRequest) {
     //const token = await getAccessToken();
 
     const response = await axios.post(
-      `${config.apiPromotionUrl}/promotions`,
+      `${configs.apiPromotionUrl}/promotions`,
       body
     );
 
     return NextResponse.json(response.data, { status: 201 });
-  } catch (error: any) {
-    console.error("Error in POST /api/promotions:", error); // 👈 THÊM DÒNG NÀY
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    console.error("Error create promotion:", error);
+    return NextResponse.json(
+      { error: "Failed to create promotion" },
+      { status: 500 }
+    );
   }
 }
