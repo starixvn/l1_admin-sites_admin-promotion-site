@@ -27,19 +27,13 @@ FROM hub.lumigame.com/docker-hub/library/node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV production
 
-RUN addgroup --system --gid 1001 nodejs  \
-     && adduser --system --uid 1001 nextjs
+COPY --from=builder /app/ ./
 
-COPY --from=builder /app/public ./public
-
-RUN mkdir .next  \
-     && chown nextjs:nodejs .next
-
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+RUN chown -R nextjs:nodejs /app/.next
 USER nextjs
 
 EXPOSE 5000
-ENV PORT 5000
-CMD HOSTNAME="0.0.0.0" node server.js
+CMD ["yarn", "start"]
+
