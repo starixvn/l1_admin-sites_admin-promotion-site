@@ -117,7 +117,7 @@ export default function Filter({
     setFilters((prev) => {
       const newOperators = [...prev.operator];
       const index = newOperators.indexOf(operatorId);
-
+       
       if (operatorId === "All") {
         return {
           ...prev,
@@ -242,6 +242,7 @@ export default function Filter({
         <div className="flex gap-2">
           <button
             type="submit"
+            onClick={(e) => handleSubmit(e)}
             className="h-[38px] px-6 bg-[#FF5B6B] text-white rounded-lg font-medium
             hover:bg-[#FF4559] transition-colors border border-transparent
             focus:outline-none focus:border-black cursor-pointer"

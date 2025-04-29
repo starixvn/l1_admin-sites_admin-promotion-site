@@ -1,11 +1,7 @@
 'use client';
 
+import { Operator } from '@/types/operator';
 import { useQuery } from '@tanstack/react-query';
-
-interface Operator {
-  id: string;
-  name: string;
-}
 
 export const useOperators = () => {
   return useQuery<Operator[]>({
