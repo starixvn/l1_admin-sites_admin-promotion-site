@@ -108,13 +108,17 @@ export default function BetSettingsDialog({
       <DialogContent className="w-full !max-w-6xl bg-gradient-to-b from-white via-blue-50 to-blue-100 rounded-3xl p-12 shadow-2xl">
         <DialogHeader>
           <DialogTitle className="text-3xl font-bold text-gray-800">
-            Bet Settings - {gameType === GAME_TYPES.CLASSIC ? "Classic Slot" : "Cascading Slot"}
+            Bet Settings -{" "}
+            {gameType === GAME_TYPES.CLASSIC
+              ? "Classic Slot"
+              : "Cascading Slot"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 mt-6">
           <p className="text-base text-gray-700">
-            <strong className="text-red-500">**</strong> Enable Free Spin Bonus for selected currency groups below.
+            <strong className="text-red-500">**</strong> Enable Free Spin Bonus
+            for selected currency groups below.
           </p>
 
           <div className="overflow-x-auto border rounded-2xl bg-white shadow-sm">
@@ -122,9 +126,15 @@ export default function BetSettingsDialog({
               <thead>
                 <tr className="bg-blue-100 text-blue-900 border-b text-lg">
                   <th className="px-4 py-3 text-center border-r">Operator</th>
-                  <th className="px-4 py-3 text-center border-r">Currency Group</th>
+                  <th className="px-4 py-3 text-center border-r">
+                    Currency Group
+                  </th>
                   <th className="px-4 py-3 text-center border-r">Status</th>
-                  <th className="px-4 py-3 text-center border-r">Bet Level</th>
+                  <th className="px-4 py-3 text-center border-r">
+                    {gameType === GAME_TYPES.CLASSIC
+                      ? "Bet Level"
+                      : "Coin Value"}
+                  </th>
                   <th className="px-4 py-3 text-center">
                     <div className="flex items-center justify-center gap-2">
                       Total Bet
@@ -133,7 +143,11 @@ export default function BetSettingsDialog({
                           <TooltipTrigger>
                             <Info className="w-5 h-5 text-blue-600" />
                           </TooltipTrigger>
-                          <TooltipContent side="top" align="center" className="z-50 text-sm bg-white shadow-lg border">
+                          <TooltipContent
+                            side="top"
+                            align="center"
+                            className="z-50 text-sm bg-white shadow-lg border"
+                          >
                             {gameType === GAME_TYPES.CLASSIC
                               ? "Classic: Bet Level x 25 = Total Bet"
                               : "Cascading: Coin Value x Bet Level x Multiplier = Total Bet"}
@@ -162,7 +176,9 @@ export default function BetSettingsDialog({
                     <td className="text-center border-r">
                       <div
                         className={`w-12 h-7 rounded-full flex items-center transition-colors duration-300 px-1 cursor-pointer ${
-                          row.enabled ? "bg-green-500 justify-end mx-auto" : "bg-gray-300 justify-start mx-auto"
+                          row.enabled
+                            ? "bg-green-500 justify-end mx-auto"
+                            : "bg-gray-300 justify-start mx-auto"
                         }`}
                         onClick={() => handleToggle(index, !row.enabled)}
                       >
@@ -179,7 +195,9 @@ export default function BetSettingsDialog({
                             min="0"
                             step="0.01"
                             value={row.betLevel}
-                            onChange={(e) => handleChangeBet(index, e.target.value)}
+                            onChange={(e) =>
+                              handleChangeBet(index, e.target.value)
+                            }
                             className="w-28 h-10 bg-white text-center text-base px-0 rounded-lg border border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
                           />
                         </div>
