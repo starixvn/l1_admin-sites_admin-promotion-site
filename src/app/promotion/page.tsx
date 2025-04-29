@@ -4,14 +4,16 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Filter from "./Filter";
 import DataGrid from "./DataGrid";
+import { Game } from "@/types/game";
 
 export default function PromotionManagement() {
   const [promotions, setPromotions] = useState([]);
   const [operators, setOperators] = useState<{ name: string; id: string }[]>(
     []
   );
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [games, setGames] = useState<Game[]>([]);
 
   // Fetch operators
   const fetchOperators = async () => {
@@ -37,7 +39,6 @@ export default function PromotionManagement() {
 
   const handleFilterSubmit = async (filters: any) => {
     try {
-      setLoading(true);
       setError(null);
       const queryParams = new URLSearchParams();
       if (filters.status !== "All")
@@ -62,14 +63,32 @@ export default function PromotionManagement() {
     } catch (err) {
       setError("Failed to fetch promotions");
       console.error(err);
-    } finally {
-      setLoading(false);
+    }
+  };
+
+  const fetchGames = async () => {
+    try {
+      const response = await axios.get("/api/games");
+      setGames(response.data);
+    } catch (err) {
+      console.error("Failed to fetch games:", err);
     }
   };
 
   useEffect(() => {
-    fetchOperators();
-  }, []); // Remove handleFilterSubmit from initial load
+      setLoading(true);
+      const initializeData = async () => {
+      try {
+        await Promise.all([fetchOperators(), fetchGames()]);
+      } catch (err) {
+        console.error("Error initializing data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializeData();
+  }, []);
 
   return (
     <div className="min-h-screen w-full bg-gray-100 p-5">
@@ -79,7 +98,12 @@ export default function PromotionManagement() {
           onFilterChange={handleFilterSubmit}
           operatorOptions={operators}
         />
-        <DataGrid promotions={promotions} loading={loading} error={error} />
+        <DataGrid
+          promotions={promotions}
+          loading={loading}
+          error={error}
+          games={games}
+        />
       </div>
     </div>
   );

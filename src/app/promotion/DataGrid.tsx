@@ -1,6 +1,7 @@
 "use client";
 
 import { GAME_TYPES } from '@/constants/gameTypes';
+import { Game } from '@/types/game';
 
 interface Promotion {
   _id: string;
@@ -33,6 +34,7 @@ interface DataGridProps {
   promotions: Promotion[];
   loading: boolean;
   error: string | null;
+  games: Game[];
 }
 
 function toGMTString(dateStr: string, gmtOffset: number) {
@@ -64,6 +66,7 @@ export default function DataGrid({
   promotions,
   loading,
   error,
+  games,
 }: DataGridProps) {
   function getStatus(
     promotion: Promotion
@@ -90,6 +93,15 @@ export default function DataGrid({
         return "text-gray-500";
     }
   }
+
+  const getGameNames = (gameIds: number[]) => {
+    if (!gameIds || !games.length) return "";
+    
+    return gameIds.map(id => {
+      const game = games.find(g => g.GameId === id);
+      return game ? game.DisplayName : id;
+    }).join(", ");
+  };
 
   if (loading) {
     return <div className="text-center py-4">Loading...</div>;
@@ -119,8 +131,8 @@ export default function DataGrid({
               "Games",
               "Operators",
               "Bet Settings",
-              "Start date (GMT + 7)",
-              "End date (GMT + 7)",
+              "Start date (GMT +7)",
+              "End date (GMT +7)",
               "Status",
               "Announcement",
               "Action",
@@ -152,12 +164,12 @@ export default function DataGrid({
                     type="text"
                     value={promotion.bonusItemCount}
                     readOnly
-                    className="border rounded bg-gray-100 w-12 text-center mt-1"
+                    className="border rounded bg-gray-100 w-18 text-center mt-1"
                   />
                 </td>
                 <td className="border border-gray-300 px-3 py-2 align-top">
                   {promotion.gameIds && promotion.gameIds.length > 0
-                    ? promotion.gameIds.join(", ")
+                    ? getGameNames(promotion.gameIds)
                     : ""}
                 </td>
                 <td className="border border-gray-300 px-3 py-2 align-middle text-center">
