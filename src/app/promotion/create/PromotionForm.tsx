@@ -95,7 +95,11 @@ const promotionSchema = z
 
 export type PromotionFormValues = z.infer<typeof promotionSchema>;
 
-export default function PromotionForm({ onClose }: { onClose?: () => void }) {
+export default function PromotionForm({
+  onClose,
+}: {
+  onClose?: (shouldReload?: boolean) => void;
+}) {
   const {
     register,
     handleSubmit,
@@ -180,7 +184,7 @@ export default function PromotionForm({ onClose }: { onClose?: () => void }) {
     createPromotion(payload, {
       onSuccess: (res) => {
         console.log("Promotion created:", res);
-        onClose?.();
+        onClose?.(true);
       },
       onError: (err) => {
         console.error("Failed to create promotion", err);
@@ -544,7 +548,7 @@ export default function PromotionForm({ onClose }: { onClose?: () => void }) {
         <div className="flex justify-between">
           <Button
             type="button"
-            onClick={onClose}
+            onClick={() => onClose?.(false)}
             className="bg-gray-600 hover:bg-gray-700"
           >
             Close

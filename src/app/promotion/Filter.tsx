@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import PromotionDialog from "./create/PromotionDialog";
 
 interface Operator {
   name: string;
@@ -18,7 +19,10 @@ interface FilterValues {
   promotionCode: string;
 }
 
-export default function Filter({ onFilterChange, operatorOptions }: FilterProps) {
+export default function Filter({
+  onFilterChange,
+  operatorOptions,
+}: FilterProps) {
   const [filters, setFilters] = useState<FilterValues>({
     status: "All",
     operator: [],
@@ -30,32 +34,37 @@ export default function Filter({ onFilterChange, operatorOptions }: FilterProps)
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLDivElement>(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
 
   useEffect(() => {
     if (operatorOptions.length > 0) {
-      setFilters(prev => ({
+      setFilters((prev) => ({
         ...prev,
-        operator: operatorOptions.map(op => op.id)
+        operator: operatorOptions.map((op) => op.id),
       }));
     }
   }, [operatorOptions]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowOperatorDropdown(false);
       }
     }
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   useEffect(() => {
     if (inputRef.current) {
-      const isTextOverflowing = inputRef.current.scrollWidth > inputRef.current.clientWidth;
+      const isTextOverflowing =
+        inputRef.current.scrollWidth > inputRef.current.clientWidth;
       setIsOverflowing(isTextOverflowing);
     }
   }, [filters.operator]);
@@ -64,16 +73,16 @@ export default function Filter({ onFilterChange, operatorOptions }: FilterProps)
     if (filters.operator.length === 0) return "";
     if (filters.operator.length === operatorOptions.length) return "All";
     if (isOverflowing) return `${filters.operator.length} selected`;
-    
+
     return filters.operator
-      .map(id => operatorOptions.find(op => op.id === id)?.name)
+      .map((id) => operatorOptions.find((op) => op.id === id)?.name)
       .filter(Boolean)
       .join(", ");
   };
 
   const statusOptions = ["All", "Running", "Completed", "Upcoming"];
 
-  const filteredOperators = operatorOptions.filter(op => 
+  const filteredOperators = operatorOptions.filter((op) =>
     op.name.toLowerCase().includes(operatorSearch.toLowerCase())
   );
 
@@ -86,16 +95,18 @@ export default function Filter({ onFilterChange, operatorOptions }: FilterProps)
     e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
   ) => {
     const { name, value } = e.target;
-    if (name === 'operator') {
+    if (name === "operator") {
       const select = e.target as HTMLSelectElement;
-      const selectedOptions = Array.from(select.selectedOptions).map(option => option.value);
-      
-      setFilters(prev => ({
+      const selectedOptions = Array.from(select.selectedOptions).map(
+        (option) => option.value
+      );
+
+      setFilters((prev) => ({
         ...prev,
-        operator: selectedOptions
+        operator: selectedOptions,
       }));
     } else {
-      setFilters(prev => ({
+      setFilters((prev) => ({
         ...prev,
         [name]: value,
       }));
@@ -103,14 +114,17 @@ export default function Filter({ onFilterChange, operatorOptions }: FilterProps)
   };
 
   const handleOperatorSelect = (operatorId: string) => {
-    setFilters(prev => {
+    setFilters((prev) => {
       const newOperators = [...prev.operator];
       const index = newOperators.indexOf(operatorId);
-      
-      if (operatorId === 'All') {
+
+      if (operatorId === "All") {
         return {
           ...prev,
-          operator: newOperators.length === operatorOptions.length ? [] : operatorOptions.map(op => op.id)
+          operator:
+            newOperators.length === operatorOptions.length
+              ? []
+              : operatorOptions.map((op) => op.id),
         };
       }
 
@@ -121,9 +135,13 @@ export default function Filter({ onFilterChange, operatorOptions }: FilterProps)
       }
       return {
         ...prev,
-        operator: newOperators
+        operator: newOperators,
       };
     });
+  };
+
+  const triggerSubmit = () => {
+    onFilterChange(filters);
   };
 
   return (
@@ -150,7 +168,7 @@ export default function Filter({ onFilterChange, operatorOptions }: FilterProps)
 
       <div className="flex flex-col relative" ref={dropdownRef}>
         <label className="text-base font-semibold mb-1">Operator</label>
-        <div 
+        <div
           className="border border-gray-400 rounded w-40 bg-white cursor-pointer relative"
           onClick={() => setShowOperatorDropdown(true)}
         >
@@ -173,11 +191,22 @@ export default function Filter({ onFilterChange, operatorOptions }: FilterProps)
               </span>
             )}
           </div>
-          <div 
-            className={`absolute right-2 top-1/2 -translate-y-1/2 transition-transform duration-200 ${showOperatorDropdown ? 'rotate-180' : ''}`}
+          <div
+            className={`absolute right-2 top-1/2 -translate-y-1/2 transition-transform duration-200 ${
+              showOperatorDropdown ? "rotate-180" : ""
+            }`}
           >
-            <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1.41 0.590088L6 5.17009L10.59 0.590088L12 2.00009L6 8.00009L0 2.00009L1.41 0.590088Z" fill="#323232"/>
+            <svg
+              width="12"
+              height="8"
+              viewBox="0 0 12 8"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M1.41 0.590088L6 5.17009L10.59 0.590088L12 2.00009L6 8.00009L0 2.00009L1.41 0.590088Z"
+                fill="#323232"
+              />
             </svg>
           </div>
           {showOperatorDropdown && (
@@ -187,13 +216,16 @@ export default function Filter({ onFilterChange, operatorOptions }: FilterProps)
                   <input
                     type="checkbox"
                     checked={filters.operator.length === operatorOptions.length}
-                    onChange={() => handleOperatorSelect('All')}
+                    onChange={() => handleOperatorSelect("All")}
                     className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
                   />
                   <span className="ml-2">All</span>
                 </label>
                 {filteredOperators.map((option) => (
-                  <label key={option.id} className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100">
+                  <label
+                    key={option.id}
+                    className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
+                  >
                     <input
                       type="checkbox"
                       checked={filters.operator.includes(option.id)}
@@ -233,11 +265,19 @@ export default function Filter({ onFilterChange, operatorOptions }: FilterProps)
       <div className="flex flex-col justify-end">
         <button
           type="button"
+          onClick={()=>setOpenDialog(true)}
           className="bg-green-400 text-black font-semibold px-6 h-10 rounded shadow hover:bg-green-500 transition"
           style={{ minWidth: 180 }}
         >
           Add New Promotion
         </button>
+        <PromotionDialog
+          open={openDialog}
+          onClose={(shouldRefresh = false) => {
+            setOpenDialog(false);
+            if (shouldRefresh) triggerSubmit();
+          }}
+        />
       </div>
     </form>
   );
