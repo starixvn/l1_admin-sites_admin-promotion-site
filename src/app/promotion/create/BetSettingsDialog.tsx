@@ -105,7 +105,7 @@ export default function BetSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl bg-white rounded-xl shadow-xl px-6 py-4">
+      <DialogContent className="max-w-4xl bg-blue-50 rounded-xl shadow-xl px-6 py-4">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-800">
             Bet Setting pop-up for{" "}

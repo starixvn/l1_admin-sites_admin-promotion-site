@@ -75,9 +75,7 @@ export default function DateTimePicker({
 
   return (
     <div className="space-y-1">
-      {label && (
-        <label className="text-lg font-semibold text-gray-700">{label}</label>
-      )}
+      {label && <label className="form-label">{label}</label>}
       <p className="text-xs text-muted-foreground mb-1">Date & Time (GMT+7)</p>
 
       <Popover open={open} onOpenChange={setOpen}>
@@ -85,7 +83,7 @@ export default function DateTimePicker({
           <Button
             variant="outline"
             className={cn(
-              "w-full justify-between px-3 py-2 text-left font-normal border border-gray-400 rounded",
+              "w-full justify-between px-4 py-3 text-left text-base font-normal border border-gray-300 rounded-xl shadow-sm bg-white focus:ring-2 focus:ring-blue-300 focus:border-blue-300 hover:border-blue-400 transition-all",
               !value && "text-muted-foreground"
             )}
           >
@@ -94,23 +92,23 @@ export default function DateTimePicker({
                 ? format(date, "dd-MM-yyyy HH:mm")
                 : "DD-MM-YYYY hh:mm"}
             </span>
-            <CalendarIcon className="h-4 w-4 text-gray-500" />
+            <CalendarIcon className="h-5 w-5 text-blue-500" />
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className="w-auto p-4 flex flex-col items-center gap-4 bg-white">
+        <PopoverContent className="w-auto p-6 flex flex-col items-center gap-6 bg-white border border-gray-300 rounded-2xl shadow-md">
           <DayPicker
             mode="single"
             selected={date}
             onSelect={handleDateChange}
-            className="border rounded-md"
+            className="custom-day-picker"
           />
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <select
               value={hour}
               onChange={(e) => handleTimeChange(e.target.value, minute)}
-              className="border rounded-md px-2 py-1"
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 hover:border-gray-400"
             >
               {hourOptions.map((h) => (
                 <option key={h} value={h}>
@@ -118,11 +116,11 @@ export default function DateTimePicker({
                 </option>
               ))}
             </select>
-            <span>:</span>
+            <span className="text-lg font-bold">:</span>
             <select
               value={minute}
               onChange={(e) => handleTimeChange(hour, e.target.value)}
-              className="border rounded-md px-2 py-1"
+              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 hover:border-gray-400"
             >
               {minuteOptions.map((m) => (
                 <option key={m} value={m}>
@@ -133,20 +131,26 @@ export default function DateTimePicker({
           </div>
 
           <div className="flex gap-4 pt-2">
-            <Button type="button" className="bg-gray-600 hover:bg-gray-700" onClick={() => setOpen(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              className="btn-cancel"
+              onClick={() => setOpen(false)}
+            >
               Cancel
             </Button>
             <Button
               onClick={() => setOpen(false)}
               type="submit"
-              className="bg-red-600 hover:bg-red-700"
+              className="btn-primary"
             >
               OK
             </Button>
           </div>
         </PopoverContent>
       </Popover>
-      {error && <p className="text-sm text-red-500">{error}</p>}
+
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>
   );
 }
