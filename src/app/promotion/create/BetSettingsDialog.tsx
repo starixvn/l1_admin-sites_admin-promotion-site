@@ -105,45 +105,35 @@ export default function BetSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl bg-blue-50 rounded-xl shadow-xl px-6 py-4">
+      <DialogContent className="w-full !max-w-6xl bg-gradient-to-b from-white via-blue-50 to-blue-100 rounded-3xl p-12 shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-gray-800">
-            Bet Setting pop-up for{" "}
-            {gameType === GAME_TYPES.CLASSIC
-              ? "Classic Slot"
-              : "Cascading Slot"}
+          <DialogTitle className="text-3xl font-bold text-gray-800">
+            Bet Settings - {gameType === GAME_TYPES.CLASSIC ? "Classic Slot" : "Cascading Slot"}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 mt-4">
-          <p className="text-sm text-gray-600">
-            <strong className="text-red-500">**</strong> Turn ON the Promotion
-            for the currency group which you want to offer the Free Spin Bonus.
+        <div className="space-y-6 mt-6">
+          <p className="text-base text-gray-700">
+            <strong className="text-red-500">**</strong> Enable Free Spin Bonus for selected currency groups below.
           </p>
 
-          <div className="overflow-x-auto border rounded-md bg-gray-50">
-            <table className="w-full text-sm border-collapse border border-gray-300">
+          <div className="overflow-x-auto border rounded-2xl bg-white shadow-sm">
+            <table className="w-full text-base border-collapse border border-blue-200">
               <thead>
-                <tr className="bg-gray-100 text-gray-700 border-b">
-                  <th className="px-3 py-2 text-left border-r">Operator</th>
-                  <th className="px-3 py-2 text-left border-r">
-                    Currency Group
-                  </th>
-                  <th className="px-3 py-2 text-center border-r">Status</th>
-                  <th className="px-3 py-2 text-center border-r">Bet Level</th>
-                  <th className="px-3 py-2 text-center">
-                    <div className="flex items-center justify-center gap-1">
+                <tr className="bg-blue-100 text-blue-900 border-b text-lg">
+                  <th className="px-4 py-3 text-center border-r">Operator</th>
+                  <th className="px-4 py-3 text-center border-r">Currency Group</th>
+                  <th className="px-4 py-3 text-center border-r">Status</th>
+                  <th className="px-4 py-3 text-center border-r">Bet Level</th>
+                  <th className="px-4 py-3 text-center">
+                    <div className="flex items-center justify-center gap-2">
                       Total Bet
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger>
-                            <Info className="w-4 h-4 text-blue-500" />
+                            <Info className="w-5 h-5 text-blue-600" />
                           </TooltipTrigger>
-                          <TooltipContent
-                            side="top"
-                            align="center"
-                            className="z-50 text-xs bg-white shadow-lg border"
-                          >
+                          <TooltipContent side="top" align="center" className="z-50 text-sm bg-white shadow-lg border">
                             {gameType === GAME_TYPES.CLASSIC
                               ? "Classic: Bet Level x 25 = Total Bet"
                               : "Cascading: Coin Value x Bet Level x Multiplier = Total Bet"}
@@ -156,29 +146,27 @@ export default function BetSettingsDialog({
               </thead>
               <tbody>
                 {rows.map((row, index) => (
-                  <tr key={row.id} className="border-t">
-                    {index === 0 ? (
+                  <tr key={row.id} className="border-t text-base">
+                    {index === 0 && (
                       <td
-                        className="px-3 py-2 text-gray-600 text-center border-r"
+                        className="px-4 py-3 text-gray-600 text-center border-r"
                         rowSpan={rows.length}
                         style={{ verticalAlign: "middle" }}
                       >
-                        <div className="h-full flex items-center justify-center">
+                        <div className="h-full flex items-center justify-center font-semibold">
                           {partnerId}
                         </div>
                       </td>
-                    ) : null}
-                    <td className="px-3 py-2 border-r">{row.name}</td>
+                    )}
+                    <td className="px-4 py-3 border-r">{row.name}</td>
                     <td className="text-center border-r">
                       <div
-                        className={`w-10 h-6 rounded-full flex items-center transition-colors duration-300 px-1 cursor-pointer ${
-                          row.enabled
-                            ? "bg-green-500 justify-end mx-auto"
-                            : "bg-gray-300 justify-start mx-auto"
+                        className={`w-12 h-7 rounded-full flex items-center transition-colors duration-300 px-1 cursor-pointer ${
+                          row.enabled ? "bg-green-500 justify-end mx-auto" : "bg-gray-300 justify-start mx-auto"
                         }`}
                         onClick={() => handleToggle(index, !row.enabled)}
                       >
-                        <div className="w-4 h-4 bg-white rounded-full shadow-md flex items-center justify-center">
+                        <div className="w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center">
                           {row.enabled && "✔"}
                         </div>
                       </div>
@@ -191,18 +179,15 @@ export default function BetSettingsDialog({
                             min="0"
                             step="0.01"
                             value={row.betLevel}
-                            onChange={(e) =>
-                              handleChangeBet(index, e.target.value)
-                            }
-                            className="w-24 h-9 bg-white text-center no-spinner px-0 text-sm rounded-md border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                            onChange={(e) => handleChangeBet(index, e.target.value)}
+                            className="w-28 h-10 bg-white text-center text-base px-0 rounded-lg border border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
                           />
                         </div>
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
-
-                    <td className="text-center">
+                    <td className="text-center font-semibold">
                       {row.enabled ? getTotalBet(row.betLevel).toFixed(2) : "-"}
                     </td>
                   </tr>
@@ -211,19 +196,11 @@ export default function BetSettingsDialog({
             </table>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button
-              type="button"
-              onClick={onClose}
-              className="bg-gray-600 hover:bg-gray-700"
-            >
+          <div className="flex justify-end gap-4 pt-6">
+            <Button type="button" onClick={onClose} className="btn-cancel">
               Close
             </Button>
-            <Button
-              type="submit"
-              className="bg-red-600 hover:bg-red-700"
-              onClick={handleSave}
-            >
+            <Button type="submit" onClick={handleSave} className="btn-primary">
               Save
             </Button>
           </div>
