@@ -164,7 +164,7 @@ export default function Filter({ onFilterChange, operatorOptions }: FilterProps)
                 value={operatorSearch}
                 onChange={(e) => setOperatorSearch(e.target.value)}
                 className="w-full outline-none font-semibold"
-                placeholder="search"
+                placeholder="Search"
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (

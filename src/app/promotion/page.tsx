@@ -60,7 +60,7 @@ export default function PromotionManagement() {
   }, []);  // Remove handleFilterSubmit from initial load
 
   return (
-    <div className="min-h-screen w-full bg-gray-100 p-0 m-0">
+    <div className="min-h-screen w-full bg-gray-100 p-5">
       <h1 className="text-2xl font-bold mb-6">Promotion Management</h1>
       <div className="bg-white rounded-lg shadow p-6">
         <Filter 
