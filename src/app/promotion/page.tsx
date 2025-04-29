@@ -7,23 +7,31 @@ import DataGrid from "./DataGrid";
 
 export default function PromotionManagement() {
   const [promotions, setPromotions] = useState([]);
-  const [operators, setOperators] = useState<{ name: string; id: string }[]>([]);
+  const [operators, setOperators] = useState<{ name: string; id: string }[]>(
+    []
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch operators
   const fetchOperators = async () => {
     try {
-      const response = await axios.get('/api/operators');
-      const operatorsList = response.data.map((op: { Name: string; PartnerId: string }) => ({
-        name: op.Name,
-        id: op.PartnerId
-      }));
+      const response = await axios.get("/api/operators");
+      const operatorsList = response.data.map(
+        (op: { Name: string; PartnerId: string }) => ({
+          name: op.Name,
+          id: op.PartnerId,
+        })
+      );
       setOperators(operatorsList);
       // Call handleFilterSubmit after operators are fetched
-      handleFilterSubmit({ status: "All", operator: operatorsList.map((op: { id: string }) => op.id), promotionCode: "" });
+      handleFilterSubmit({
+        status: "All",
+        operator: operatorsList.map((op: { id: string }) => op.id),
+        promotionCode: "",
+      });
     } catch (err) {
-      console.error('Failed to fetch operators:', err);
+      console.error("Failed to fetch operators:", err);
     }
   };
 
@@ -35,7 +43,11 @@ export default function PromotionManagement() {
       if (filters.status !== "All")
         queryParams.append("status", filters.status);
       // Xử lý multiple select operators
-      if (filters.operator && filters.operator.length > 0 && !filters.operator.includes('All')) {
+      if (
+        filters.operator &&
+        filters.operator.length > 0 &&
+        !filters.operator.includes("All")
+      ) {
         filters.operator.forEach((op: string) => {
           queryParams.append("operator", op);
         });
@@ -57,14 +69,14 @@ export default function PromotionManagement() {
 
   useEffect(() => {
     fetchOperators();
-  }, []);  // Remove handleFilterSubmit from initial load
+  }, []); // Remove handleFilterSubmit from initial load
 
   return (
     <div className="min-h-screen w-full bg-gray-100 p-5">
       <h1 className="text-2xl font-bold mb-6">Promotion Management</h1>
       <div className="bg-white rounded-lg shadow p-6">
-        <Filter 
-          onFilterChange={handleFilterSubmit} 
+        <Filter
+          onFilterChange={handleFilterSubmit}
           operatorOptions={operators}
         />
         <DataGrid promotions={promotions} loading={loading} error={error} />

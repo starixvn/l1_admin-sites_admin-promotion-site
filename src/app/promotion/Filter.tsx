@@ -256,7 +256,7 @@ export default function Filter({
       <div className="flex flex-col justify-end">
         <button
           type="submit"
-          className="bg-red-400 text-white font-semibold px-6 h-10 rounded shadow hover:bg-red-500 transition"
+          className="bg-red-400 text-white font-semibold px-6 h-10 rounded shadow hover:bg-red-500 transition cursor-pointer"
           style={{ minWidth: 120 }}
         >
           Submit
@@ -266,7 +266,7 @@ export default function Filter({
         <button
           type="button"
           onClick={()=>setOpenDialog(true)}
-          className="bg-green-400 text-black font-semibold px-6 h-10 rounded shadow hover:bg-green-500 transition"
+          className="bg-green-400 text-black font-semibold px-6 h-10 rounded shadow hover:bg-green-500 transition cursor-pointer"
           style={{ minWidth: 180 }}
         >
           Add New Promotion

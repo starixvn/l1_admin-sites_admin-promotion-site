@@ -1,5 +1,7 @@
 "use client";
 
+import { GAME_TYPES } from '@/constants/gameTypes';
+
 interface Promotion {
   _id: string;
   name: string;
@@ -46,6 +48,17 @@ function toGMTString(dateStr: string, gmtOffset: number) {
     minute: "2-digit",
   });
 }
+
+const getGameTypeName = (gameConfigType: number) => {
+  switch (gameConfigType) {
+    case GAME_TYPES.CLASSIC:
+      return "Classic Slots";
+    case GAME_TYPES.CASCADING:
+      return "Cascading Slots";
+    default:
+      return "";
+  }
+};
 
 export default function DataGrid({
   promotions,
@@ -114,7 +127,7 @@ export default function DataGrid({
             ].map((header) => (
               <th
                 key={header}
-                className="border border-gray-300 px-3 py-2 text-xs font-semibold text-gray-700 bg-gray-50 text-center"
+                className="border border-gray-300 px-3 py-2 text-base font-bold text-gray-700 bg-gray-50 text-center"
               >
                 {header}
               </th>
@@ -126,14 +139,14 @@ export default function DataGrid({
             const status = getStatus(promotion);
             return (
               <tr key={promotion._id} className="hover:bg-gray-100">
-                <td className="border border-gray-300 px-3 py-2 align-top">
+                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
                   {promotion.name}
                 </td>
-                <td className="border border-gray-300 px-3 py-2 align-top">
+                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
                   {promotion.code}
                 </td>
                 <td className="border border-gray-300 px-3 py-2 align-top">
-                  <div className="font-medium">Classic Slots</div>
+                  <div>{getGameTypeName(promotion.gameConfigType)}</div>
                   <div className="text-xs">Number of Free Spin</div>
                   <input
                     type="text"
@@ -147,22 +160,22 @@ export default function DataGrid({
                     ? promotion.gameIds.join(", ")
                     : ""}
                 </td>
-                <td className="border border-gray-300 px-3 py-2 align-top">
+                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
                   {promotion.operatorId}
                 </td>
-                <td className="border border-gray-300 px-3 py-2 align-top">
-                  <button className="text-blue-600 underline hover:text-blue-800">
+                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
+                  <button className="text-blue-600 hover:text-blue-800 cursor-pointer">
                     Details
                   </button>
                 </td>
-                <td className="border border-gray-300 px-3 py-2 align-top text-center">
+                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
                   {toGMTString(promotion.startDate, 7)}
                 </td>
-                <td className="border border-gray-300 px-3 py-2 align-top text-center">
+                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
                   {toGMTString(promotion.endDate, 7)}
                 </td>
                 <td
-                  className={`border border-gray-300 px-3 py-2 align-top text-center font-semibold ${getStatusColorByDate(
+                  className={`border border-gray-300 px-3 py-2 align-middle text-center font-semibold ${getStatusColorByDate(
                     promotion
                   )}`}
                 >
@@ -170,16 +183,16 @@ export default function DataGrid({
                     ? "Up Coming"
                     : status.charAt(0).toUpperCase() + status.slice(1)}
                 </td>
-                <td className="border border-gray-300 px-3 py-2 align-top text-center">
+                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
                   <span className="text-green-400 font-medium">Linked</span>
                 </td>
-                <td className="border border-gray-300 px-3 py-2 align-top text-center">
-                  <div className="flex flex-col gap-2 items-center">
+                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
+                  <div className="flex flex-col gap-2">
                     <button
                       className={`w-16 py-1 rounded font-semibold ${
                         status === "completed"
                           ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                          : "bg-green-500 text-white hover:bg-green-600"
+                          : "bg-green-500 text-white hover:bg-green-600 cursor-pointer"
                       }`}
                       disabled={status === "completed"}
                     >
@@ -187,11 +200,11 @@ export default function DataGrid({
                     </button>
                     <button
                       className={`w-16 py-1 rounded font-semibold ${
-                        status === "completed"
+                        status === "completed" || status === "running"
                           ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                          : "bg-red-500 text-white hover:bg-red-600"
+                          : "bg-red-500 text-white hover:bg-red-600 cursor-pointer"
                       }`}
-                      disabled={status === "completed"}
+                      disabled={status === "completed" || status === "running"}
                     >
                       Delete
                     </button>
