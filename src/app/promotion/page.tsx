@@ -5,6 +5,36 @@ import axios, { AxiosError } from "axios";
 import Filter from "./Filter";
 import DataGrid from "./DataGrid";
 import { Game } from "@/types/game";
+import ConfirmModal from '@/components/ConfirmModal';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+interface Promotion {
+  _id: string;
+  name: string;
+  code: string;
+  operatorId: string;
+  offeredSiteNames: string[];
+  currencyGroups: string[];
+  startDate: string;
+  endDate: string;
+  bonusItemCount: number;
+  offeredPlayerIds: string[];
+  gameConfigType: number;
+  gameIds: number[];
+  betLevels: {
+    currencyGroup: string;
+    betLevel: number;
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
+  }[];
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  status?: string;
+  announcement?: string;
+}
 
 interface PromotionFilters {
   status: string;
@@ -13,11 +43,13 @@ interface PromotionFilters {
 }
 
 export default function PromotionPage() {
-  const [promotions, setPromotions] = useState([]);
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [operators, setOperators] = useState<{ name: string; id: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [games, setGames] = useState<Game[]>([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingPromotionId, setDeletingPromotionId] = useState<string | null>(null);
 
   const handleFilterSubmit = useCallback(async (filters: PromotionFilters) => {
     try {
@@ -72,9 +104,38 @@ export default function PromotionPage() {
     }
   };
 
+  const handleDeleteClick = async (id: string): Promise<void> => {
+    setDeletingPromotionId(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deletingPromotionId) return;
+    
+    try {
+      await axios.delete(`/api/promotions/${deletingPromotionId}`);
+      setPromotions((prev) => prev.filter((p) => p._id !== deletingPromotionId));
+      setIsDeleteModalOpen(false);
+      toast.success("Promotion deleted successfully", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        setError(error.response?.data?.message || "Failed to delete promotion");
+        toast.error(error.response?.data?.message || "Failed to delete promotion");
+      } else {
+        setError("Failed to delete promotion");
+        toast.error("Failed to delete promotion");
+      }
+      console.error("Error deleting promotion:", error);
+    }
+    setDeletingPromotionId(null);
+  };
+
   useEffect(() => {
-      setLoading(true);
-      const initializeData = async () => {
+    setLoading(true);
+    const initializeData = async () => {
       try {
         await Promise.all([fetchOperators(), fetchGames()]);
       } catch (err) {
@@ -85,7 +146,7 @@ export default function PromotionPage() {
     };
 
     initializeData();
-  }, []);
+  }, [fetchOperators]);
 
   return (
     <div className="space-y-4 w-full">
@@ -103,8 +164,22 @@ export default function PromotionPage() {
           loading={loading}
           error={error}
           games={games}
+          onDelete={handleDeleteClick}
         />
       </div>
+
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setDeletingPromotionId(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Promotion"
+        message="Are you sure you want to delete this promotion? This action cannot be undone."
+      />
+      
+      <ToastContainer />
     </div>
   );
 }

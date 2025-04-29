@@ -1,7 +1,7 @@
 "use client";
 
-import { GAME_TYPES } from '@/constants/gameTypes';
-import { Game } from '@/types/game';
+import { GAME_TYPES } from "@/constants/gameTypes";
+import { Game } from "@/types/game";
 
 interface Promotion {
   _id: string;
@@ -35,20 +35,23 @@ interface DataGridProps {
   loading: boolean;
   error: string | null;
   games: Game[];
+  onDelete: (id: string) => Promise<void>;
 }
 
 function toGMTString(dateStr: string, gmtOffset: number) {
   if (!dateStr) return "";
   const date = new Date(dateStr);
   const gmtDate = new Date(date.getTime() + gmtOffset * 60 * 60 * 1000);
-  return gmtDate.toLocaleString("en-GB", {
-    hour12: false,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).replace(',', '');
+  return gmtDate
+    .toLocaleString("en-GB", {
+      hour12: false,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+    .replace(",", "");
 }
 
 const getGameTypeName = (gameConfigType: number) => {
@@ -67,6 +70,7 @@ export default function DataGrid({
   loading,
   error,
   games,
+  onDelete,
 }: DataGridProps) {
   function getStatus(
     promotion: Promotion
@@ -96,11 +100,21 @@ export default function DataGrid({
 
   const getGameNames = (gameIds: number[]) => {
     if (!gameIds || !games.length) return "";
-    
-    return gameIds.map(id => {
-      const game = games.find(g => g.GameId === id);
-      return game ? game.DisplayName : id;
-    }).join(", ");
+
+    return gameIds
+      .map((id) => {
+        const game = games.find((g) => g.GameId === id);
+        return game ? game.DisplayName : id;
+      })
+      .join(", ");
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await onDelete(id);
+    } catch (error) {
+      console.error("Failed to delete promotion:", error);
+    }
   };
 
   if (loading) {
@@ -186,18 +200,30 @@ export default function DataGrid({
             const status = getStatus(promotion);
             return (
               <tr key={promotion._id} className="hover:bg-gray-50">
-                <td className="px-3 py-2 text-sm border-b border-r border-gray-200">{promotion.name}</td>
-                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-gray-600">{promotion.code}</td>
+                <td className="px-3 py-2 text-sm border-b border-r border-gray-200">
+                  {promotion.name}
+                </td>
+                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-gray-600">
+                  {promotion.code}
+                </td>
                 <td className="px-3 py-2 text-sm border-b border-r border-gray-200">
                   <div>{getGameTypeName(promotion.gameConfigType)}</div>
-                  <div className="text-gray-500">Free Spins: {promotion.bonusItemCount}</div>
+                  <div className="text-gray-500">
+                    Free Spins: {promotion.bonusItemCount}
+                  </div>
                 </td>
                 <td className="px-3 py-2 text-sm border-b border-r border-gray-200">
-                  {promotion.gameIds && promotion.gameIds.length > 0 ? getGameNames(promotion.gameIds) : ""}
+                  {promotion.gameIds && promotion.gameIds.length > 0
+                    ? getGameNames(promotion.gameIds)
+                    : ""}
                 </td>
-                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">{promotion.operatorId}</td>
                 <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
-                  <button className="text-blue-600 hover:text-blue-800 cursor-pointer">Details</button>
+                  {promotion.operatorId}
+                </td>
+                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
+                  <button className="text-blue-600 hover:text-blue-800 cursor-pointer">
+                    Details
+                  </button>
                 </td>
                 <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center whitespace-nowrap">
                   {toGMTString(promotion.startDate, 7)}
@@ -206,9 +232,13 @@ export default function DataGrid({
                   {toGMTString(promotion.endDate, 7)}
                 </td>
                 <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                    ${getStatusColorByDate(promotion)}`}>
-                    {status === "upcoming" ? "Up Coming" : status.charAt(0).toUpperCase() + status.slice(1)}
+                  <span
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                    ${getStatusColorByDate(promotion)}`}
+                  >
+                    {status === "upcoming"
+                      ? "Up Coming"
+                      : status.charAt(0).toUpperCase() + status.slice(1)}
                   </span>
                 </td>
                 <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
@@ -227,9 +257,10 @@ export default function DataGrid({
                       Edit
                     </button>
                     <button
+                      onClick={() => handleDelete(promotion._id)}
                       className={`min-w-[60px] px-3 py-1 rounded text-xs font-medium ${
                         status === "completed" || status === "running"
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                           : "bg-red-500 text-white hover:bg-red-600 cursor-pointer"
                       }`}
                       disabled={status === "completed" || status === "running"}

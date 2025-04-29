@@ -48,8 +48,6 @@ export async function GET(req: NextRequest) {
     if (operator && operator !== 'All') params.append('operatorIds', operator);
     if (code) params.append('code', code);
 
-    console.log("params:", params.toString());
-
     const response = await axios.get(
       `${configs.apiPromotionUrl}/promotions?${params.toString()}`
     );
@@ -69,5 +67,3 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-
-
