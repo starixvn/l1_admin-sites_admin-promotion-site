@@ -180,6 +180,7 @@ export default function PromotionForm({ onClose }: { onClose?: () => void }) {
     createPromotion(payload, {
       onSuccess: (res) => {
         console.log("Promotion created:", res);
+        onClose?.();
       },
       onError: (err) => {
         console.error("Failed to create promotion", err);
