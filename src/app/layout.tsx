@@ -2,8 +2,7 @@ import "@/styles/globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { SidebarProvider } from "@/context/SidebarContext";
-import Header from "@/components/layout/Header";
-import Sidebar from "@/components/layout/Sidebar";
+import LayoutWrapper from "@/components/layout/LayoutWrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -12,7 +11,6 @@ export const metadata: Metadata = {
   description: "Admin promotion site built with Next.js",
 };
 
-// Root layout
 export default function RootLayout({
   children,
 }: {
@@ -20,22 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className={inter.className}>
         <SidebarProvider>
-          <div className="min-h-screen bg-gray-50">
-            <Header />
-            <Sidebar />
-            <main className="transition-all duration-300 pt-16">
-              <div 
-                className="p-6"
-                style={{
-                  marginLeft: '256px', // Default width khi không collapsed
-                }}
-              >
-                {children}
-              </div>
-            </main>
-          </div>
+          <LayoutWrapper>
+            {children}
+          </LayoutWrapper>
         </SidebarProvider>
       </body>
     </html>

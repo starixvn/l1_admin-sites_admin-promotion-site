@@ -53,9 +53,9 @@ const Header = () => {
                 className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg"
               >
                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 font-medium">B</span>
+                  <span className="text-blue-600 font-medium">A</span>
                 </div>
-                <span className="text-gray-700">Brian</span>
+                <span className="text-gray-700">Admin</span>
                 <svg className={`w-4 h-4 text-gray-500 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
                   fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
