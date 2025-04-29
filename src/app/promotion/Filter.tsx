@@ -194,6 +194,16 @@ export default function Filter({
               <div className="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 
               rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
                 <div className="py-1">
+                  <div className="px-4 py-2">
+                    <input
+                      type="text"
+                      value={operatorSearch}
+                      onChange={(e) => setOperatorSearch(e.target.value)}
+                      placeholder="Search operators..."
+                      className="w-full px-2 py-1 border rounded"
+                    />
+                  </div>
+                  
                   <label className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100">
                     <input
                       type="checkbox"

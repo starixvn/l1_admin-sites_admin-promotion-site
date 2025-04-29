@@ -91,7 +91,6 @@ export default function Login() {
         {/* Right side - Welcome message */}
         <div className="w-1/2 bg-[#FF5B6B] p-8 flex flex-col items-center justify-center text-white">
           <h2 className="text-2xl font-semibold mb-4">Welcome to login</h2>
-          <p className="mb-4">Don't have an account?</p>
           <Link 
             href="/signup"
             className="px-6 py-2 border-2 border-white rounded-md hover:bg-white hover:text-[#FF5B6B] transition-colors cursor-pointer"

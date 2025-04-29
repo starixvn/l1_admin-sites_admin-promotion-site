@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import configs from "../../../../configs";
 
 export async function POST(req: NextRequest) {
@@ -55,9 +55,18 @@ export async function GET(req: NextRequest) {
     );
 
     return NextResponse.json(response.data);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error in GET /api/promotions:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error instanceof AxiosError) {
+      return NextResponse.json(
+        { error: error.response?.data?.message || error.message },
+        { status: error.response?.status || 500 }
+      );
+    }
+    return NextResponse.json(
+      { error: 'An unexpected error occurred' },
+      { status: 500 }
+    );
   }
 }
 
