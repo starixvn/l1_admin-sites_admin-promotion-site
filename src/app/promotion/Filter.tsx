@@ -145,140 +145,129 @@ export default function Filter({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex items-end gap-4 p-4 border rounded-lg bg-white mb-6 shadow-sm"
-      style={{ width: "max-content" }}
-    >
-      <div className="flex flex-col">
-        <label className="text-base font-semibold mb-1">Status</label>
-        <select
-          name="status"
-          value={filters.status}
-          onChange={handleInputChange}
-          className="border border-gray-400 rounded px-3 pr-8 h-10 w-40 text-base font-semibold appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEuNDEgMC41OTAwODhMNiA1LjE3MDA5TDEwLjU5IDAuNTkwMDg4TDEyIDIuMDAwMDlMNiA4LjAwMDA5TDAgMi4wMDAwOUwxLjQxIDAuNTkwMDg4WiIgZmlsbD0iIzMyMzIzMiIvPjwvc3ZnPg==')] bg-no-repeat bg-[right_10px_center] bg-[length:12px_8px]"
-        >
-          {statusOptions.map((option) => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="flex flex-col relative" ref={dropdownRef}>
-        <label className="text-base font-semibold mb-1">Operator</label>
-        <div
-          className="border border-gray-400 rounded w-40 bg-white cursor-pointer relative"
-          onClick={() => setShowOperatorDropdown(true)}
-        >
-          <div
-            ref={inputRef}
-            className="w-full h-10 px-3 pr-8 flex items-center text-base font-semibold outline-none truncate"
-          >
-            {showOperatorDropdown ? (
-              <input
-                type="text"
-                value={operatorSearch}
-                onChange={(e) => setOperatorSearch(e.target.value)}
-                className="w-full outline-none font-semibold"
-                placeholder="Search"
-                onClick={(e) => e.stopPropagation()}
-              />
-            ) : (
-              <span className="text-gray-700 font-semibold">
-                {getSelectedOperatorDisplay() || "Select operator"}
-              </span>
-            )}
-          </div>
-          <div
-            className={`absolute right-2 top-1/2 -translate-y-1/2 transition-transform duration-200 ${
-              showOperatorDropdown ? "rotate-180" : ""
-            }`}
-          >
-            <svg
-              width="12"
-              height="8"
-              viewBox="0 0 12 8"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+    <div className="bg-white rounded-xl p-6 shadow-sm">
+      <div className="flex items-end gap-4">
+        {/* Status Filter */}
+        <div className="flex flex-col min-w-[140px]">
+          <label className="text-sm font-medium text-gray-700 mb-2">Status</label>
+          <div className="relative">
+            <select
+              name="status"
+              value={filters.status}
+              onChange={handleInputChange}
+              className="w-full h-[38px] pl-3 pr-8 border border-gray-300 rounded-lg bg-white
+              appearance-none focus:outline-none focus:border-black
+              text-gray-700 cursor-pointer"
             >
-              <path
-                d="M1.41 0.590088L6 5.17009L10.59 0.590088L12 2.00009L6 8.00009L0 2.00009L1.41 0.590088Z"
-                fill="#323232"
-              />
-            </svg>
+              {statusOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+                <path d="M1.41 0.590088L6 5.17009L10.59 0.590088L12 2.00009L6 8.00009L0 2.00009L1.41 0.590088Z" fill="#6B7280"/>
+              </svg>
+            </div>
           </div>
-          {showOperatorDropdown && (
-            <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-b shadow-lg z-10 max-h-60 overflow-y-auto mt-1">
-              <div className="py-1">
-                <label className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100">
-                  <input
-                    type="checkbox"
-                    checked={filters.operator.length === operatorOptions.length}
-                    onChange={() => handleOperatorSelect("All")}
-                    className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
-                  />
-                  <span className="ml-2">All</span>
-                </label>
-                {filteredOperators.map((option) => (
-                  <label
-                    key={option.id}
-                    className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
-                  >
+        </div>
+
+        {/* Operator Filter */}
+        <div className="flex flex-col flex-1">
+          <label className="text-sm font-medium text-gray-700 mb-2">Operator</label>
+          <div className="relative" ref={dropdownRef}>
+            <div
+              onClick={() => setShowOperatorDropdown(true)}
+              className="w-full h-[38px] px-3 border border-gray-300 rounded-lg bg-white
+              flex items-center justify-between cursor-pointer
+              focus:outline-none focus:border-black"
+            >
+              <span className="text-gray-700">
+                {getSelectedOperatorDisplay() || "All"}
+              </span>
+              <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+                <path d="M1.41 0.590088L6 5.17009L10.59 0.590088L12 2.00009L6 8.00009L0 2.00009L1.41 0.590088Z" fill="#6B7280"/>
+              </svg>
+            </div>
+            {showOperatorDropdown && (
+              <div className="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 
+              rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                <div className="py-1">
+                  <label className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100">
                     <input
                       type="checkbox"
-                      checked={filters.operator.includes(option.id)}
-                      onChange={() => handleOperatorSelect(option.id)}
-                      className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out"
+                      checked={filters.operator.length === operatorOptions.length}
+                      onChange={() => handleOperatorSelect("All")}
+                      className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out cursor-pointer"
                     />
-                    <span className="ml-2">{option.name}</span>
+                    <span className="ml-2">All</span>
                   </label>
-                ))}
+                  {filteredOperators.map((option) => (
+                    <label
+                      key={option.id}
+                      className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={filters.operator.includes(option.id)}
+                        onChange={() => handleOperatorSelect(option.id)}
+                        className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out cursor-pointer"
+                      />
+                      <span className="ml-2">{option.name}</span>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+        </div>
+
+        {/* Promotion Code Input */}
+        <div className="flex flex-col flex-1">
+          <label className="text-sm font-medium text-gray-700 mb-2">Promotion Code</label>
+          <input
+            type="text"
+            name="promotionCode"
+            value={filters.promotionCode}
+            onChange={handleInputChange}
+            placeholder="Enter promotion code"
+            className="w-full h-[38px] px-3 border border-gray-300 rounded-lg
+            focus:outline-none focus:border-black
+            placeholder-gray-400"
+          />
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            className="h-[38px] px-6 bg-[#FF5B6B] text-white rounded-lg font-medium
+            hover:bg-[#FF4559] transition-colors border border-transparent
+            focus:outline-none focus:border-black cursor-pointer"
+          >
+            Search
+          </button>
+          <button
+            type="button"
+            onClick={() => setOpenDialog(true)}
+            className="h-[38px] px-4 bg-emerald-500 text-white rounded-lg font-medium
+            hover:bg-emerald-600 transition-colors flex items-center gap-2
+            border border-transparent focus:outline-none focus:border-black cursor-pointer"
+          >
+            <span>+</span>
+            Add New Promotion
+          </button>
         </div>
       </div>
 
-      <div className="flex flex-col">
-        <label className="text-base font-semibold mb-1">Promotion Code</label>
-        <input
-          type="text"
-          name="promotionCode"
-          value={filters.promotionCode}
-          onChange={handleInputChange}
-          className="border border-gray-400 rounded px-3 py-2 w-80 h-10 font-semibold text-base"
-          placeholder="Enter code"
-        />
-      </div>
-
-      <div className="flex flex-col justify-end">
-        <button
-          type="submit"
-          className="bg-red-400 text-white font-semibold px-6 h-10 rounded shadow hover:bg-red-500 transition cursor-pointer"
-          style={{ minWidth: 120 }}
-        >
-          Submit
-        </button>
-      </div>
-      <div className="flex flex-col justify-end">
-        <button
-          type="button"
-          onClick={()=>setOpenDialog(true)}
-          className="bg-green-400 text-black font-semibold px-6 h-10 rounded shadow hover:bg-green-500 transition cursor-pointer"
-          style={{ minWidth: 180 }}
-        >
-          Add New Promotion
-        </button>
-        <PromotionDialog
-          open={openDialog}
-          onClose={(shouldRefresh = false) => {
-            setOpenDialog(false);
-            if (shouldRefresh) triggerSubmit();
-          }}
-        />
-      </div>
-    </form>
+      <PromotionDialog
+        open={openDialog}
+        onClose={(shouldRefresh = false) => {
+          setOpenDialog(false);
+          if (shouldRefresh) triggerSubmit();
+        }}
+      />
+    </div>
   );
 }

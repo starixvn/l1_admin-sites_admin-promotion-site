@@ -6,7 +6,7 @@ import Filter from "./Filter";
 import DataGrid from "./DataGrid";
 import { Game } from "@/types/game";
 
-export default function PromotionManagement() {
+export default function PromotionPage() {
   const [promotions, setPromotions] = useState([]);
   const [operators, setOperators] = useState<{ name: string; id: string }[]>(
     []
@@ -91,13 +91,16 @@ export default function PromotionManagement() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full bg-gray-100 p-5">
-      <h1 className="text-2xl font-bold mb-6">Promotion Management</h1>
-      <div className="bg-white rounded-lg shadow p-6">
-        <Filter
-          onFilterChange={handleFilterSubmit}
-          operatorOptions={operators}
-        />
+    <div className="space-y-4 w-full">
+      <h1 className="text-2xl font-semibold text-gray-800 mb-6">Promotion Management</h1>
+      
+      {/* Filter section */}
+      <div className="w-full bg-white rounded-xl shadow-sm">
+        <Filter onFilterChange={handleFilterSubmit} operatorOptions={operators} />
+      </div>
+
+      {/* Data grid */}
+      <div className="w-full bg-white rounded-xl shadow-sm">
         <DataGrid
           promotions={promotions}
           loading={loading}

@@ -48,7 +48,7 @@ function toGMTString(dateStr: string, gmtOffset: number) {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-  });
+  }).replace(',', '');
 }
 
 const getGameTypeName = (gameConfigType: number) => {
@@ -120,100 +120,116 @@ export default function DataGrid({
   }
 
   return (
-    <div className="overflow-x-auto border rounded-lg bg-white shadow">
-      <table className="min-w-full border-collapse">
+    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <table className="w-full border-collapse min-w-[1200px]">
         <thead>
           <tr>
-            {[
-              "Promotion name",
-              "Promotion Code",
-              "Details",
-              "Games",
-              "Operators",
-              "Bet Settings",
-              "Start date (GMT +7)",
-              "End date (GMT +7)",
-              "Status",
-              "Announcement",
-              "Action",
-            ].map((header) => (
-              <th
-                key={header}
-                className="border border-gray-300 px-3 py-2 text-base font-bold text-gray-700 bg-gray-50 text-center"
-              >
-                {header}
-              </th>
-            ))}
+            <th className="w-[15%] px-3 py-4 bg-gray-50 text-left text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
+              <div className="flex items-center">
+                <span>Promotion Name</span>
+              </div>
+            </th>
+            <th className="w-[15%] px-3 py-4 bg-gray-50 text-left text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
+              <div className="flex items-center">
+                <span>Promotion Code</span>
+              </div>
+            </th>
+            <th className="w-[18%] px-3 py-4 bg-gray-50 text-left text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
+              <div className="flex items-center">
+                <span>Details</span>
+              </div>
+            </th>
+            <th className="w-[15%] px-3 py-4 bg-gray-50 text-left text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
+              <div className="flex items-center">
+                <span>Games</span>
+              </div>
+            </th>
+            <th className="w-[8%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
+              <div className="flex items-center justify-center">
+                <span>Operators</span>
+              </div>
+            </th>
+            <th className="w-[9%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200 whitespace-nowrap">
+              <div className="flex items-center justify-center">
+                <span>Bet Settings</span>
+              </div>
+            </th>
+            <th className="w-[7%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
+              <div className="flex items-center justify-center">
+                <span>Start</span>
+              </div>
+            </th>
+            <th className="w-[7%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
+              <div className="flex items-center justify-center">
+                <span>End</span>
+              </div>
+            </th>
+            <th className="w-[6%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
+              <div className="flex items-center justify-center">
+                <span>Status</span>
+              </div>
+            </th>
+            <th className="w-[6%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
+              <div className="flex items-center justify-center">
+                <span>Notice</span>
+              </div>
+            </th>
+            <th className="w-[7%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-gray-200">
+              <div className="flex items-center justify-center">
+                <span>Action</span>
+              </div>
+            </th>
           </tr>
         </thead>
         <tbody>
           {promotions.map((promotion) => {
             const status = getStatus(promotion);
             return (
-              <tr key={promotion._id} className="hover:bg-gray-100">
-                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
-                  {promotion.name}
-                </td>
-                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
-                  {promotion.code}
-                </td>
-                <td className="border border-gray-300 px-3 py-2 align-top">
+              <tr key={promotion._id} className="hover:bg-gray-50">
+                <td className="px-3 py-2 text-sm border-b border-r border-gray-200">{promotion.name}</td>
+                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-gray-600">{promotion.code}</td>
+                <td className="px-3 py-2 text-sm border-b border-r border-gray-200">
                   <div>{getGameTypeName(promotion.gameConfigType)}</div>
-                  <div className="text-xs">Number of Free Spin</div>
-                  <input
-                    type="text"
-                    value={promotion.bonusItemCount}
-                    readOnly
-                    className="border rounded bg-gray-100 w-18 text-center mt-1"
-                  />
+                  <div className="text-gray-500">Free Spins: {promotion.bonusItemCount}</div>
                 </td>
-                <td className="border border-gray-300 px-3 py-2 align-top">
-                  {promotion.gameIds && promotion.gameIds.length > 0
-                    ? getGameNames(promotion.gameIds)
-                    : ""}
+                <td className="px-3 py-2 text-sm border-b border-r border-gray-200">
+                  {promotion.gameIds && promotion.gameIds.length > 0 ? getGameNames(promotion.gameIds) : ""}
                 </td>
-                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
-                  {promotion.operatorId}
+                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">{promotion.operatorId}</td>
+                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
+                  <button className="text-blue-600 hover:text-blue-800 cursor-pointer">Details</button>
                 </td>
-                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
-                  <button className="text-blue-600 hover:text-blue-800 cursor-pointer">
-                    Details
-                  </button>
-                </td>
-                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
+                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center whitespace-nowrap">
                   {toGMTString(promotion.startDate, 7)}
                 </td>
-                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
+                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center whitespace-nowrap">
                   {toGMTString(promotion.endDate, 7)}
                 </td>
-                <td
-                  className={`border border-gray-300 px-3 py-2 align-middle text-center font-semibold ${getStatusColorByDate(
-                    promotion
-                  )}`}
-                >
-                  {status === "upcoming"
-                    ? "Up Coming"
-                    : status.charAt(0).toUpperCase() + status.slice(1)}
+                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                    ${getStatusColorByDate(promotion)}`}>
+                    {status === "upcoming" ? "Up Coming" : status.charAt(0).toUpperCase() + status.slice(1)}
+                  </span>
                 </td>
-                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
-                  <span className="text-green-400 font-medium">Linked</span>
+                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
+                  <span className="text-green-400">Linked</span>
                 </td>
-                <td className="border border-gray-300 px-3 py-2 align-middle text-center">
-                  <div className="flex flex-col gap-2">
+                <td className="px-3 py-2 border-b border-gray-200">
+                  <div className="flex flex-col gap-1 items-center">
                     <button
-                      className={`w-16 py-1 rounded font-semibold ${
+                      className={`min-w-[60px] px-3 py-1 rounded text-xs font-medium ${
                         status === "completed"
-                          ? "bg-gray-300 text-gray-600 cursor-not-allowed"
-                          : "bg-green-500 text-white hover:bg-green-600 cursor-pointer"
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          : "bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer"
                       }`}
                       disabled={status === "completed"}
                     >
                       Edit
                     </button>
                     <button
-                      className={`w-16 py-1 rounded font-semibold ${
+                      className={`min-w-[60px] px-3 py-1 rounded text-xs font-medium ${
                         status === "completed" || status === "running"
-                          ? "bg-gray-300 text-gray-600 cursor-not-allowed"
+                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                           : "bg-red-500 text-white hover:bg-red-600 cursor-pointer"
                       }`}
                       disabled={status === "completed" || status === "running"}
