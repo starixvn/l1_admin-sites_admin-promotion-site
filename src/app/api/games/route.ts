@@ -6,8 +6,29 @@ import configs from "../../../../configs";
 import { Game } from "@/types/game";
 
 export async function GET(req: NextRequest) {
+  const searchParams = req.nextUrl.searchParams;
+  const gameType = searchParams.get("type");
+  const currencyGroups = searchParams.get("currencyGroups");
+
   try {
     const token = await getAccessToken();
+
+    if (gameType && currencyGroups) {
+      const response = await axios.get(
+        `${configs.apiBaseUrl}/general_game_settings/games`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: {
+            gameType: gameType,
+            currencyGroups: currencyGroups,
+          },
+        }
+      );
+
+      return NextResponse.json(response.data);
+    }
 
     const res = await axios.get(
       `${configs.apiBaseUrl}/general_game_settings/getAll`,
@@ -18,14 +39,11 @@ export async function GET(req: NextRequest) {
       }
     );
 
-    const url = new URL(req.url);
-    const type = url.searchParams.get("type");
-
     const games = res.data;
-
-    const filtered = type
-      ? games.filter((g: Game) => g.Type === Number(type))
+    const filtered = gameType
+      ? games.filter((g: Game) => g.Type === Number(gameType))
       : games;
+
     return NextResponse.json(filtered);
   } catch (error) {
     console.error("Error fetching games:", error);
@@ -35,3 +53,4 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+

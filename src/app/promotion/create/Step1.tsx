@@ -1,0 +1,195 @@
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import DateTimePicker from "@/components/custom/date-time-picker";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { GAME_TYPES, type GameType } from "@/constants/gameTypes";
+import { cn } from "@/lib/utils";
+import { Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type {
+  UseFormRegister,
+  UseFormSetValue,
+  UseFormWatch,
+  FieldErrors,
+} from "react-hook-form";
+import type { PromotionFormValues } from "./PromotionForm";
+import type { Operator } from "@/types/operator";
+
+interface Step1Props {
+  register: UseFormRegister<PromotionFormValues>;
+  setValue: UseFormSetValue<PromotionFormValues>;
+  watch: UseFormWatch<PromotionFormValues>;
+  errors: FieldErrors<PromotionFormValues>;
+  handleNext: () => void;
+  codeEdited: boolean;
+  setCodeEdited: (value: boolean) => void;
+  operators: Operator[];
+}
+
+export default function Step1({
+  register,
+  setValue,
+  watch,
+  errors,
+  handleNext,
+  setCodeEdited,
+  operators,
+}: Step1Props) {
+  return (
+    <div className="space-y-6">
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          {" "}
+          <Label className="form-label">Promotion Name</Label>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="tooltip-icon" />
+              </TooltipTrigger>
+              <TooltipContent
+                side="right"
+                className="max-w-xs break-words p-3 text-base text-gray-700 leading-relaxed"
+              >
+                <p>
+                  Each promotion must have a name. Can include letters, numbers,
+                  or underscores. No special characters allowed.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        <Input {...register("name")} maxLength={50} className="form-input" />
+
+        {errors.name && <p className="error-message">{errors.name.message}</p>}
+      </div>
+
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <Label className="form-label">Promotion Code</Label>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info className="tooltip-icon" />
+              </TooltipTrigger>
+              <TooltipContent
+                side="right"
+                className="max-w-xs break-words p-3 text-base text-gray-700 leading-relaxed"
+              >
+                <p>
+                  Automatically generated from Promotion Name. Must be unique.
+                  Only letters, numbers, or underscores allowed.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+
+        <Input
+          {...register("code")}
+          maxLength={50}
+          onChange={() => setCodeEdited(true)}
+          className="form-input"
+        />
+
+        {errors.code && <p className="error-message">{errors.code.message}</p>}
+      </div>
+
+      <div>
+        <Label className="form-label">Game Type</Label>
+        <Select
+          value={String(watch("gameConfigType"))}
+          onValueChange={(val) => {
+            const parsed = Number(val) as GameType;
+            setValue("gameConfigType", parsed);
+          }}
+        >
+          <SelectTrigger className="select-wrapper">
+            <SelectValue placeholder="Select game type" />
+          </SelectTrigger>
+          <SelectContent className="bg-white">
+            <SelectItem value={String(GAME_TYPES.CLASSIC)}>
+              Classic Slot
+            </SelectItem>
+            <SelectItem value={String(GAME_TYPES.CASCADING)}>
+              Cascading Slot
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label className="form-label">No. of Free Spins</Label>
+        <Input
+          type="number"
+          {...register("bonusItemCount", { valueAsNumber: true })}
+          className="form-input"
+        />
+        {errors.bonusItemCount && (
+          <p className="error-message">{errors.bonusItemCount.message}</p>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <DateTimePicker
+          label="Start Date"
+          value={watch("startDate")}
+          onChange={(val) => setValue("startDate", val)}
+          error={errors.startDate?.message}
+        />
+        <DateTimePicker
+          label="End Date"
+          value={watch("endDate")}
+          onChange={(val) => setValue("endDate", val)}
+          error={errors.endDate?.message}
+        />
+      </div>
+
+      <div>
+        <Label className="form-label">Operator</Label>
+        <Select
+          value={watch("operatorId")}
+          onValueChange={(val) => setValue("operatorId", val)}
+        >
+          <SelectTrigger className="select-wrapper">
+            <SelectValue placeholder="Select Operator" />
+          </SelectTrigger>
+          <SelectContent className="bg-white">
+            {operators.map((op, index) => (
+              <SelectItem
+                key={op.PartnerId}
+                value={op.PartnerId}
+                className={cn(
+                  "text-base py-3 hover:bg-gray-100 cursor-pointer",
+                  index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                )}
+              >
+                {op.Name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {errors.operatorId && (
+          <p className="error-message">{errors.operatorId.message}</p>
+        )}
+      </div>
+
+      <div className="flex justify-end">
+        <button type="button" className="btn-next" onClick={handleNext}>
+          Next →
+        </button>
+      </div>
+    </div>
+  );
+}
