@@ -4,10 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { cn } from "@/lib/utils";
-import type {
+import {
   UseFormSetValue,
-  UseFormWatch,
+  Control,
   FieldErrors,
+  useWatch,
 } from "react-hook-form";
 import type { PromotionFormValues } from "./PromotionForm";
 import type { Game } from "@/types/game";
@@ -16,10 +17,8 @@ import PlayerFileUploader from "./PlayerFileUploader";
 
 interface Step2Props {
   setValue: UseFormSetValue<PromotionFormValues>;
-  watch: UseFormWatch<PromotionFormValues>;
+  control: Control<PromotionFormValues>;
   errors: FieldErrors<PromotionFormValues>;
-  isPending: boolean;
-  onBack: () => void;
   openBetSettings: boolean;
   setOpenBetSettings: (val: boolean) => void;
   siteInput: string;
@@ -32,10 +31,8 @@ interface Step2Props {
 
 export default function Step2({
   setValue,
-  watch,
+  control,
   errors,
-  isPending,
-  onBack,
   openBetSettings,
   setOpenBetSettings,
   siteInput,
@@ -45,6 +42,11 @@ export default function Step2({
   error,
   toggleGame,
 }: Step2Props) {
+  const gameIds = useWatch({ control, name: "gameIds" });
+  const operatorId = useWatch({ control, name: "operatorId" });
+  const gameConfigType = useWatch({ control, name: "gameConfigType" });
+  const allPlayers = useWatch({ control, name: "allPlayers" });
+
   return (
     <div className="space-y-6">
       <fieldset className="fieldset-wrapper-operator">
@@ -63,6 +65,9 @@ export default function Step2({
             <SquarePen className="w-5 h-5" />
           </button>
         </div>
+        {errors.currencyGroups && (
+          <p className="error-message mt-2">{errors.currencyGroups.message}</p>
+        )}
 
         {/* Site Offering */}
         <div>
@@ -91,10 +96,6 @@ export default function Step2({
             promotion to all sites associated with the selected Operator.
           </p>
         </div>
-
-        {errors.currencyGroups && (
-          <p className="error-message mt-2">{errors.currencyGroups.message}</p>
-        )}
       </fieldset>
 
       <fieldset className="fieldset-wrapper-games">
@@ -106,9 +107,7 @@ export default function Step2({
         <div className="flex items-center space-x-2 mb-4">
           <Checkbox
             id="game-check-all"
-            checked={
-              games.length > 0 && watch("gameIds").length === games.length
-            }
+            checked={games.length > 0 && gameIds.length === games.length}
             onCheckedChange={(checked) => {
               const allGameIds = games.map((g) => g.GameId);
               setValue("gameIds", checked ? allGameIds : []);
@@ -116,7 +115,7 @@ export default function Step2({
           />
           <label
             htmlFor="game-check-all"
-            className="text-md font-semibold text-blue-800"
+            className="text-md font-semibold text-gray-800"
           >
             Check All
           </label>
@@ -126,7 +125,7 @@ export default function Step2({
         {/* Game list */}
         <div className="grid gap-3 max-h-[15rem] overflow-y-auto pr-2">
           {games.map((game) => {
-            const isChecked = watch("gameIds").includes(game.GameId);
+            const isChecked = gameIds.includes(game.GameId);
             return (
               <label
                 key={game.GameId}
@@ -134,8 +133,8 @@ export default function Step2({
                 className={cn(
                   "flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer",
                   isChecked
-                    ? "bg-blue-50 border-blue-200 text-blue-800 font-medium"
-                    : "bg-white border-blue-100 hover:bg-blue-50"
+                    ? "bg-green-50 border-green-200 text-green-800 font-medium"
+                    : "bg-white border-green-100 hover:bg-green-50"
                 )}
               >
                 <div className="flex items-center space-x-3">
@@ -159,19 +158,28 @@ export default function Step2({
       <div>
         <Label className="form-label">👥 Target Members</Label>
         <RadioGroup
-          value={watch("allPlayers") ? "true" : "false"}
+          value={allPlayers ? "true" : "false"}
           onValueChange={(val) => setValue("allPlayers", val === "true")}
         >
           <div className="flex gap-4 items-center">
-            <RadioGroupItem value="true" id="all" />
+            <RadioGroupItem
+              value="true"
+              id="all"
+              className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
+            />
             <label htmlFor="all">All Players</label>
           </div>
           <div className="flex gap-4 items-center">
-            <RadioGroupItem value="false" id="file" />
+            <RadioGroupItem
+              value="false"
+              id="file"
+              className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
+            />
             <label htmlFor="file">Players from File</label>
           </div>
         </RadioGroup>
-        {!watch("allPlayers") && (
+
+        {!allPlayers && (
           <PlayerFileUploader
             onValidFile={(file, data) => {
               const playerIds = data
@@ -185,20 +193,12 @@ export default function Step2({
           />
         )}
       </div>
-      <div className="flex justify-between">
-        <button type="button" className="btn-cancel" onClick={onBack}>
-          ← Back
-        </button>
-        <button type="submit" className="btn-primary" disabled={isPending}>
-          {isPending ? "Saving..." : "Save Promotion"}
-        </button>
-      </div>
 
       <BetSettingsDialog
         open={openBetSettings}
         onClose={() => setOpenBetSettings(false)}
-        partnerId={watch("operatorId")}
-        gameType={watch("gameConfigType")}
+        partnerId={operatorId}
+        gameType={gameConfigType}
         onSave={({ currencyGroups, betLevels }) => {
           setValue("currencyGroups", currencyGroups);
           setValue("betLevels", betLevels);

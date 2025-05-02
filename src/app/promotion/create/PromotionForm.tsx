@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Step1 from "./Step1";
@@ -81,11 +81,11 @@ export default function PromotionForm({
     handleSubmit,
     setValue,
     trigger,
-    watch,
+    control,
     formState: { errors },
   } = useForm<PromotionFormValues>({
     resolver: zodResolver(promotionSchema),
-    mode: "onChange",
+    mode: "onSubmit",
     defaultValues: {
       name: "",
       code: "",
@@ -109,23 +109,15 @@ export default function PromotionForm({
   const [openBetSettings, setOpenBetSettings] = useState(false);
   const [siteInput, setSiteInput] = useState("");
 
-  const watchFields = watch();
+  const currencyGroups = useWatch({ control, name: "currencyGroups" });
+  const gameConfigType = useWatch({ control, name: "gameConfigType" });
+  const gameIds = useWatch({ control, name: "gameIds" });
   const { data: operators = [] } = useOperators();
   const {
     data: games = [],
     isLoading,
     error,
-  } = useFilteredGames(watch("currencyGroups"), watch("gameConfigType"));
-
-  useEffect(() => {
-    if (!codeEdited && watchFields.name) {
-      const autoCode = watchFields.name
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-zA-Z0-9_]/g, "_");
-      setValue("code", autoCode);
-    }
-  }, [watchFields.name, codeEdited, setValue]);
+  } = useFilteredGames(currencyGroups, gameConfigType);
 
   useEffect(() => {
     console.log("Validation errors:", errors);
@@ -167,54 +159,91 @@ export default function PromotionForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      <div className="w-full space-y-1">
-        <div className="flex justify-between items-center text-sm font-medium text-gray-600 px-1">
-          <span>Step {step} of 2</span>
-          <span>{step === 1 ? "Basic Details" : "Targeting & Settings"}</span>
+    <div className="flex flex-col h-[80vh]">
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+        <form id="promotionForm" className="space-y-6">
+          {/* Step Progress UI */}
+          <div className="space-y-1">
+            <div className="flex justify-between items-center text-sm font-medium text-gray-600 px-1">
+              <span>Step {step} of 2</span>
+              <span>
+                {step === 1 ? "Basic Details" : "Targeting & Settings"}
+              </span>
+            </div>
+            <div className="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
+              <div
+                className="h-full bg-gray-800 transition-all duration-300"
+                style={{ width: step === 1 ? "50%" : "100%" }}
+              />
+            </div>
+          </div>
+
+          {/* Form Steps */}
+          {step === 1 ? (
+            <Step1
+              register={register}
+              setValue={setValue}
+              control={control}
+              errors={errors}
+              codeEdited={codeEdited}
+              setCodeEdited={setCodeEdited}
+              operators={operators}
+            />
+          ) : (
+            <Step2
+              setValue={setValue}
+              control={control}
+              errors={errors}
+              openBetSettings={openBetSettings}
+              setOpenBetSettings={setOpenBetSettings}
+              siteInput={siteInput}
+              setSiteInput={setSiteInput}
+              games={games}
+              isLoading={isLoading}
+              error={error || null}
+              toggleGame={(id: number) => {
+                setValue(
+                  "gameIds",
+                  gameIds.includes(id)
+                    ? gameIds.filter((gid) => gid !== id)
+                    : [...gameIds, id]
+                );
+              }}
+            />
+          )}
+        </form>
+      </div>
+      {/* Footer fixed at bottom of dialog */}
+      <div className="form-footer relative px-6 py-4">
+        <div className="absolute left-6 top-1/2 -translate-y-1/2">
+          {step === 2 && (
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="btn-cancel flex items-center gap-2"
+            >
+              ← Back
+            </button>
+          )}
         </div>
-        <div className="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
-          <div
-            className={`h-full bg-gray-800 transition-all duration-300`}
-            style={{ width: step === 1 ? "50%" : "100%" }}
-          />
+
+        <div className="flex justify-end">
+          {step === 1 ? (
+            <button type="button" onClick={handleNextStep} className="btn-next">
+              Next →
+            </button>
+          ) : step === 2 ? (
+            <button
+              type="button"
+              onClick={handleSubmit(onSubmit)}
+              disabled={isPending}
+              className="btn-primary flex items-center gap-2"
+            >
+              Save Promotion ✓
+            </button>
+          ) : null}
         </div>
       </div>
-
-      {step === 1 ? (
-        <Step1
-          register={register}
-          setValue={setValue}
-          watch={watch}
-          errors={errors}
-          handleNext={handleNextStep}
-          codeEdited={codeEdited}
-          setCodeEdited={setCodeEdited}
-          operators={operators}
-        />
-      ) : (
-        <Step2
-          setValue={setValue}
-          watch={watch}
-          errors={errors}
-          isPending={isPending}
-          onBack={() => setStep(1)}
-          openBetSettings={openBetSettings}
-          setOpenBetSettings={setOpenBetSettings}
-          siteInput={siteInput}
-          setSiteInput={setSiteInput}
-          games={games}
-          isLoading={isLoading}
-          error={error || null}
-          toggleGame={(id: number) => {
-            const gameIds = watch("gameIds");
-            const updated = gameIds.includes(id)
-              ? gameIds.filter((gid) => gid !== id)
-              : [...gameIds, id];
-            setValue("gameIds", updated);
-          }}
-        />
-      )}
-    </form>
+    </div>
   );
 }
