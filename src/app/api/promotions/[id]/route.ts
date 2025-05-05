@@ -34,7 +34,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  context: RouteContext
 ) {
   try {
     const { id } = await context.params;
@@ -43,7 +43,7 @@ export async function PUT(
       `${configs.apiPromotionUrl}/promotions/${id}`,
       data
     );
-    return NextResponse.json(response.data);
+    return NextResponse.json(response.data, { status: 200 });
   } catch (error) {
     console.error("Error updating promotion:", error);
     if (error instanceof AxiosError) {
