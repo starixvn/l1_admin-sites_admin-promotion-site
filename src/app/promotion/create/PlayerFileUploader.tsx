@@ -10,19 +10,19 @@ interface Props {
 }
 
 export default function PlayerFileUploader({ operatorId, onValidFile }: Props) {
-  const [fileName, setFileName] = useState<string | null>(null);
+  const [file, setFile] = useState<File | null>(null);
 
   const handleFileValidation = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
 
-    if (!file.name.endsWith(".csv")) {
+    if (!selectedFile.name.endsWith(".csv")) {
       alert("Only CSV files are allowed.");
       e.target.value = "";
       return;
     }
 
-    Papa.parse(file, {
+    Papa.parse(selectedFile, {
       header: true,
       skipEmptyLines: true,
       complete: (results) => {
@@ -43,7 +43,7 @@ export default function PlayerFileUploader({ operatorId, onValidFile }: Props) {
           e.target.value = "";
           return;
         }
-        
+
         const processedData = data.map((row) => ({
           SiteID: row.SiteID,
           PlayerID:
@@ -51,8 +51,9 @@ export default function PlayerFileUploader({ operatorId, onValidFile }: Props) {
               ? `${row.SiteID}~${row.PlayerID}`
               : row.PlayerID,
         }));
-        setFileName(file.name);
-        onValidFile(file, processedData);
+
+        setFile(selectedFile);
+        onValidFile(selectedFile, processedData);
       },
       error: (err) => {
         alert("Failed to read CSV file.");
@@ -77,7 +78,6 @@ export default function PlayerFileUploader({ operatorId, onValidFile }: Props) {
         onChange={handleFileValidation}
         className="hidden"
       />
-      {fileName && <p className="text-sm text-blue-700 mt-1">{fileName}</p>}
       <a
         href="/sample-files/player-list-template.csv"
         download

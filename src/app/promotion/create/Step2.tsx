@@ -14,6 +14,7 @@ import type { PromotionFormValues } from "./PromotionForm";
 import type { Game } from "@/types/game";
 import { SquarePen } from "lucide-react";
 import PlayerFileUploader from "./PlayerFileUploader";
+import { useState } from "react";
 
 interface Step2Props {
   setValue: UseFormSetValue<PromotionFormValues>;
@@ -46,6 +47,7 @@ export default function Step2({
   const operatorId = useWatch({ control, name: "operatorId" });
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
   const allPlayers = useWatch({ control, name: "allPlayers" });
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
   return (
     <div className="space-y-6">
@@ -167,7 +169,9 @@ export default function Step2({
               id="all"
               className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
             />
-            <label htmlFor="all" className="text-sm">All Players</label>
+            <label htmlFor="all" className="text-sm">
+              All Players
+            </label>
           </div>
           <div className="flex gap-4 items-center">
             <RadioGroupItem
@@ -175,22 +179,36 @@ export default function Step2({
               id="file"
               className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
             />
-            <label htmlFor="file" className="text-sm">Players from File</label>
+            <label htmlFor="file" className="text-sm">
+              Players from File
+            </label>
           </div>
         </RadioGroup>
 
         {!allPlayers && (
-          <PlayerFileUploader
-            operatorId={operatorId}
-            onValidFile={(file, data) => {
-              const playerIds = data
-                .map((row) => row.PlayerID?.toString())
-                .filter(Boolean);
+          <>
+            <PlayerFileUploader
+              operatorId={operatorId}
+              onValidFile={(file, data) => {
+                const playerIds = data
+                  .map((row) => row.PlayerID?.toString())
+                  .filter(Boolean);
 
-              setValue("uploadedFile", file);
-              setValue("offeredPlayerIds", playerIds);
-            }}
-          />
+                setUploadedFile(file);
+                setValue("uploadedFile", file);
+                setValue("offeredPlayerIds", playerIds);
+              }}
+            />
+            {uploadedFile && (
+              <a
+                href={URL.createObjectURL(uploadedFile)}
+                download={uploadedFile.name}
+                className="block text-blue-700 hover:underline text-sm mt-2"
+              >
+                📎 {uploadedFile.name}
+              </a>
+            )}
+          </>
         )}
       </div>
 

@@ -29,6 +29,7 @@ type Props = {
     currencyGroups: string[];
     betLevels: { currencyGroup: string; betLevel: number }[];
   }) => void;
+  readonly?: boolean;
   initialValues?: {
     betLevels: {
       currencyGroup: string;
@@ -50,11 +51,12 @@ export default function BetSettingsDialog({
   partnerId,
   gameType,
   onSave,
+  readonly = false,
   initialValues,
 }: Props) {
   const { data: currencyGroups = [] } = useCurrencyGroups(partnerId);
   const [rows, setRows] = useState<RowState[]>([]);
-  
+
   useEffect(() => {
     if (currencyGroups.length > 0) {
       const initialBetMap = new Map<string, number>();
@@ -88,6 +90,7 @@ export default function BetSettingsDialog({
   };
 
   const handleToggle = (index: number, enabled: boolean) => {
+    if (readonly) return;
     setRows((prev) => {
       const updated = [...prev];
       updated[index].enabled = enabled;
@@ -99,6 +102,7 @@ export default function BetSettingsDialog({
   };
 
   const handleChangeBet = (index: number, value: string) => {
+    if (readonly) return;
     const num = parseFloat(value);
     setRows((prev) => {
       const updated = [...prev];
@@ -121,9 +125,9 @@ export default function BetSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full !max-w-3xl bg-white rounded-xl px-8 py-5 shadow-xl">
+      <DialogContent className="w-full !max-w-6xl bg-gradient-to-b from-white via-blue-50 to-blue-100 rounded-3xl p-12 shadow-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-gray-800">
+          <DialogTitle className="text-3xl font-bold text-gray-800">
             Bet Settings -{" "}
             {gameType === GAME_TYPES.CLASSIC
               ? "Classic Slot"
@@ -138,9 +142,9 @@ export default function BetSettingsDialog({
           </p>
 
           <div className="overflow-x-auto border rounded-2xl bg-white shadow-sm">
-            <table className="w-full text-base border-collapse">
+            <table className="w-full text-base border-collapse border border-blue-200">
               <thead>
-                <tr className="bg-blue-100 text-blue-900 border-b text-md">
+                <tr className="bg-blue-100 text-blue-900 border-b text-lg">
                   <th className="px-4 py-3 text-center border-r">Operator</th>
                   <th className="px-4 py-3 text-center border-r">
                     Currency Group
@@ -195,7 +199,7 @@ export default function BetSettingsDialog({
                           row.enabled
                             ? "bg-green-500 justify-end mx-auto"
                             : "bg-gray-300 justify-start mx-auto"
-                        }`}
+                        } ${readonly ? "opacity-50 cursor-not-allowed" : ""}`}
                         onClick={() => handleToggle(index, !row.enabled)}
                       >
                         <div className="w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center">
@@ -214,6 +218,7 @@ export default function BetSettingsDialog({
                             onChange={(e) =>
                               handleChangeBet(index, e.target.value)
                             }
+                            disabled={readonly}
                             className="w-28 h-10 bg-white text-center text-base px-0 rounded-lg border border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
                           />
                         </div>
@@ -234,9 +239,15 @@ export default function BetSettingsDialog({
             <Button type="button" onClick={onClose} className="btn-cancel">
               Close
             </Button>
-            <Button type="submit" onClick={handleSave} className="btn-primary">
-              Save
-            </Button>
+            {!readonly && (
+              <Button
+                type="submit"
+                onClick={handleSave}
+                className="btn-primary"
+              >
+                Save
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
