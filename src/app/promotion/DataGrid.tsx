@@ -118,20 +118,25 @@ export default function DataGrid({
     if (!selectedPromotion) return;
 
     const payload = {
-      ...selectedPromotion,
+      name: selectedPromotion.name,
+      code: selectedPromotion.code,
+      offeredSiteNames: selectedPromotion.offeredSiteNames,
+      operatorId: selectedPromotion.operatorId,
+      bonusItemCount: selectedPromotion.bonusItemCount,
+      gameConfigType: selectedPromotion.gameConfigType,
+      gameIds: selectedPromotion.gameIds,
+      startDate: selectedPromotion.startDate,
+      endDate: selectedPromotion.endDate,
+      offeredPlayerIds: selectedPromotion.offeredPlayerIds,
       currencyGroups: data.currencyGroups,
       betLevels: data.betLevels,
     };
-    console.log("selectedPromotion", selectedPromotion);
-    console.log("currencyGroups", data.currencyGroups);
-    console.log("betLevels", data.betLevels);
+
     updatePromotionMutation.mutate(
       { id: selectedPromotion._id, data: payload },
       {
         onSuccess: () => {
           setShowDialog(false);
-          // Optional: invalidate promotion list query
-          // queryClient.invalidateQueries(["promotions"]);
         },
         onError: (err) => {
           console.error(err);

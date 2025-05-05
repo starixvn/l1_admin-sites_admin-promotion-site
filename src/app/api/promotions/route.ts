@@ -4,10 +4,7 @@ import configs from "../../../../configs";
 
 export async function POST(req: NextRequest) {
   try {
-    console.log("Request body:", req);
     const body = await req.json();
-    console.log("Request body:", body);
-    //const token = await getAccessToken();
 
     const response = await axios.post(
       `${configs.apiPromotionUrl}/promotions`,
@@ -27,26 +24,26 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
-    let status = searchParams.get('status');
+    let status = searchParams.get("status");
     // Map FE status to BE status
     const statusMap: Record<string, string> = {
-      'Upcoming': 'not_started',
-      'Running': 'running',
-      'Completed': 'ended',
+      Upcoming: "not_started",
+      Running: "running",
+      Completed: "ended",
     };
-    if (status && status !== 'All') {
+    if (status && status !== "All") {
       status = statusMap[status] || status;
     } else {
       status = null;
     }
 
-    const operator = searchParams.get('operator');
-    const code = searchParams.get('promotionCode');
+    const operator = searchParams.get("operator");
+    const code = searchParams.get("promotionCode");
 
     const params = new URLSearchParams();
-    if (status) params.append('status', status);
-    if (operator && operator !== 'All') params.append('operatorIds', operator);
-    if (code) params.append('code', code);
+    if (status) params.append("status", status);
+    if (operator && operator !== "All") params.append("operatorIds", operator);
+    if (code) params.append("code", code);
 
     const response = await axios.get(
       `${configs.apiPromotionUrl}/promotions?${params.toString()}`
@@ -62,7 +59,7 @@ export async function GET(req: NextRequest) {
       );
     }
     return NextResponse.json(
-      { error: 'An unexpected error occurred' },
+      { error: "An unexpected error occurred" },
       { status: 500 }
     );
   }

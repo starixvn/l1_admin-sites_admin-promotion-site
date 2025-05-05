@@ -185,8 +185,7 @@ export default function Step2({
               const playerIds = data
                 .map((row) => row.PlayerID?.toString())
                 .filter(Boolean);
-              console.log("File hợp lệ:", file);
-              console.log("Parsed data:", data);
+
               setValue("uploadedFile", file);
               setValue("offeredPlayerIds", playerIds);
             }}

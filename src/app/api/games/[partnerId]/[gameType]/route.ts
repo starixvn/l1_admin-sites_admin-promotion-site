@@ -31,8 +31,6 @@ export async function GET(req: NextRequest) {
       }
     );
 
-    console.log("response.data", response.data);
-
     return NextResponse.json(response.data);
   } catch (error) {
     console.error("Error fetching games:", error);
