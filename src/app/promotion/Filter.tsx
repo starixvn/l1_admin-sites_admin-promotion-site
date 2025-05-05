@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import PromotionDialog from "./create/PromotionDialog";
+import { PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
 
 interface Operator {
   name: string;
@@ -77,8 +78,6 @@ export default function Filter({
       .filter(Boolean)
       .join(", ");
   };
-
-  const statusOptions = ["All", "Running", "Completed", "Upcoming"];
 
   const filteredOperators = operatorOptions.filter((op) =>
     op.name.toLowerCase().includes(operatorSearch.toLowerCase())
@@ -157,7 +156,7 @@ export default function Filter({
               appearance-none focus:outline-none focus:border-black
               text-gray-700 cursor-pointer"
             >
-              {statusOptions.map((option) => (
+              {PROMOTION_STATUS_OPTIONS.map((option) => (
                 <option key={option} value={option}>
                   {option}
                 </option>

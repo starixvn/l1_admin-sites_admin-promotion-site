@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios, { AxiosError } from "axios";
 import configs from "../../../../configs";
+import { PROMOTION_STATUS_MAP } from "@/constants/promotionStatusMap";
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,11 +27,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = req.nextUrl;
     let status = searchParams.get("status");
     // Map FE status to BE status
-    const statusMap: Record<string, string> = {
-      Upcoming: "not_started",
-      Running: "running",
-      Completed: "ended",
-    };
+    const statusMap = PROMOTION_STATUS_MAP;
     if (status && status !== "All") {
       status = statusMap[status] || status;
     } else {
@@ -42,9 +39,9 @@ export async function GET(req: NextRequest) {
 
     const params = new URLSearchParams();
     if (status) params.append("status", status);
-    if (operator && operator !== "All") params.append("operatorIds", operator);
+    if (operator) params.append("operatorIds", operator);
     if (code) params.append("code", code);
-
+    console.log("Request body:", params.toString());
     const response = await axios.get(
       `${configs.apiPromotionUrl}/promotions?${params.toString()}`
     );

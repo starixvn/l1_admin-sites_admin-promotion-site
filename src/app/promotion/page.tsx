@@ -62,10 +62,13 @@ export default function PromotionPage() {
       setError(null);
       const queryParams = new URLSearchParams();
       if (filters.status !== "All") queryParams.append("status", filters.status);
-      if (filters.operator && filters.operator.length > 0 && !filters.operator.includes("All")) {
-        filters.operator.forEach((op: string) => {
-          queryParams.append("operator", op);
-        });
+      const allOperatorIds = operators.map(op => op.id);
+      const isAllSelected =
+        filters.operator.length === allOperatorIds.length &&
+        allOperatorIds.every(id => filters.operator.includes(id));
+
+      if (filters.operator && filters.operator.length > 0 && !isAllSelected) {
+          queryParams.append("operator", filters.operator.toString());
       }
       if (filters.promotionCode) queryParams.append("promotionCode", filters.promotionCode);
 
@@ -90,7 +93,7 @@ export default function PromotionPage() {
           id: op.PartnerId,
         })
       );
-      setOperators(operatorsList);
+      await setOperators(operatorsList);
       handleFilterSubmit({
         status: "All",
         operator: operatorsList.map((op: { name: string; id: string }) => op.id),
