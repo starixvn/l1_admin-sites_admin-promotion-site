@@ -193,7 +193,7 @@ export default function Step1({
                 key={op.PartnerId}
                 value={op.PartnerId}
                 className={cn(
-                  "text-base py-3 hover:bg-gray-100 cursor-pointer",
+                  "text-sm py-3 hover:bg-gray-100 cursor-pointer",
                   index % 2 === 0 ? "bg-gray-50" : "bg-white"
                 )}
               >

@@ -75,8 +75,11 @@ export default function DateTimePicker({
 
   return (
     <div className="space-y-1">
-      {label && <label className="form-label">{label}</label>}
-      <p className="text-xs text-muted-foreground mb-1">Date & Time (GMT+7)</p>
+      {label && (
+        <label className="form-label">
+          {label} <span className="text-gray-400 text-sm ml-1">(GMT+7)</span>
+        </label>
+      )}
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild className="bg-white mt-1">
@@ -96,7 +99,7 @@ export default function DateTimePicker({
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent className="w-auto p-6 flex flex-col items-center gap-6 bg-white border border-gray-300 rounded-2xl shadow-md">
+        <PopoverContent className="w-auto p-4 flex flex-col items-center gap-4 bg-white border border-gray-200 rounded-xl shadow-lg">
           <DayPicker
             mode="single"
             selected={date}
@@ -108,7 +111,7 @@ export default function DateTimePicker({
             <select
               value={hour}
               onChange={(e) => handleTimeChange(e.target.value, minute)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 hover:border-gray-400"
+              className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-300 focus:border-blue-300"
             >
               {hourOptions.map((h) => (
                 <option key={h} value={h}>
@@ -120,7 +123,7 @@ export default function DateTimePicker({
             <select
               value={minute}
               onChange={(e) => handleTimeChange(hour, e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-300 focus:border-blue-300 hover:border-gray-400"
+              className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-300 focus:border-blue-300"
             >
               {minuteOptions.map((m) => (
                 <option key={m} value={m}>
@@ -130,19 +133,18 @@ export default function DateTimePicker({
             </select>
           </div>
 
-          <div className="flex gap-4 pt-2">
+          <div className="flex gap-3 pt-2">
             <Button
               type="button"
-              variant="outline"
-              className="btn-cancel"
               onClick={() => setOpen(false)}
+              className="px-5 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 text-sm font-medium"
             >
               Cancel
             </Button>
             <Button
               onClick={() => setOpen(false)}
               type="submit"
-              className="btn-primary"
+              className="px-5 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white text-sm font-semibold"
             >
               OK
             </Button>

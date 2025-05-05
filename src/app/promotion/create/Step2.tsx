@@ -90,7 +90,7 @@ export default function Step2({
               setValue("offeredSiteNames", array);
             }}
           />
-          <p className="text-medium text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             ** Enter the site names to offer the promotion (Separate multiple
             names with a semicolon ;). Leave the field empty to offer the
             promotion to all sites associated with the selected Operator.
@@ -115,7 +115,7 @@ export default function Step2({
           />
           <label
             htmlFor="game-check-all"
-            className="text-md font-semibold text-gray-800"
+            className="text-sm font-semibold text-gray-800"
           >
             Check All
           </label>
@@ -133,7 +133,7 @@ export default function Step2({
                 className={cn(
                   "flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer",
                   isChecked
-                    ? "bg-green-50 border-green-200 text-green-800 font-medium"
+                    ? "bg-green-50 border-green-200 text-green-800 font-small"
                     : "bg-white border-green-100 hover:bg-green-50"
                 )}
               >
@@ -143,7 +143,7 @@ export default function Step2({
                     checked={isChecked}
                     onCheckedChange={() => toggleGame(game.GameId)}
                   />
-                  <span className="text-base">{game.DisplayName}</span>
+                  <span className="text-sm">{game.DisplayName}</span>
                 </div>
               </label>
             );
@@ -167,7 +167,7 @@ export default function Step2({
               id="all"
               className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
             />
-            <label htmlFor="all">All Players</label>
+            <label htmlFor="all" className="text-sm">All Players</label>
           </div>
           <div className="flex gap-4 items-center">
             <RadioGroupItem
@@ -175,7 +175,7 @@ export default function Step2({
               id="file"
               className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
             />
-            <label htmlFor="file">Players from File</label>
+            <label htmlFor="file" className="text-sm">Players from File</label>
           </div>
         </RadioGroup>
 
