@@ -10,9 +10,9 @@ export default function LayoutWrapper({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isLoginPage = pathname === '/login';
+  const isIndexPage = pathname === '/login' || pathname === '/';
 
-  if (isLoginPage) {
+  if (isIndexPage) {
     return children;
   }
 
