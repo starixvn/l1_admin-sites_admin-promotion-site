@@ -342,13 +342,8 @@ export default function DataGrid({
           partnerId={selectedPromotion.operatorId}
           gameType={selectedPromotion.gameConfigType}
           onSave={handleSaveBetSettings}
-          readonly={getStatus(selectedPromotion) !== "upcoming"}
-          initialValues={{
-            betLevels: selectedPromotion.betLevels.map((b) => ({
-              currencyGroup: b.currencyGroup,
-              betLevel: b.betLevel,
-            })),
-          }}
+          readonly={true}
+          initialValues={selectedPromotion.betLevels}
         />
       )}
     </div>

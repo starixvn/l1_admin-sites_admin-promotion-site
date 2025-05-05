@@ -220,11 +220,11 @@ export default function Step2({
         onClose={() => setOpenBetSettings(false)}
         partnerId={operatorId}
         gameType={gameConfigType}
-        initialBetLevels={betLevels}
         onSave={({ currencyGroups, betLevels }) => {
           setValue("currencyGroups", currencyGroups);
           setValue("betLevels", betLevels);
         }}
+        initialValues={betLevels}
       />
     </div>
   );

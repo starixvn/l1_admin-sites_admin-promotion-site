@@ -18,25 +18,22 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { GAME_TYPES } from "@/constants/gameTypes";
-import { CurrencyGroup } from "@/types/currencyGroup";
+import { CurrencyGroup } from "@/types/currency-group";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   partnerId: string;
   gameType: number;
-  initialBetLevels?: { currencyGroup: string; betLevel: number }[];
   onSave: (data: {
     currencyGroups: string[];
     betLevels: { currencyGroup: string; betLevel: number }[];
   }) => void;
   readonly?: boolean;
   initialValues?: {
-    betLevels: {
-      currencyGroup: string;
-      betLevel: number;
-    }[];
-  };
+    currencyGroup: string;
+    betLevel: number;
+  }[];
 };
 
 type RowState = {
@@ -61,8 +58,8 @@ export default function BetSettingsDialog({
   useEffect(() => {
     if (currencyGroups.length > 0) {
       const initialBetMap = new Map<string, number>();
-      if (initialValues?.betLevels) {
-        for (const b of initialValues.betLevels) {
+      if (initialValues) {
+        for (const b of initialValues) {
           initialBetMap.set(b.currencyGroup, b.betLevel);
         }
       }

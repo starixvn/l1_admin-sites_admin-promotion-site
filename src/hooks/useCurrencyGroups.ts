@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { CurrencyGroup } from "@/types/currencyGroup";
+import type { CurrencyGroup } from "@/types/currency-group";
 
 export const useCurrencyGroups = (partnerId: string | undefined) => {
   return useQuery<CurrencyGroup[]>({
