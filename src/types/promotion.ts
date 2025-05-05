@@ -25,3 +25,18 @@ export type CreatePromotionResponse = {
     betLevel: number;
   }[];
 };
+
+export type PromotionPayload = {
+  name: string;
+  code: string;
+  operatorId: string;
+  offeredSiteNames: string[];
+  currencyGroups: string[];
+  startDate: string;
+  endDate: string;
+  bonusItemCount: number;
+  offeredPlayerIds: string[];
+  gameConfigType: number;
+  gameIds: number[];
+  betLevels: { currencyGroup: string; betLevel: number }[];
+};

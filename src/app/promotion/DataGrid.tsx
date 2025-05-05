@@ -2,6 +2,9 @@
 
 import { GAME_TYPES } from "@/constants/gameTypes";
 import { Game } from "@/types/game";
+import { useState } from "react";
+import BetSettingsDialog from "./create/BetSettingsDialog";
+import { useUpdatePromotion } from "@/hooks/useUpdatePromotion";
 
 interface Promotion {
   _id: string;
@@ -97,6 +100,46 @@ export default function DataGrid({
         return "text-gray-500";
     }
   }
+
+  const [showDialog, setShowDialog] = useState(false);
+  const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(
+    null
+  );
+
+  const handleShowBetSettings = (promotion: Promotion) => {
+    setSelectedPromotion(promotion);
+    setShowDialog(true);
+  };
+  const updatePromotionMutation = useUpdatePromotion();
+  const handleSaveBetSettings = (data: {
+    currencyGroups: string[];
+    betLevels: { currencyGroup: string; betLevel: number }[];
+  }) => {
+    if (!selectedPromotion) return;
+
+    const payload = {
+      ...selectedPromotion,
+      currencyGroups: data.currencyGroups,
+      betLevels: data.betLevels,
+    };
+    console.log("selectedPromotion", selectedPromotion);
+    console.log("currencyGroups", data.currencyGroups);
+    console.log("betLevels", data.betLevels);
+    updatePromotionMutation.mutate(
+      { id: selectedPromotion._id, data: payload },
+      {
+        onSuccess: () => {
+          setShowDialog(false);
+          // Optional: invalidate promotion list query
+          // queryClient.invalidateQueries(["promotions"]);
+        },
+        onError: (err) => {
+          console.error(err);
+          alert("Failed to update promotion");
+        },
+      }
+    );
+  };
 
   const getGameNames = (gameIds: number[]) => {
     if (!gameIds || !games.length) return "";
@@ -221,7 +264,10 @@ export default function DataGrid({
                   {promotion.operatorId}
                 </td>
                 <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
-                  <button className="text-blue-600 hover:text-blue-800 cursor-pointer">
+                  <button
+                    onClick={() => handleShowBetSettings(promotion)}
+                    className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                  >
                     Details
                   </button>
                 </td>
@@ -274,6 +320,21 @@ export default function DataGrid({
           })}
         </tbody>
       </table>
+      {selectedPromotion && (
+        <BetSettingsDialog
+          open={showDialog}
+          onClose={() => setShowDialog(false)}
+          partnerId={selectedPromotion.operatorId}
+          gameType={selectedPromotion.gameConfigType}
+          onSave={handleSaveBetSettings}
+          initialValues={{
+            betLevels: selectedPromotion.betLevels.map((b) => ({
+              currencyGroup: b.currencyGroup,
+              betLevel: b.betLevel,
+            })),
+          }}
+        />
+      )}
     </div>
   );
 }

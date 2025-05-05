@@ -29,6 +29,12 @@ type Props = {
     currencyGroups: string[];
     betLevels: { currencyGroup: string; betLevel: number }[];
   }) => void;
+  initialValues?: {
+    betLevels: {
+      currencyGroup: string;
+      betLevel: number;
+    }[];
+  };
 };
 
 type RowState = {
@@ -44,22 +50,32 @@ export default function BetSettingsDialog({
   partnerId,
   gameType,
   onSave,
+  initialValues,
 }: Props) {
   const { data: currencyGroups = [] } = useCurrencyGroups(partnerId);
   const [rows, setRows] = useState<RowState[]>([]);
-
+  
   useEffect(() => {
     if (currencyGroups.length > 0) {
+      const initialBetMap = new Map<string, number>();
+      if (initialValues?.betLevels) {
+        for (const b of initialValues.betLevels) {
+          initialBetMap.set(b.currencyGroup, b.betLevel);
+        }
+      }
       setRows(
-        currencyGroups.map((cg: CurrencyGroup) => ({
-          id: cg.Id,
-          name: cg.Name,
-          enabled: false,
-          betLevel: getSuggestedBetLevel(gameType),
-        }))
+        currencyGroups.map((cg: CurrencyGroup) => {
+          const betLevel = initialBetMap.get(cg.Id);
+          return {
+            id: cg.Id,
+            name: cg.Name,
+            enabled: betLevel !== undefined,
+            betLevel: betLevel ?? getSuggestedBetLevel(gameType),
+          };
+        })
       );
     }
-  }, [currencyGroups, gameType]);
+  }, [currencyGroups, gameType, initialValues]);
 
   const getSuggestedBetLevel = (type: number) => {
     return type === GAME_TYPES.CASCADING ? 1 : 0.1;

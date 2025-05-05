@@ -1,19 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import type { CreatePromotionResponse } from "@/types/promotion";
-type PromotionPayload = {
-  name: string;
-  operatorId: string;
-  offeredSiteNames: string[];
-  currencyGroups: string[];
-  startDate: string;
-  endDate: string;
-  bonusItemCount: number;
-  offeredPlayerIds: string[];
-  gameConfigType: number;
-  gameIds: number[];
-  betLevels: { currencyGroup: string; betLevel: number }[];
-};
-
+import type { CreatePromotionResponse, PromotionPayload } from "@/types/promotion";
 export const useCreatePromotion = () => {
   return useMutation({
     mutationKey: ["createPromotion"],
