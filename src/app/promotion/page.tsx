@@ -50,8 +50,14 @@ export default function PromotionPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingPromotionId, setDeletingPromotionId] = useState<string | null>(null);
+  const [currentFilters, setCurrentFilters] = useState<PromotionFilters>({
+    status: "All",
+    operator: operators.map((op) => op.id),
+    promotionCode: ""
+  });
 
   const handleFilterSubmit = useCallback(async (filters: PromotionFilters) => {
+    setCurrentFilters(filters);
     try {
       setError(null);
       const queryParams = new URLSearchParams();
@@ -154,7 +160,11 @@ export default function PromotionPage() {
       
       {/* Filter section */}
       <div className="w-full bg-white rounded-xl shadow-sm">
-        <Filter onFilterChange={handleFilterSubmit} operatorOptions={operators} />
+        <Filter
+          onFilterChange={handleFilterSubmit}
+          operatorOptions={operators}
+          initialFilters={currentFilters}
+        />
       </div>
 
       {/* Data grid */}
@@ -165,6 +175,7 @@ export default function PromotionPage() {
           error={error}
           games={games}
           onDelete={handleDeleteClick}
+          onRefresh={() => handleFilterSubmit(currentFilters)}
         />
       </div>
 

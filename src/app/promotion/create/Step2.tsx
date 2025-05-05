@@ -48,6 +48,7 @@ export default function Step2({
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
   const allPlayers = useWatch({ control, name: "allPlayers" });
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const betLevels = useWatch({ control, name: "betLevels" });
 
   return (
     <div className="space-y-6">
@@ -161,7 +162,10 @@ export default function Step2({
         <Label className="form-label">👥 Target Members</Label>
         <RadioGroup
           value={allPlayers ? "true" : "false"}
-          onValueChange={(val) => setValue("allPlayers", val === "true")}
+          onValueChange={(val) => {
+            setValue("allPlayers", val === "true");
+            setValue("offeredPlayerIds", []);
+          }}
         >
           <div className="flex gap-4 items-center">
             <RadioGroupItem
@@ -193,7 +197,6 @@ export default function Step2({
                 const playerIds = data
                   .map((row) => row.PlayerID?.toString())
                   .filter(Boolean);
-
                 setUploadedFile(file);
                 setValue("uploadedFile", file);
                 setValue("offeredPlayerIds", playerIds);
@@ -217,6 +220,7 @@ export default function Step2({
         onClose={() => setOpenBetSettings(false)}
         partnerId={operatorId}
         gameType={gameConfigType}
+        initialBetLevels={betLevels}
         onSave={({ currencyGroups, betLevels }) => {
           setValue("currencyGroups", currencyGroups);
           setValue("betLevels", betLevels);

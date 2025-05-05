@@ -32,24 +32,18 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   }
 }
 
-export async function PUT(request: NextRequest, context: RouteContext) {
+export async function PUT(
+  request: NextRequest,
+  context: { params: { id: string } }
+) {
   try {
     const { id } = await context.params;
-    const body = await request.json();
-
+    const data = await request.json();
     const response = await axios.put(
       `${configs.apiPromotionUrl}/promotions/${id}`,
-      body,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          // Nếu cần auth:
-          // Authorization: `Bearer ${token}`,
-        },
-      }
+      data
     );
-
-    return NextResponse.json(response.data, { status: 200 });
+    return NextResponse.json(response.data);
   } catch (error) {
     console.error("Error updating promotion:", error);
     if (error instanceof AxiosError) {

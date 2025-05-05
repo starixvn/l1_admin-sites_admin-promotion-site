@@ -25,6 +25,7 @@ type Props = {
   onClose: () => void;
   partnerId: string;
   gameType: number;
+  initialBetLevels?: { currencyGroup: string; betLevel: number }[];
   onSave: (data: {
     currencyGroups: string[];
     betLevels: { currencyGroup: string; betLevel: number }[];
@@ -50,6 +51,7 @@ export default function BetSettingsDialog({
   onClose,
   partnerId,
   gameType,
+  initialBetLevels = [],
   onSave,
   readonly = false,
   initialValues,
@@ -67,17 +69,19 @@ export default function BetSettingsDialog({
       }
       setRows(
         currencyGroups.map((cg: CurrencyGroup) => {
-          const betLevel = initialBetMap.get(cg.Id);
+          const existingBetLevel = initialBetLevels.find(
+            (bl) => bl.currencyGroup === cg.Id
+          );
           return {
             id: cg.Id,
             name: cg.Name,
-            enabled: betLevel !== undefined,
-            betLevel: betLevel ?? getSuggestedBetLevel(gameType),
+            enabled: !!existingBetLevel,
+            betLevel: existingBetLevel?.betLevel || getSuggestedBetLevel(gameType),
           };
         })
       );
     }
-  }, [currencyGroups, gameType, initialValues]);
+  }, [currencyGroups, gameType, initialBetLevels, initialValues?.betLevels]);
 
   const getSuggestedBetLevel = (type: number) => {
     return type === GAME_TYPES.CASCADING ? 1 : 0.1;

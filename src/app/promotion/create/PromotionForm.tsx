@@ -8,6 +8,7 @@ import { useCreatePromotion } from "@/hooks/useCreatePromotion";
 import { GAME_TYPES } from "@/constants/gameTypes";
 import { useOperators } from "@/hooks/useOperators";
 import { useFilteredGames } from "@/hooks/useFilteredGames";
+import { Promotion } from "@/types/promotion";
 
 const getNowInGMT7 = () => {
   const now = new Date();
@@ -71,11 +72,22 @@ const promotionSchema = z
   });
 
 export type PromotionFormValues = z.infer<typeof promotionSchema>;
-export default function PromotionForm({
-  onClose,
-}: {
+
+type PromotionFormSubmission = Omit<Promotion, '_id' | 'createdAt' | 'updatedAt' | '__v' | 'betLevels'> & {
+  betLevels: { currencyGroup: string; betLevel: number; }[];
+};
+
+interface PromotionFormProps {
+  initialValues?: Promotion;
   onClose?: (shouldReload?: boolean) => void;
-}) {
+  onSubmit?: (values: Promotion) => Promise<void>;
+}
+
+export default function PromotionForm({
+  initialValues,
+  onClose,
+  onSubmit,
+}: PromotionFormProps) {
   const {
     register,
     handleSubmit,
@@ -86,7 +98,16 @@ export default function PromotionForm({
   } = useForm<PromotionFormValues>({
     resolver: zodResolver(promotionSchema),
     mode: "onSubmit",
-    defaultValues: {
+    defaultValues: initialValues ? {
+      ...initialValues,
+      startDate: new Date(initialValues.startDate),
+      endDate: new Date(initialValues.endDate),
+      gameConfigType: initialValues.gameConfigType as 2 | 3,
+      offeredSiteNames: initialValues.offeredSiteNames || [],
+      offeredPlayerIds: initialValues.offeredPlayerIds || [],
+      betLevels: initialValues.betLevels || [],
+      allPlayers: !initialValues.offeredPlayerIds || initialValues.offeredPlayerIds.length === 0,
+    } : {
       name: "",
       code: "",
       bonusItemCount: 0,
@@ -123,6 +144,12 @@ export default function PromotionForm({
     console.log("Validation errors:", errors);
   }, [errors]);
 
+  useEffect(() => {
+    if (initialValues && initialValues.offeredSiteNames) {
+      setSiteInput(initialValues.offeredSiteNames.join(";"));
+    }
+  }, [initialValues]);
+
   const handleNextStep = async () => {
     const valid = await trigger([
       "name",
@@ -136,32 +163,33 @@ export default function PromotionForm({
   };
 
   const { mutate: createPromotion, isPending } = useCreatePromotion();
-  const onSubmit = (data: PromotionFormValues) => {
-    const payload = {
-      name: data.name,
-      code: data.code,
-      operatorId: data.operatorId,
-      offeredSiteNames: data.offeredSiteNames ?? [],
-      currencyGroups: data.currencyGroups,
+
+  const handleFormSubmit = (data: PromotionFormValues) => {
+    const { allPlayers, uploadedFile, ...rest } = data;
+    const payload: PromotionFormSubmission = {
+      ...rest,
       startDate: new Date(data.startDate).toISOString(),
       endDate: new Date(data.endDate).toISOString(),
-      bonusItemCount: data.bonusItemCount,
-      offeredPlayerIds: data.offeredPlayerIds ?? [],
-      gameConfigType: data.gameConfigType,
-      gameIds: data.gameIds,
-      betLevels: data.betLevels ?? [],
+      offeredSiteNames: data.offeredSiteNames || [],
+      offeredPlayerIds: data.offeredPlayerIds || [],
+      betLevels: data.betLevels || [],
+      ...(initialValues ? { _id: initialValues._id } : {}),
     };
 
-    createPromotion(payload, {
-      onSuccess: () => onClose?.(true),
-      onError: (err) => console.error("Failed to create promotion", err),
-    });
+    if (onSubmit) {
+      onSubmit(payload as Promotion);
+    } else {
+      createPromotion(payload, {
+        onSuccess: () => onClose?.(true),
+        onError: (err) => console.error("Failed to create promotion", err),
+      });
+    }
   };
 
   return (
     <div className="flex flex-col h-[80vh]">
       <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-        <form id="promotionForm" className="space-y-6">
+        <form id="promotionForm" onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
           {/* Step Progress UI */}
           <div className="space-y-1">
             <div className="flex justify-between items-center text-sm font-medium text-gray-600 px-1">
@@ -235,7 +263,7 @@ export default function PromotionForm({
           ) : step === 2 ? (
             <button
               type="button"
-              onClick={handleSubmit(onSubmit)}
+              onClick={handleSubmit(handleFormSubmit)}
               disabled={isPending}
               className="btn-primary flex items-center gap-2"
             >

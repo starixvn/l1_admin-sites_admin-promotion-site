@@ -11,6 +11,7 @@ interface Operator {
 interface FilterProps {
   onFilterChange: (filters: FilterValues) => void;
   operatorOptions: Operator[];
+  initialFilters: FilterValues;
 }
 
 interface FilterValues {
@@ -22,12 +23,9 @@ interface FilterValues {
 export default function Filter({
   onFilterChange,
   operatorOptions,
+  initialFilters,
 }: FilterProps) {
-  const [filters, setFilters] = useState<FilterValues>({
-    status: "All",
-    operator: [],
-    promotionCode: "",
-  });
+  const [filters, setFilters] = useState<FilterValues>(initialFilters);
 
   const [operatorSearch, setOperatorSearch] = useState("");
   const [showOperatorDropdown, setShowOperatorDropdown] = useState(false);

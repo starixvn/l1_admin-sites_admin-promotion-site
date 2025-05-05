@@ -5,33 +5,9 @@ import { Game } from "@/types/game";
 import { useState } from "react";
 import BetSettingsDialog from "./create/BetSettingsDialog";
 import { useUpdatePromotion } from "@/hooks/useUpdatePromotion";
-
-interface Promotion {
-  _id: string;
-  name: string;
-  code: string;
-  operatorId: string;
-  offeredSiteNames: string[];
-  currencyGroups: string[];
-  startDate: string;
-  endDate: string;
-  bonusItemCount: number;
-  offeredPlayerIds: string[];
-  gameConfigType: number;
-  gameIds: number[];
-  betLevels: {
-    currencyGroup: string;
-    betLevel: number;
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-  }[];
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
-  status?: string;
-  announcement?: string;
-}
+import PromotionEditDialog from "./edit/PromotionEditDialog";
+import { Promotion } from "@/types/promotion";
+import { toast } from "react-toastify";
 
 interface DataGridProps {
   promotions: Promotion[];
@@ -39,6 +15,7 @@ interface DataGridProps {
   error: string | null;
   games: Game[];
   onDelete: (id: string) => Promise<void>;
+  onRefresh: () => void;
 }
 
 function toGMTString(dateStr: string, gmtOffset: number) {
@@ -74,7 +51,10 @@ export default function DataGrid({
   error,
   games,
   onDelete,
+  onRefresh,
 }: DataGridProps) {
+  const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
+
   function getStatus(
     promotion: Promotion
   ): "upcoming" | "running" | "completed" {
@@ -162,6 +142,29 @@ export default function DataGrid({
       await onDelete(id);
     } catch (error) {
       console.error("Failed to delete promotion:", error);
+    }
+  };
+
+  const handleEdit = (promotion: Promotion) => {
+    setEditPromotion(promotion);
+  };
+
+  const handleSaveEdit = async (updatedPromotion: Promotion) => {
+    try {
+      const { _id, ...payload } = updatedPromotion;
+      await fetch(`/api/promotions/${_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      toast.success("Promotion updated successfully", {
+        position: "top-right",
+        autoClose: 3000,
+      });
+      setEditPromotion(null);
+      onRefresh();
+    } catch (error) {
+      console.error('Failed to update promotion:', error);
     }
   };
 
@@ -298,6 +301,7 @@ export default function DataGrid({
                 <td className="px-3 py-2 border-b border-gray-200">
                   <div className="flex flex-col gap-1 items-center">
                     <button
+                      onClick={() => handleEdit(promotion)}
                       className={`min-w-[60px] px-3 py-1 rounded text-xs font-medium ${
                         status === "completed"
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -325,6 +329,12 @@ export default function DataGrid({
           })}
         </tbody>
       </table>
+      <PromotionEditDialog
+        open={!!editPromotion}
+        promotion={editPromotion}
+        onClose={() => setEditPromotion(null)}
+        onSave={handleSaveEdit}
+      />
       {selectedPromotion && (
         <BetSettingsDialog
           open={showDialog}
