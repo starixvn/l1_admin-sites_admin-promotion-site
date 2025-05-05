@@ -165,14 +165,19 @@ export default function PromotionForm({
   const { mutate: createPromotion, isPending } = useCreatePromotion();
 
   const handleFormSubmit = (data: PromotionFormValues) => {
-    const { allPlayers, uploadedFile, ...rest } = data;
     const payload: PromotionFormSubmission = {
-      ...rest,
+      betLevels: data.betLevels || [],
+      bonusItemCount: data.bonusItemCount,
+      code: data.code,
+      currencyGroups: data.currencyGroups,
+      gameConfigType: data.gameConfigType,
+      gameIds: data.gameIds,
+      name: data.name,
+      operatorId: data.operatorId,
       startDate: new Date(data.startDate).toISOString(),
       endDate: new Date(data.endDate).toISOString(),
       offeredSiteNames: data.offeredSiteNames || [],
       offeredPlayerIds: data.offeredPlayerIds || [],
-      betLevels: data.betLevels || [],
       ...(initialValues ? { _id: initialValues._id } : {}),
     };
 
