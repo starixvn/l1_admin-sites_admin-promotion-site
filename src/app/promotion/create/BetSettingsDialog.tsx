@@ -51,7 +51,6 @@ export default function BetSettingsDialog({
   onClose,
   partnerId,
   gameType,
-  initialBetLevels = [],
   onSave,
   readonly = false,
   initialValues,
@@ -69,19 +68,17 @@ export default function BetSettingsDialog({
       }
       setRows(
         currencyGroups.map((cg: CurrencyGroup) => {
-          const existingBetLevel = initialBetLevels.find(
-            (bl) => bl.currencyGroup === cg.Id
-          );
+          const existingBetLevel = initialBetMap.get(cg.Id);
           return {
             id: cg.Id,
             name: cg.Name,
-            enabled: !!existingBetLevel,
-            betLevel: existingBetLevel?.betLevel || getSuggestedBetLevel(gameType),
+            enabled: existingBetLevel !== undefined,
+            betLevel: existingBetLevel ?? getSuggestedBetLevel(gameType),
           };
         })
       );
     }
-  }, [currencyGroups, gameType, initialBetLevels, initialValues?.betLevels]);
+  }, [currencyGroups, gameType, initialValues]);
 
   const getSuggestedBetLevel = (type: number) => {
     return type === GAME_TYPES.CASCADING ? 1 : 0.1;
@@ -129,9 +126,9 @@ export default function BetSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full !max-w-6xl bg-gradient-to-b from-white via-blue-50 to-blue-100 rounded-3xl p-12 shadow-2xl">
+      <DialogContent className="w-full !max-w-3xl bg-white rounded-xl px-8 py-5 shadow-xl">
         <DialogHeader>
-          <DialogTitle className="text-3xl font-bold text-gray-800">
+          <DialogTitle className="text-2xl font-bold text-gray-800">
             Bet Settings -{" "}
             {gameType === GAME_TYPES.CLASSIC
               ? "Classic Slot"
@@ -146,9 +143,9 @@ export default function BetSettingsDialog({
           </p>
 
           <div className="overflow-x-auto border rounded-2xl bg-white shadow-sm">
-            <table className="w-full text-base border-collapse border border-blue-200">
+            <table className="w-full text-base border-collapse">
               <thead>
-                <tr className="bg-blue-100 text-blue-900 border-b text-lg">
+                <tr className="bg-blue-100 text-blue-900 border-b text-md">
                   <th className="px-4 py-3 text-center border-r">Operator</th>
                   <th className="px-4 py-3 text-center border-r">
                     Currency Group

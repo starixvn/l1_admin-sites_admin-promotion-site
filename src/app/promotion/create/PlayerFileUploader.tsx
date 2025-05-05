@@ -1,4 +1,3 @@
-import { useState } from "react";
 import Papa from "papaparse";
 
 interface Props {
@@ -10,7 +9,6 @@ interface Props {
 }
 
 export default function PlayerFileUploader({ operatorId, onValidFile }: Props) {
-  const [file, setFile] = useState<File | null>(null);
 
   const handleFileValidation = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -52,7 +50,6 @@ export default function PlayerFileUploader({ operatorId, onValidFile }: Props) {
               : row.PlayerID,
         }));
 
-        setFile(selectedFile);
         onValidFile(selectedFile, processedData);
       },
       error: (err) => {
