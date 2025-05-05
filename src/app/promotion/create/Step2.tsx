@@ -181,6 +181,7 @@ export default function Step2({
 
         {!allPlayers && (
           <PlayerFileUploader
+            operatorId={operatorId}
             onValidFile={(file, data) => {
               const playerIds = data
                 .map((row) => row.PlayerID?.toString())

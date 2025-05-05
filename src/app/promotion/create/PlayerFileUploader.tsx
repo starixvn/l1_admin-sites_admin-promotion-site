@@ -2,17 +2,17 @@ import { useState } from "react";
 import Papa from "papaparse";
 
 interface Props {
+  operatorId: string;
   onValidFile: (
     file: File,
     data: { SiteID: string; PlayerID: string }[]
   ) => void;
 }
 
-export default function PlayerFileUploader({ onValidFile }: Props) {
+export default function PlayerFileUploader({ operatorId, onValidFile }: Props) {
   const [fileName, setFileName] = useState<string | null>(null);
 
   const handleFileValidation = (e: React.ChangeEvent<HTMLInputElement>) => {
-    debugger;
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -43,9 +43,16 @@ export default function PlayerFileUploader({ onValidFile }: Props) {
           e.target.value = "";
           return;
         }
-
+        
+        const processedData = data.map((row) => ({
+          SiteID: row.SiteID,
+          PlayerID:
+            operatorId === "SabaPlay"
+              ? `${row.SiteID}~${row.PlayerID}`
+              : row.PlayerID,
+        }));
         setFileName(file.name);
-        onValidFile(file, data);
+        onValidFile(file, processedData);
       },
       error: (err) => {
         alert("Failed to read CSV file.");
