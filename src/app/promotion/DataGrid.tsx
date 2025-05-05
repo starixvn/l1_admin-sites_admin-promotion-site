@@ -117,6 +117,7 @@ export default function DataGrid({
       {
         onSuccess: () => {
           setShowDialog(false);
+          onRefresh();
         },
         onError: (err) => {
           console.error(err);
@@ -153,8 +154,8 @@ export default function DataGrid({
     try {
       const { _id, ...payload } = updatedPromotion;
       await fetch(`/api/promotions/${_id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       toast.success("Promotion updated successfully", {
@@ -164,7 +165,7 @@ export default function DataGrid({
       setEditPromotion(null);
       onRefresh();
     } catch (error) {
-      console.error('Failed to update promotion:', error);
+      console.error("Failed to update promotion:", error);
     }
   };
 
