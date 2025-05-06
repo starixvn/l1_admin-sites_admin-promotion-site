@@ -61,6 +61,8 @@ export default function BetSettingsDialog({
   const [rows, setRows] = useState<RowState[]>([]);
   const { mutateAsync: getCurrencyGroupGames } = useCurrencyGroupGames();
   const gameIds = games?.map((g) => g.GameId);
+  const [invalidRows, setInvalidRows] = useState<Set<string>>(new Set());
+  const [showGlobalError, setShowGlobalError] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -139,13 +141,30 @@ export default function BetSettingsDialog({
   };
 
   const handleSave = () => {
-    const enabledRows = rows.filter((r) => r.enabled);
+    const newInvalidRows = new Set<string>();
+    rows.forEach((row) => {
+      if (row.enabled && row.betLevel === 0) {
+        newInvalidRows.add(row.id);
+      }
+    });
+
+    if (newInvalidRows.size > 0) {
+      setInvalidRows(newInvalidRows);
+      setShowGlobalError(true);
+      return;
+    }
+
+    setInvalidRows(new Set());
+    setShowGlobalError(false);
+
     onSave({
-      currencyGroups: enabledRows.map((r) => r.id),
-      betLevels: enabledRows.map((r) => ({
-        currencyGroup: r.id,
-        betLevel: r.betLevel,
-      })),
+      currencyGroups: rows.filter((r) => r.enabled).map((r) => r.id),
+      betLevels: rows
+        .filter((r) => r.enabled)
+        .map((r) => ({
+          currencyGroup: r.id,
+          betLevel: r.betLevel,
+        })),
     });
     onClose();
   };
@@ -164,8 +183,12 @@ export default function BetSettingsDialog({
 
         <div className="space-y-6 mt-6">
           <p className="text-base text-gray-700">
-            <strong className="text-red-500">**</strong> Enable Free Spin Bonus
-            for selected currency groups below.
+            <strong className="text-red-500">**</strong> Turn ON the Promotion
+            for the currency group which you want to offer the Free Spin Bonus
+          </p>
+          <p className="text-base text-gray-700">
+            The suggested Bet Level value is based on the default setting
+            currently displayed in the game for each currency group.{" "}
           </p>
 
           <div className="overflow-x-auto border rounded-2xl bg-white shadow-sm">
@@ -246,7 +269,11 @@ export default function BetSettingsDialog({
                               handleChangeBet(index, e.target.value)
                             }
                             disabled={readonly}
-                            className="w-28 h-10 bg-white text-center text-base px-0 rounded-lg border border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition"
+                            className={`w-28 h-10 text-center text-base px-0 rounded-lg border transition ${
+                              invalidRows.has(row.id)
+                                ? "border-red-500 focus:border-red-600 focus:ring-red-200"
+                                : "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                            }`}
                           />
                         </div>
                       ) : (
@@ -277,6 +304,13 @@ export default function BetSettingsDialog({
             )}
           </div>
         </div>
+        {showGlobalError && (
+          <div className="absolute bottom-7 left-6 text-red-600 text-sm font-medium">
+            ❗ Please make sure all enabled rows have{" "}
+            {gameType === GAME_TYPES.CLASSIC ? "Bet Level" : "Coin Value"}{" "}
+            greater than 0
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
