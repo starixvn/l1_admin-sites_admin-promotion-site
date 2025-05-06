@@ -2,14 +2,20 @@ import Papa from "papaparse";
 
 interface Props {
   operatorId: string;
+  fileName: string;
+  uploadedFile: File | null;
   onValidFile: (
     file: File,
     data: { SiteID: string; PlayerID: string }[]
   ) => void;
 }
 
-export default function PlayerFileUploader({ operatorId, onValidFile }: Props) {
-
+export default function PlayerFileUploader({
+  operatorId,
+  onValidFile,
+  fileName,
+  uploadedFile,
+}: Props) {
   const handleFileValidation = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
@@ -75,13 +81,18 @@ export default function PlayerFileUploader({ operatorId, onValidFile }: Props) {
         onChange={handleFileValidation}
         className="hidden"
       />
-      <a
-        href="/sample-files/player-list-template.csv"
-        download
-        className="inline-flex items-center gap-2 text-blue-700 hover:text-blue-900 text-sm font-medium"
-      >
-        📥 Download Sample File
-      </a>
+      {fileName && !uploadedFile && (
+        <label className="text-blue-700 text-sm mt-2">📎 {fileName}</label>
+      )}
+      {uploadedFile && (
+        <a
+          href={URL.createObjectURL(uploadedFile)}
+          download={uploadedFile.name}
+          className="text-blue-700 text-sm mt-2"
+        >
+          📎 {uploadedFile.name}
+        </a>
+      )}
     </div>
   );
 }

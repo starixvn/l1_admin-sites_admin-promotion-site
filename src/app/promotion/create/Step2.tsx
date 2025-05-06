@@ -30,9 +30,11 @@ interface Step2Props {
   isLoading: boolean;
   error: Error | null;
   toggleGame: (id: number) => void;
+  fileName: string;
 }
 
 export default function Step2({
+  fileName,
   mode,
   status,
   setValue,
@@ -205,6 +207,8 @@ export default function Step2({
           <>
             <PlayerFileUploader
               operatorId={operatorId}
+              fileName={fileName}
+              uploadedFile={uploadedFile}
               onValidFile={(file, data) => {
                 const playerIds = data
                   .map((row) => row.PlayerID?.toString())
@@ -215,15 +219,13 @@ export default function Step2({
                 setValue("offeredPlayerIds", playerIds);
               }}
             />
-            {uploadedFile && (
-              <a
-                href={URL.createObjectURL(uploadedFile)}
-                download={uploadedFile.name}
-                className="block text-blue-700 hover:underline text-sm mt-2"
-              >
-                📎 {uploadedFile.name}
-              </a>
-            )}
+            <a
+              href="/sample-files/player-list-template.csv"
+              download
+              className="inline-flex items-center gap-2 text-blue-700 hover:text-blue-900 text-sm font-medium"
+            >
+              📥 Download Sample File
+            </a>            
           </>
         )}
       </div>

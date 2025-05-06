@@ -92,7 +92,7 @@ export default function PromotionForm({
   onClose,
   onSubmit,
 }: PromotionFormProps) {
-  const status = getStatus(initialValues as Promotion);
+  const status = initialValues ? getStatus(initialValues as Promotion) : "";
   const {
     register,
     handleSubmit,
@@ -236,6 +236,7 @@ export default function PromotionForm({
               mode={mode}
               status={status}
               setValue={setValue}
+              fileName={initialValues?.fileName || ""}
               control={control}
               errors={errors}
               openBetSettings={openBetSettings}
