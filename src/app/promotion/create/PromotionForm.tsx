@@ -236,7 +236,6 @@ export default function PromotionForm({
               mode={mode}
               status={status}
               setValue={setValue}
-              fileName={initialValues?.fileName || ""}
               control={control}
               errors={errors}
               openBetSettings={openBetSettings}

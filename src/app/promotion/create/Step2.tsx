@@ -30,11 +30,9 @@ interface Step2Props {
   isLoading: boolean;
   error: Error | null;
   toggleGame: (id: number) => void;
-  fileName: string;
 }
 
 export default function Step2({
-  fileName,
   mode,
   status,
   setValue,
@@ -57,6 +55,9 @@ export default function Step2({
   const allPlayers = useWatch({ control, name: "allPlayers" });
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const betLevels = useWatch({ control, name: "betLevels" });
+  const fileName = useWatch({ control, name: "fileName" });
+  const offeredPlayerIds = useWatch({ control, name: "offeredPlayerIds" }) ?? [];
+  const [showPlayerList, setShowPlayerList] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -207,7 +208,9 @@ export default function Step2({
           <>
             <PlayerFileUploader
               operatorId={operatorId}
-              fileName={fileName}
+              setShowPlayerList={setShowPlayerList}
+              fileName={fileName || ""}
+              offeredPlayerIds={offeredPlayerIds || []}
               uploadedFile={uploadedFile}
               onValidFile={(file, data) => {
                 const playerIds = data
@@ -226,6 +229,56 @@ export default function Step2({
             >
               📥 Download Sample File
             </a>            
+            
+            {/* Player List Modal */}
+            {showPlayerList && (
+              <div
+                className="absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full h-full flex items-center justify-center bg-white/60"
+                onClick={() => setShowPlayerList(false)}
+              >
+                <div
+                  className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-[480px] p-8 relative"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-bold text-gray-800">Player List: {fileName?.replace(/\.csv$/i, "")}</h2>
+                    <button
+                      className="text-gray-400 hover:text-red-500 text-2xl font-bold transition"
+                      onClick={() => setShowPlayerList(false)}
+                      aria-label="Close"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <div className="overflow-y-auto max-h-80 border">
+                    <table className="w-full text-base">
+                      <thead>
+                        <tr className="bg-gray-100 border-b">
+                          <th className="px-4 py-2 text-center font-medium text-gray-700 border-r">No.</th>
+                          <th className="px-4 py-2 text-center font-medium text-gray-700">PlayerID</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(offeredPlayerIds ?? []).map((id, idx) => (
+                          <tr key={id + idx} className="border-b last:border-b-0">
+                            <td className="px-4 py-2 text-center border-r">{idx + 1}</td>
+                            <td className="px-4 py-2 text-center">{id}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="flex justify-end mt-6">
+                    <button
+                      className="px-6 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 font-medium shadow"
+                      onClick={() => setShowPlayerList(false)}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
