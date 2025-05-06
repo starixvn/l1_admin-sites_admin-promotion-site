@@ -54,6 +54,7 @@ const promotionSchema = z
     allPlayers: z.boolean(),
     offeredPlayerIds: z.array(z.string()).optional(),
     uploadedFile: z.any().optional(),
+    fileName: z.string().optional(),
     gameConfigType: z.nativeEnum(GAME_TYPES),
     betLevels: z
       .array(
@@ -122,6 +123,7 @@ export default function PromotionForm({
       uploadedFile: undefined,
       gameConfigType: GAME_TYPES.CLASSIC,
       betLevels: [],
+      fileName: "",
     },
   });
 
@@ -178,6 +180,7 @@ export default function PromotionForm({
       endDate: new Date(data.endDate).toISOString(),
       offeredSiteNames: data.offeredSiteNames || [],
       offeredPlayerIds: data.offeredPlayerIds || [],
+      fileName: data.fileName,
       ...(initialValues ? { _id: initialValues._id } : {}),
     };
 

@@ -198,6 +198,7 @@ export default function Step2({
                   .map((row) => row.PlayerID?.toString())
                   .filter(Boolean);
                 setUploadedFile(file);
+                setValue("fileName", file.name);
                 setValue("uploadedFile", file);
                 setValue("offeredPlayerIds", playerIds);
               }}
