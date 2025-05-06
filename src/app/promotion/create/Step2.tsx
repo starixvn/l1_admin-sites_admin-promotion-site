@@ -240,6 +240,7 @@ export default function Step2({
           setValue("currencyGroups", currencyGroups);
           setValue("betLevels", betLevels);
         }}
+        games={games}
         initialValues={betLevels}
       />
     </div>

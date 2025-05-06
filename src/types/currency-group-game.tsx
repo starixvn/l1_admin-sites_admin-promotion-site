@@ -1,9 +1,10 @@
-
 export interface CurrencyGroupGame {
-    groupId: string;
-    gameId: number;
-    gameName: string;
-    enabled: boolean;
-    coinValues: number[];
-    betLevels: number[];
-  }
+  GroupId: string;
+  GameId: number;
+  GameName: string;
+  Enabled: boolean;
+  CoinValues: number[];
+  BetLevels: number[];
+  DefaultBetLevel: number;
+  DefaultCoinValue: number;
+}

@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     const token = await getAccessToken();
 
     const response = await axios.get(
-      `${configs.apiBaseUrl}/general_game_settings/getByGroup`,
+      `${configs.apiBaseUrl}/currencyGroupGame/getByGroup`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

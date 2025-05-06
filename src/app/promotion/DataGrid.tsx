@@ -331,6 +331,7 @@ export default function DataGrid({
           partnerId={selectedPromotion.operatorId}
           gameType={selectedPromotion.gameConfigType}
           onSave={handleSaveBetSettings}
+          games={games}
           readonly={true}
           initialValues={selectedPromotion.betLevels}
         />

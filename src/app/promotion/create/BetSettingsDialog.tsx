@@ -19,6 +19,9 @@ import {
 } from "@/components/ui/tooltip";
 import { GAME_TYPES } from "@/constants/gameTypes";
 import { CurrencyGroup } from "@/types/currency-group";
+import { useCurrencyGroupGames } from "@/hooks/useCurrencyGroupGames";
+import { Game } from "@/types/game";
+import { CurrencyGroupGame } from "@/types/currency-group-game";
 
 type Props = {
   open: boolean;
@@ -29,6 +32,7 @@ type Props = {
     currencyGroups: string[];
     betLevels: { currencyGroup: string; betLevel: number }[];
   }) => void;
+  games?: Game[];
   readonly?: boolean;
   initialValues?: {
     currencyGroup: string;
@@ -49,36 +53,56 @@ export default function BetSettingsDialog({
   partnerId,
   gameType,
   onSave,
+  games,
   readonly = false,
   initialValues,
 }: Props) {
   const { data: currencyGroups = [] } = useCurrencyGroups(partnerId);
   const [rows, setRows] = useState<RowState[]>([]);
+  const { mutateAsync: getCurrencyGroupGames } = useCurrencyGroupGames();
+  const gameIds = games?.map((g) => g.GameId);
 
   useEffect(() => {
-    if (currencyGroups.length > 0) {
-      const initialBetMap = new Map<string, number>();
-      if (initialValues) {
-        for (const b of initialValues) {
-          initialBetMap.set(b.currencyGroup, b.betLevel);
+    const fetchData = async () => {
+      if (currencyGroups.length > 0) {
+        const initialBetMap = new Map<string, number>();
+        if (initialValues) {
+          for (const b of initialValues) {
+            initialBetMap.set(b.currencyGroup, b.betLevel);
+          }
         }
-      }
-      setRows(
-        currencyGroups.map((cg: CurrencyGroup) => {
-          const existingBetLevel = initialBetMap.get(cg.Id);
-          return {
-            id: cg.Id,
-            name: cg.Name,
-            enabled: existingBetLevel !== undefined,
-            betLevel: existingBetLevel ?? getSuggestedBetLevel(gameType),
-          };
-        })
-      );
-    }
-  }, [currencyGroups, gameType, initialValues]);
+        const mapped = await Promise.all(
+          currencyGroups.map(async (cg: CurrencyGroup) => {
+            const existingBetLevel = initialBetMap.get(cg.Id);
+            const groupGames = await getCurrencyGroupGames(cg.Id);
+            const betLevel =
+              existingBetLevel ?? selectSuggestedBetLevel(gameType, groupGames);
 
-  const getSuggestedBetLevel = (type: number) => {
-    return type === GAME_TYPES.CASCADING ? 1 : 0.1;
+            return {
+              id: cg.Id,
+              name: cg.Name,
+              enabled: existingBetLevel !== undefined,
+              betLevel,
+            };
+          })
+        );
+
+        setRows(mapped);
+      }
+    };
+    fetchData();
+  }, [open]);
+
+  const selectSuggestedBetLevel = (
+    type: number,
+    groupGames: CurrencyGroupGame[]
+  ): number => {
+    const filtered = groupGames.filter((gg) => gameIds?.includes(gg.GameId));
+    if (filtered.length === 0) return type === GAME_TYPES.CASCADING ? 1 : 0.1;
+    const selected = filtered[Math.floor(Math.random() * filtered.length)];
+    return type === GAME_TYPES.CASCADING
+      ? selected.DefaultCoinValue ?? 1
+      : selected.DefaultBetLevel ?? 0.1;
   };
 
   const getTotalBet = (betLevel: number) => {
@@ -87,13 +111,18 @@ export default function BetSettingsDialog({
       : betLevel * 25;
   };
 
-  const handleToggle = (index: number, enabled: boolean) => {
+  const handleToggle = async (index: number, enabled: boolean) => {
     if (readonly) return;
+    let suggested = rows[index].betLevel;
+    if (enabled && !suggested) {
+      const groupGames = await getCurrencyGroupGames(rows[index].id);
+      suggested = selectSuggestedBetLevel(gameType, groupGames);
+    }
     setRows((prev) => {
       const updated = [...prev];
       updated[index].enabled = enabled;
       if (enabled && !updated[index].betLevel) {
-        updated[index].betLevel = getSuggestedBetLevel(gameType);
+        updated[index].betLevel = suggested;
       }
       return updated;
     });
