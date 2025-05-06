@@ -123,7 +123,7 @@ export default function PromotionForm({
       uploadedFile: undefined,
       gameConfigType: GAME_TYPES.CLASSIC,
       betLevels: [],
-      fileName: "",
+      fileName: undefined,
     },
   });
 
