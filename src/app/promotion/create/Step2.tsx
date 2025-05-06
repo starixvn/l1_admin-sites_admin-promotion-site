@@ -17,6 +17,8 @@ import PlayerFileUploader from "./PlayerFileUploader";
 import { useState } from "react";
 
 interface Step2Props {
+  mode: string;
+  status: string;
   setValue: UseFormSetValue<PromotionFormValues>;
   control: Control<PromotionFormValues>;
   errors: FieldErrors<PromotionFormValues>;
@@ -31,6 +33,8 @@ interface Step2Props {
 }
 
 export default function Step2({
+  mode,
+  status,
   setValue,
   control,
   errors,
@@ -43,6 +47,8 @@ export default function Step2({
   error,
   toggleGame,
 }: Step2Props) {
+  const isEdit = mode === "edit";
+  const isRunning = isEdit && status === "running";
   const gameIds = useWatch({ control, name: "gameIds" });
   const operatorId = useWatch({ control, name: "operatorId" });
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
@@ -92,6 +98,7 @@ export default function Step2({
               );
               setValue("offeredSiteNames", array);
             }}
+            disabled={isRunning}
           />
           <p className="text-xs text-muted-foreground mt-1">
             ** Enter the site names to offer the promotion (Separate multiple
@@ -115,6 +122,7 @@ export default function Step2({
               const allGameIds = games.map((g) => g.GameId);
               setValue("gameIds", checked ? allGameIds : []);
             }}
+            disabled={isRunning}
           />
           <label
             htmlFor="game-check-all"
@@ -145,6 +153,7 @@ export default function Step2({
                     id={`game-${game.GameId}`}
                     checked={isChecked}
                     onCheckedChange={() => toggleGame(game.GameId)}
+                    disabled={isRunning}
                   />
                   <span className="text-sm">{game.DisplayName}</span>
                 </div>
@@ -166,12 +175,14 @@ export default function Step2({
             setValue("allPlayers", val === "true");
             setValue("offeredPlayerIds", []);
           }}
+          disabled={isRunning}
         >
           <div className="flex gap-4 items-center">
             <RadioGroupItem
               value="true"
               id="all"
               className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
+              disabled={isRunning}
             />
             <label htmlFor="all" className="text-sm">
               All Players
@@ -182,6 +193,7 @@ export default function Step2({
               value="false"
               id="file"
               className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
+              disabled={isRunning}
             />
             <label htmlFor="file" className="text-sm">
               Players from File
@@ -221,6 +233,7 @@ export default function Step2({
         onClose={() => setOpenBetSettings(false)}
         partnerId={operatorId}
         gameType={gameConfigType}
+        readonly={isRunning}
         onSave={({ currencyGroups, betLevels }) => {
           setValue("currencyGroups", currencyGroups);
           setValue("betLevels", betLevels);

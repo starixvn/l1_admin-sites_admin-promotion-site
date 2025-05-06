@@ -21,7 +21,7 @@ export default function PromotionDialog({ open, onClose }: Props) {
             aria-label="Close"
           ></button>
         </div>
-        <PromotionForm onClose={() => onClose(true)} />
+        <PromotionForm mode="create" onClose={() => onClose(true)} />
       </DialogContent>
     </Dialog>
   );

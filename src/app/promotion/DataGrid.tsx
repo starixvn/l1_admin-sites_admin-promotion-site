@@ -8,6 +8,7 @@ import { useUpdatePromotion } from "@/hooks/useUpdatePromotion";
 import PromotionEditDialog from "./edit/PromotionEditDialog";
 import { Promotion } from "@/types/promotion";
 import { toast } from "react-toastify";
+import { getStatus } from "@/constants/promotionStatusMap";
 
 interface DataGridProps {
   promotions: Promotion[];
@@ -54,19 +55,7 @@ export default function DataGrid({
   onRefresh,
 }: DataGridProps) {
   const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
-
-  function getStatus(
-    promotion: Promotion
-  ): "upcoming" | "running" | "completed" {
-    const now = new Date();
-    const start = new Date(promotion.startDate);
-    const end = new Date(promotion.endDate);
-
-    if (now < start) return "upcoming";
-    if (now > end) return "completed";
-    return "running";
-  }
-
+  
   function getStatusColorByDate(promotion: Promotion) {
     const status = getStatus(promotion);
     switch (status) {

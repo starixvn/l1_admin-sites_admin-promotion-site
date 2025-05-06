@@ -28,6 +28,8 @@ import type { PromotionFormValues } from "./PromotionForm";
 import type { Operator } from "@/types/operator";
 
 interface Step1Props {
+  mode: string;
+  status: string;
   register: UseFormRegister<PromotionFormValues>;
   setValue: UseFormSetValue<PromotionFormValues>;
   control: Control<PromotionFormValues>;
@@ -38,6 +40,8 @@ interface Step1Props {
 }
 
 export default function Step1({
+  mode,
+  status,
   register,
   setValue,
   control,
@@ -46,6 +50,8 @@ export default function Step1({
   setCodeEdited,
   operators,
 }: Step1Props) {
+  const isEdit = mode === "edit";
+  const isRunning = isEdit && status === "running";
   const name = useWatch({ control, name: "name" });
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
 
@@ -84,7 +90,7 @@ export default function Step1({
             }
           }}
           onBlur={() => {
-            if (!codeEdited && name) {
+            if (!codeEdited && name && !isEdit) {
               const autoCode = name
                 .trim()
                 .toLowerCase()
@@ -120,6 +126,7 @@ export default function Step1({
 
         <Input
           {...register("code")}
+          disabled={isEdit}
           maxLength={50}
           onChange={() => setCodeEdited(true)}
           className="form-input"
@@ -136,6 +143,7 @@ export default function Step1({
             const parsed = Number(val) as GameType;
             setValue("gameConfigType", parsed);
           }}
+          disabled={isRunning}
         >
           <SelectTrigger className="select-wrapper">
             <SelectValue placeholder="Select game type" />
@@ -157,6 +165,7 @@ export default function Step1({
           type="number"
           {...register("bonusItemCount", { valueAsNumber: true })}
           className="form-input"
+          disabled={isRunning}
         />
         {errors.bonusItemCount && (
           <p className="error-message">{errors.bonusItemCount.message}</p>
@@ -169,12 +178,14 @@ export default function Step1({
           value={useWatch({ control, name: "startDate" })}
           onChange={(val) => setValue("startDate", val)}
           error={errors.startDate?.message}
+          disabled={isRunning}
         />
         <DateTimePicker
           label="End Date"
           value={useWatch({ control, name: "endDate" })}
           onChange={(val) => setValue("endDate", val)}
           error={errors.endDate?.message}
+          disabled={isRunning}
         />
       </div>
 
@@ -183,6 +194,7 @@ export default function Step1({
         <Select
           value={useWatch({ control, name: "operatorId" })}
           onValueChange={(val) => setValue("operatorId", val)}
+          disabled={isRunning}
         >
           <SelectTrigger className="select-wrapper">
             <SelectValue placeholder="Select Operator" />

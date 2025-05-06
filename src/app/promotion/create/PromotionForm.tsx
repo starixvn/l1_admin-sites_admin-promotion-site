@@ -9,6 +9,7 @@ import { GAME_TYPES } from "@/constants/gameTypes";
 import { useOperators } from "@/hooks/useOperators";
 import { useFilteredGames } from "@/hooks/useFilteredGames";
 import { Promotion } from "@/types/promotion";
+import { getStatus } from "@/constants/promotionStatusMap";
 
 const getNowInGMT7 = () => {
   const now = new Date();
@@ -79,16 +80,19 @@ type PromotionFormSubmission = Omit<Promotion, '_id' | 'createdAt' | 'updatedAt'
 };
 
 interface PromotionFormProps {
+  mode?: string;
   initialValues?: Promotion;
   onClose?: (shouldReload?: boolean) => void;
   onSubmit?: (values: Promotion) => Promise<void>;
 }
 
 export default function PromotionForm({
+  mode = "create", 
   initialValues,
   onClose,
   onSubmit,
 }: PromotionFormProps) {
+  const status = getStatus(initialValues as Promotion);
   const {
     register,
     handleSubmit,
@@ -217,6 +221,8 @@ export default function PromotionForm({
           {/* Form Steps */}
           {step === 1 ? (
             <Step1
+              mode={mode}
+              status={status}
               register={register}
               setValue={setValue}
               control={control}
@@ -227,6 +233,8 @@ export default function PromotionForm({
             />
           ) : (
             <Step2
+              mode={mode}
+              status={status}
               setValue={setValue}
               control={control}
               errors={errors}

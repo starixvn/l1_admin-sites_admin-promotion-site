@@ -14,6 +14,7 @@ import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 
 interface DateTimePickerProps {
+  disabled?: boolean;
   label?: string;
   value?: Date;
   onChange: (val: Date) => void;
@@ -27,6 +28,7 @@ const getNowInGMT7 = () => {
 };
 
 export default function DateTimePicker({
+  disabled = false,
   label,
   value,
   onChange,
@@ -104,6 +106,7 @@ export default function DateTimePicker({
             mode="single"
             selected={date}
             onSelect={handleDateChange}
+            disabled={disabled}
             className="custom-day-picker"
           />
 
@@ -112,6 +115,7 @@ export default function DateTimePicker({
               value={hour}
               onChange={(e) => handleTimeChange(e.target.value, minute)}
               className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-300 focus:border-blue-300"
+              disabled={disabled}
             >
               {hourOptions.map((h) => (
                 <option key={h} value={h}>
@@ -124,6 +128,7 @@ export default function DateTimePicker({
               value={minute}
               onChange={(e) => handleTimeChange(hour, e.target.value)}
               className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-300 focus:border-blue-300"
+              disabled={disabled}
             >
               {minuteOptions.map((m) => (
                 <option key={m} value={m}>
