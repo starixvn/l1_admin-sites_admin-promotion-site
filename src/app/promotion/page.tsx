@@ -67,7 +67,7 @@ export default function PromotionPage() {
           id: op.PartnerId,
         })
       );
-      await setOperators(operatorsList);
+      setOperators(operatorsList);
       handleFilterSubmit({
         status: "All",
         operator: operatorsList.map((op: { name: string; id: string }) => op.id),
