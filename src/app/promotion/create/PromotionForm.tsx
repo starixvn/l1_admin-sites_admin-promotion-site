@@ -69,8 +69,8 @@ const promotionSchema = z
       .optional(),
   })
   .refine((data) => data.endDate > data.startDate, {
-    message: "End date must be after start date",
-    path: ["endDate"],
+    message: "Start Date must be earlier than or equal to the End Date",
+    path: ["startDate"],
   });
 
 export type PromotionFormValues = z.infer<typeof promotionSchema>;
