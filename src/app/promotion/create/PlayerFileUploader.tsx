@@ -10,6 +10,7 @@ interface Props {
   ) => void;
   offeredPlayerIds: string[];
   setShowPlayerList: (show: boolean) => void;
+  disabled: boolean;
 }
 
 export default function PlayerFileUploader({
@@ -19,6 +20,7 @@ export default function PlayerFileUploader({
   uploadedFile,
   offeredPlayerIds,
   setShowPlayerList,
+  disabled
 }: Props) {
   const handleFileValidation = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -82,6 +84,7 @@ export default function PlayerFileUploader({
         id="uploadedFile"
         type="file"
         accept=".csv"
+        disabled={disabled}
         onChange={handleFileValidation}
         className="hidden"
       />

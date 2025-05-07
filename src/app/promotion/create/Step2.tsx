@@ -208,6 +208,7 @@ export default function Step2({
           <>
             <PlayerFileUploader
               operatorId={operatorId}
+              disabled={isRunning}
               setShowPlayerList={setShowPlayerList}
               fileName={fileName || ""}
               offeredPlayerIds={offeredPlayerIds || []}
