@@ -152,17 +152,19 @@ export default function Filter({
       <div className="flex items-end gap-4">
         {/* Status Filter */}
         <div className="flex flex-col min-w-[140px]">
-          <label className="text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="status-select" className="text-sm font-medium text-gray-700 mb-2">
             Status
           </label>
           <div className="relative">
             <select
+              id="status-select"
               name="status"
               value={filters.status}
               onChange={handleInputChange}
               className="w-full h-[38px] pl-3 pr-8 border border-gray-300 rounded-lg bg-white
               appearance-none focus:outline-none focus:border-black
               text-gray-700 cursor-pointer"
+              aria-label="Status"
             >
               {PROMOTION_STATUS_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -183,15 +185,20 @@ export default function Filter({
 
         {/* Operator Filter */}
         <div className="flex flex-col flex-1">
-          <label className="text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="operator-select" className="text-sm font-medium text-gray-700 mb-2">
             Operator
           </label>
           <div className="relative" ref={dropdownRef}>
-            <div
+            <button
+              id="operator-select"
+              type="button"
               onClick={() => setShowOperatorDropdown(true)}
               className="w-full h-[38px] px-3 border border-gray-300 rounded-lg bg-white
               flex items-center justify-between cursor-pointer
               focus:outline-none focus:border-black"
+              aria-label="Operator"
+              aria-expanded={showOperatorDropdown}
+              aria-haspopup="listbox"
             >
               <span className="text-gray-700">
                 {getSelectedOperatorDisplay() || "All"}
@@ -202,11 +209,13 @@ export default function Filter({
                   fill="#6B7280"
                 />
               </svg>
-            </div>
+            </button>
+            
             {showOperatorDropdown && (
               <div
+                role="listbox"
                 className="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 
-              rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto"
+                rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto"
               >
                 <div className="py-1">
                   <div className="px-4 py-2">
@@ -216,23 +225,25 @@ export default function Filter({
                       onChange={(e) => setOperatorSearch(e.target.value)}
                       placeholder="Search operators..."
                       className="w-full px-2 py-1 border rounded"
+                      aria-label="Search operators"
                     />
                   </div>
 
-                  <label className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100">
+                  <div role="option" className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100">
                     <input
                       type="checkbox"
-                      checked={
-                        filters.operator.length === operatorOptions.length
-                      }
+                      checked={filters.operator.length === operatorOptions.length}
                       onChange={() => handleOperatorSelect("All")}
                       className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out cursor-pointer"
+                      aria-label="Select all operators"
                     />
                     <span className="ml-2">All</span>
-                  </label>
+                  </div>
+                  
                   {filteredOperators.map((option) => (
-                    <label
+                    <div
                       key={option.id}
+                      role="option"
                       className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
                     >
                       <input
@@ -240,9 +251,10 @@ export default function Filter({
                         checked={filters.operator.includes(option.id)}
                         onChange={() => handleOperatorSelect(option.id)}
                         className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out cursor-pointer"
+                        aria-label={`Select ${option.name}`}
                       />
                       <span className="ml-2">{option.name}</span>
-                    </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -252,10 +264,11 @@ export default function Filter({
 
         {/* Promotion Code Input */}
         <div className="flex flex-col flex-1">
-          <label className="text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="promotion-code" className="text-sm font-medium text-gray-700 mb-2">
             Promotion Code
           </label>
           <input
+            id="promotion-code"
             type="text"
             name="promotionCode"
             value={filters.promotionCode}
@@ -264,6 +277,7 @@ export default function Filter({
             className="w-full h-[38px] px-3 border border-gray-300 rounded-lg
             focus:outline-none focus:border-black
             placeholder-gray-400"
+            aria-label="Promotion code"
           />
         </div>
 
@@ -275,6 +289,7 @@ export default function Filter({
             className="h-[38px] px-6 bg-[#FF5B6B] text-white rounded-lg font-medium
             hover:bg-[#FF4559] transition-colors border border-transparent
             focus:outline-none focus:border-black cursor-pointer"
+            aria-label="Search promotions"
           >
             Search
           </button>
@@ -284,9 +299,10 @@ export default function Filter({
             className="h-[38px] px-4 bg-emerald-500 text-white rounded-lg font-medium
             hover:bg-emerald-600 transition-colors flex items-center gap-2
             border border-transparent focus:outline-none focus:border-black cursor-pointer"
+            aria-label="Add new promotion"
           >
-            <span>+</span>
-            Add New Promotion
+            <span aria-hidden="true">+</span>
+            <span>Add New Promotion</span>
           </button>
         </div>
       </div>
