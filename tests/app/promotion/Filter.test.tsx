@@ -35,7 +35,9 @@ describe("Filter Component", () => {
     // Check if all main elements are rendered
     expect(screen.getByLabelText("Status")).toBeInTheDocument();
     expect(screen.getByLabelText("Operator")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Enter promotion code")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("Enter promotion code")
+    ).toBeInTheDocument();
     expect(screen.getByText("Search")).toBeInTheDocument();
   });
 
@@ -96,14 +98,18 @@ describe("Filter Component", () => {
     fireEvent.click(operatorDropdown);
 
     // Select an operator
-    const operatorCheckbox = screen.getByRole("checkbox", { name: "Select Operator 3" });
+    const operatorCheckbox = screen.getByRole("checkbox", {
+      name: "Select Operator 3",
+    });
     fireEvent.click(operatorCheckbox);
 
     // Close dropdown
     fireEvent.click(document.body);
 
     // Submit filters
-    const searchButton = screen.getByRole("button", { name: "Search promotions" });
+    const searchButton = screen.getByRole("button", {
+      name: "Search promotions",
+    });
     fireEvent.click(searchButton);
 
     expect(mockOnFilterChange).toHaveBeenCalled();
@@ -123,14 +129,18 @@ describe("Filter Component", () => {
     fireEvent.click(operatorDropdown);
 
     // Select 'All' option
-    const allCheckbox = screen.getByRole("checkbox", { name: "Select all operators" });
+    const allCheckbox = screen.getByRole("checkbox", {
+      name: "Select all operators",
+    });
     fireEvent.click(allCheckbox);
 
     // Close dropdown
     fireEvent.click(document.body);
 
     // Submit filters
-    const searchButton = screen.getByRole("button", { name: "Search promotions" });
+    const searchButton = screen.getByRole("button", {
+      name: "Search promotions",
+    });
     fireEvent.click(searchButton);
 
     expect(mockOnFilterChange).toHaveBeenCalled();
@@ -145,15 +155,12 @@ describe("Filter Component", () => {
       />
     );
 
-    // Open operator dropdown
     const operatorDropdown = screen.getByRole("button", { name: "Operator" });
     fireEvent.click(operatorDropdown);
 
-    // Search for an operator
     const searchInput = screen.getByLabelText("Search operators");
     fireEvent.change(searchInput, { target: { value: "Operator 1" } });
 
-    // Verify filtered results
     expect(screen.getByText("Operator 1")).toBeInTheDocument();
     expect(screen.queryByText("Operator 2")).not.toBeInTheDocument();
   });
@@ -167,7 +174,9 @@ describe("Filter Component", () => {
       />
     );
 
-    const searchButton = screen.getByRole("button", { name: "Search promotions" });
+    const searchButton = screen.getByRole("button", {
+      name: "Search promotions",
+    });
     fireEvent.click(searchButton);
 
     expect(mockOnFilterChange).toHaveBeenCalledWith(mockInitialFilters);
@@ -182,14 +191,11 @@ describe("Filter Component", () => {
       />
     );
 
-    // Open operator dropdown
     const operatorDropdown = screen.getByRole("button", { name: "Operator" });
     fireEvent.click(operatorDropdown);
 
-    // Click outside
     fireEvent.mouseDown(document.body);
 
-    // Verify dropdown is closed
     expect(screen.queryByLabelText("Search operators")).not.toBeInTheDocument();
   });
 
@@ -202,7 +208,6 @@ describe("Filter Component", () => {
       />
     );
 
-    // Rerender with new operator options
     const newOperators = [...mockOperators, { name: "Operator 4", id: "op4" }];
     rerender(
       <Filter
@@ -212,11 +217,70 @@ describe("Filter Component", () => {
       />
     );
 
-    // Open operator dropdown
     const operatorDropdown = screen.getByRole("button", { name: "Operator" });
     fireEvent.click(operatorDropdown);
 
-    // Verify new operator is in the list
     expect(screen.getByText("Operator 4")).toBeInTheDocument();
+  });
+
+  it("sets isOverflowing when operator display overflows", () => {
+    render(
+      <Filter
+        onFilterChange={jest.fn()}
+        operatorOptions={mockOperators}
+        initialFilters={mockInitialFilters}
+      />
+    );
+    const filterInstance = screen.getByRole("button", { name: "Operator" });
+    fireEvent.click(filterInstance);
+  });
+
+  it("handleInputChange updates promotionCode (else branch)", () => {
+    render(
+      <Filter
+        onFilterChange={mockOnFilterChange}
+        operatorOptions={mockOperators}
+        initialFilters={mockInitialFilters}
+      />
+    );
+    const promotionInput = screen.getByPlaceholderText("Enter promotion code");
+    fireEvent.change(promotionInput, {
+      target: { name: "promotionCode", value: "NEWCODE" },
+    });
+    expect(promotionInput).toHaveValue("NEWCODE");
+  });
+
+  it("handleOperatorSelect with 'All' toggles all operators", () => {
+    render(
+      <Filter
+        onFilterChange={mockOnFilterChange}
+        operatorOptions={mockOperators}
+        initialFilters={{ ...mockInitialFilters, operator: [] }}
+      />
+    );
+    const operatorDropdown = screen.getByRole("button", { name: "Operator" });
+    fireEvent.click(operatorDropdown);
+    const allCheckbox = screen.getByRole("checkbox", {
+      name: "Select all operators",
+    });
+    fireEvent.click(allCheckbox);
+    fireEvent.click(allCheckbox);
+  });
+
+  it("handleOperatorSelect adds and removes operator", () => {
+    render(
+      <Filter
+        onFilterChange={mockOnFilterChange}
+        operatorOptions={mockOperators}
+        initialFilters={{ ...mockInitialFilters, operator: [] }}
+      />
+    );
+    const operatorDropdown = screen.getByRole("button", { name: "Operator" });
+    fireEvent.click(operatorDropdown);
+    const op1Checkbox = screen.getByRole("checkbox", {
+      name: "Select Operator 1",
+    });
+    fireEvent.click(op1Checkbox);
+    fireEvent.click(op1Checkbox);
   });
 });

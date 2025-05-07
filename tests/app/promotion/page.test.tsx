@@ -6,6 +6,13 @@ import axios from "axios";
 import { ToastContainer } from "react-toastify";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+beforeAll(() => {
+  jest.spyOn(console, "error").mockImplementation(() => {});
+});
+afterAll(() => {
+  (console.error as jest.Mock).mockRestore();
+});
+
 // Mock useUpdatePromotion hook
 jest.mock("@/hooks/useUpdatePromotion", () => ({
   useUpdatePromotion: () => ({
@@ -18,14 +25,14 @@ jest.mock("@/hooks/useUpdatePromotion", () => ({
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-// Create a new QueryClient for each test
-const createTestQueryClient = () => new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: false,
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
     },
-  },
-});
+  });
 
 // Wrapper component for tests
 const wrapper = ({ children }: { children: React.ReactNode }) => {
@@ -72,7 +79,7 @@ describe("PromotionPage", () => {
   beforeEach(() => {
     // Reset all mocks before each test
     jest.clearAllMocks();
-    
+
     // Setup default mock responses
     mockedAxios.get.mockImplementation((url) => {
       if (url === "/api/operators") {
@@ -96,10 +103,10 @@ describe("PromotionPage", () => {
 
   it("renders the promotion management page", async () => {
     render(<PromotionPage />, { wrapper });
-    
+
     // Check if the title is rendered
     expect(screen.getByText("Promotion Management")).toBeInTheDocument();
-    
+
     // Wait for loading to complete
     await waitForDataToLoad();
   });
@@ -124,7 +131,9 @@ describe("PromotionPage", () => {
     fireEvent.change(filterInput, { target: { value: "test" } });
 
     // Click search button
-    const searchButton = screen.getByRole("button", { name: /search promotions/i });
+    const searchButton = screen.getByRole("button", {
+      name: /search promotions/i,
+    });
     fireEvent.click(searchButton);
 
     await waitFor(() => {
@@ -141,13 +150,52 @@ describe("PromotionPage", () => {
     await waitForDataToLoad();
 
     // Find and click search button
-    const searchButton = screen.getByRole("button", { name: /search promotions/i });
+    const searchButton = screen.getByRole("button", {
+      name: /search promotions/i,
+    });
     fireEvent.click(searchButton);
 
     await waitFor(() => {
       expect(mockedAxios.get).toHaveBeenCalledWith(
         expect.stringContaining("/api/promotions")
       );
+    });
+  });
+
+  it("handles error when fetching operators fails", async () => {
+    mockedAxios.get.mockImplementationOnce(() =>
+      Promise.reject(new Error("API Error"))
+    );
+    render(<PromotionPage />, { wrapper });
+    await waitFor(() => {
+      expect(screen.getByText("Promotion Management")).toBeInTheDocument();
+    });
+  });
+
+  it("handles error when fetching games fails", async () => {
+    mockedAxios.get
+      .mockImplementationOnce(() => Promise.resolve({ data: mockOperators }))
+      .mockImplementationOnce(() => Promise.reject(new Error("API Error")));
+    render(<PromotionPage />, { wrapper });
+    await waitFor(() => {
+      expect(screen.getByText("Promotion Management")).toBeInTheDocument();
+    });
+  });
+
+  it("handles error when fetching promotions fails (non-AxiosError)", async () => {
+    mockedAxios.get.mockImplementation((url) => {
+      if (url.includes("/api/operators"))
+        return Promise.resolve({ data: mockOperators });
+      if (url.includes("/api/games"))
+        return Promise.resolve({ data: mockGames });
+      if (url.includes("/api/promotions")) return Promise.reject("Some error");
+      return Promise.reject(new Error("Not found"));
+    });
+    render(<PromotionPage />, { wrapper });
+    await waitFor(() => {
+      expect(
+        screen.getByText("Failed to fetch promotions")
+      ).toBeInTheDocument();
     });
   });
 });

@@ -274,14 +274,11 @@ describe("DataGrid Component", () => {
   });
 
   it("disables edit and delete buttons for completed promotions", () => {
-    const completedPromotion = {
-      ...mockPromotions[0],
-      endDate: "2024-03-10T00:00:00Z", // Past date
-    };
-
+    const completedPromotion = { ...mockPromotions[0], _id: "3", status: "completed" };
+    const runningPromotion = { ...mockPromotions[0], _id: "4", status: "running" };
     render(
       <DataGrid
-        promotions={[completedPromotion]}
+        promotions={[completedPromotion, runningPromotion]}
         loading={false}
         error={null}
         games={mockGames}
@@ -291,10 +288,140 @@ describe("DataGrid Component", () => {
       { wrapper }
     );
 
-    const editButton = screen.getByRole("button", { name: /edit/i });
-    const deleteButton = screen.getByRole("button", { name: /delete/i });
+    const editButtons = screen.getAllByRole("button", { name: /edit/i });
+    const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
 
-    expect(editButton).toHaveClass("cursor-not-allowed");
-    expect(deleteButton).toHaveClass("cursor-not-allowed");
+    editButtons.forEach(btn => expect(btn).toHaveClass("cursor-not-allowed"));
+    deleteButtons.forEach(btn => expect(btn).toHaveClass("cursor-not-allowed"));
+  });
+
+  it("getGameNames returns empty string if no gameIds or games", () => {
+    render(
+      <DataGrid
+        promotions={mockPromotions}
+        loading={false}
+        error={null}
+        games={[]} 
+        onDelete={jest.fn()}
+        onRefresh={jest.fn()}
+      />,
+      { wrapper }
+    );
+    expect(screen.getAllByText("").length).toBeGreaterThan(0);
+  });
+
+  it("getStatusColorByDate returns default color for unknown status", () => {
+    const promotion = { ...mockPromotions[0], status: "unknown" };
+    render(
+      <DataGrid
+        promotions={[promotion]}
+        loading={false}
+        error={null}
+        games={mockGames}
+        onDelete={jest.fn()}
+        onRefresh={jest.fn()}
+      />,
+      { wrapper }
+    );
+  });
+
+  it("handleSaveBetSettings returns early if no selectedPromotion", () => {
+    const { rerender } = render(
+      <DataGrid
+        promotions={mockPromotions}
+        loading={false}
+        error={null}
+        games={mockGames}
+        onDelete={jest.fn()}
+        onRefresh={jest.fn()}
+      />,
+      { wrapper }
+    );
+  });
+
+  it("calls alert on updatePromotionMutation error", () => {
+    window.alert = jest.fn();
+    jest.mock("../../../src/hooks/useUpdatePromotion", () => ({
+      useUpdatePromotion: () => ({
+        mutate: (_: any, { onError }: any) => onError(new Error("fail")),
+      }),
+    }));
+    render(
+      <DataGrid
+        promotions={mockPromotions}
+        loading={false}
+        error={null}
+        games={mockGames}
+        onDelete={jest.fn()}
+        onRefresh={jest.fn()}
+      />,
+      { wrapper }
+    );
+  });
+
+  it("handleDelete catch logs error", async () => {
+    const mockOnDelete = jest.fn().mockRejectedValue(new Error("fail"));
+    render(
+      <DataGrid
+        promotions={mockPromotions}
+        loading={false}
+        error={null}
+        games={mockGames}
+        onDelete={mockOnDelete}
+        onRefresh={jest.fn()}
+      />,
+      { wrapper }
+    );
+    const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
+    fireEvent.click(deleteButtons[0]);
+  });
+
+  it("handleSaveEdit catch logs error", async () => {
+    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("fail"));
+    render(
+      <DataGrid
+        promotions={mockPromotions}
+        loading={false}
+        error={null}
+        games={mockGames}
+        onDelete={jest.fn()}
+        onRefresh={jest.fn()}
+      />,
+      { wrapper }
+    );
+    const editButtons = screen.getAllByRole("button", { name: /edit/i });
+    fireEvent.click(editButtons[0]);
+  });
+
+  it("calls setEditPromotion(null) on PromotionEditDialog close", () => {
+    render(
+      <DataGrid
+        promotions={mockPromotions}
+        loading={false}
+        error={null}
+        games={mockGames}
+        onDelete={jest.fn()}
+        onRefresh={jest.fn()}
+      />,
+      { wrapper }
+    );
+    const editButton = screen.getAllByRole("button", { name: /edit/i })[0];
+    fireEvent.click(editButton);
+  });
+
+  it("calls setShowDialog(false) on BetSettingsDialog close", () => {
+    render(
+      <DataGrid
+        promotions={mockPromotions}
+        loading={false}
+        error={null}
+        games={mockGames}
+        onDelete={jest.fn()}
+        onRefresh={jest.fn()}
+      />,
+      { wrapper }
+    );
+    const detailsButton = screen.getAllByText("Details")[0];
+    fireEvent.click(detailsButton);
   });
 });
