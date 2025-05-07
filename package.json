@@ -10,10 +10,7 @@
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test-coverage": "jest --coverage",
-    "prepare": "husky install",
-    "format": "prettier --write .",
-    "check-types": "tsc --noEmit"
+    "test-coverage": "jest --coverage"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",
