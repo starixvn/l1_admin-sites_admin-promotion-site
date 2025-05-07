@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { generateHourOptions, generateMinuteOptions, getNowInGMT7, mergeDateAndTime } from "@/lib/date-time.utils";
 
 interface DateTimePickerProps {
   disabled?: boolean;
@@ -20,12 +21,6 @@ interface DateTimePickerProps {
   onChange: (val: Date) => void;
   error?: string;
 }
-
-const getNowInGMT7 = () => {
-  const now = new Date();
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  return new Date(utc + 7 * 60 * 60 * 1000);
-};
 
 export default function DateTimePicker({
   disabled = false,
@@ -53,9 +48,7 @@ export default function DateTimePicker({
     if (!selected) {
       return;
     }
-    const newDate = new Date(selected);
-    newDate.setHours(Number(hour));
-    newDate.setMinutes(Number(minute));
+    const newDate = mergeDateAndTime(selected, hour, minute);
     setDate(newDate);
     onChange(newDate);
   };
@@ -63,19 +56,13 @@ export default function DateTimePicker({
   const handleTimeChange = (h: string, m: string) => {
     setHour(h);
     setMinute(m);
-    const newDate = new Date(date);
-    newDate.setHours(Number(h));
-    newDate.setMinutes(Number(m));
+    const newDate = mergeDateAndTime(date, h, m);
     setDate(newDate);
     onChange(newDate);
   };
 
-  const hourOptions = Array.from({ length: 24 }, (_, i) =>
-    i.toString().padStart(2, "0")
-  );
-  const minuteOptions = Array.from({ length: 60 }, (_, i) =>
-    i.toString().padStart(2, "0")
-  );
+  const hourOptions = generateHourOptions();
+  const minuteOptions = generateMinuteOptions();
 
   return (
     <div className="space-y-1">

@@ -10,12 +10,7 @@ import { useOperators } from "@/hooks/useOperators";
 import { useFilteredGames } from "@/hooks/useFilteredGames";
 import { Promotion } from "@/types/promotion";
 import { getStatus } from "@/constants/promotionStatusMap";
-
-const getNowInGMT7 = () => {
-  const now = new Date();
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  return new Date(utc + 7 * 60 * 60 * 1000);
-};
+import { getNowInGMT7 } from "@/lib/date-time.utils";
 
 const promotionSchema = z
   .object({
