@@ -13,6 +13,13 @@ jest.mock("react-toastify", () => ({
   },
 }));
 
+beforeAll(() => {
+  jest.spyOn(console, "error").mockImplementation(() => {});
+});
+afterAll(() => {
+  (console.error as jest.Mock).mockRestore();
+});
+
 // Mock fetch
 global.fetch = jest.fn();
 
@@ -455,7 +462,6 @@ describe("DataGrid Component", () => {
       />, { wrapper }
     );
     const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
-    console.log(deleteButtons);
     fireEvent.click(deleteButtons[2]);
     expect(mockOnDelete).toHaveBeenCalledWith(mockPromotions[2]._id);
   });

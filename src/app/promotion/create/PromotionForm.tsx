@@ -147,10 +147,6 @@ export default function PromotionForm({
   } = useFilteredGames(currencyGroups, gameConfigType);
 
   useEffect(() => {
-    console.log("Validation errors:", errors);
-  }, [errors]);
-
-  useEffect(() => {
     if (initialValues && initialValues.offeredSiteNames) {
       setSiteInput(initialValues.offeredSiteNames.join(";"));
     }
