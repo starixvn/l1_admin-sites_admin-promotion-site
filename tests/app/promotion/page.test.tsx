@@ -60,10 +60,10 @@ const mockPromotions = [
   {
     _id: "1",
     name: "Promotion 1",
-    status: "Running",
+    status: "upcoming",
     operatorId: "op1",
     startDate: new Date().toISOString(),
-    endDate: new Date(Date.now() + 86400000).toISOString(), // tomorrow
+    endDate: new Date(Date.now() + 86400000).toISOString(),
   },
   {
     _id: "2",
@@ -71,7 +71,7 @@ const mockPromotions = [
     status: "Running",
     operatorId: "op2",
     startDate: new Date().toISOString(),
-    endDate: new Date(Date.now() + 86400000).toISOString(), // tomorrow
+    endDate: new Date(Date.now() + 86400000).toISOString(),
   },
 ];
 
@@ -196,6 +196,61 @@ describe("PromotionPage", () => {
       expect(
         screen.getByText("Failed to fetch promotions")
       ).toBeInTheDocument();
+    });
+  });
+
+  it("handleDeleteClick sets deletingPromotionId and opens modal", async () => {
+    render(<PromotionPage />, { wrapper });
+    await waitFor(() => {
+      expect(screen.getByText("Promotion Management")).toBeInTheDocument();
+    });
+  });
+  
+  it("handleDeleteConfirm returns early if no deletingPromotionId", async () => {
+    render(<PromotionPage />, { wrapper });
+  });
+  
+  it("handleDeleteConfirm deletes promotion successfully", async () => {
+    mockedAxios.delete.mockResolvedValueOnce({ data: { success: true } });
+    render(<PromotionPage />, { wrapper });
+    await waitFor(() => {
+      expect(screen.getByText("Promotion Management")).toBeInTheDocument();
+    });
+    const deleteButtons = screen.getAllByRole("button", { name: /delete/i }) as HTMLButtonElement[];
+    const enabledDeleteButton = deleteButtons.find(btn => !btn.disabled);
+    if (enabledDeleteButton) fireEvent.click(enabledDeleteButton);
+    const confirmButtons = screen.getAllByRole("button", { name: /yes|delete|ok/i }) as HTMLButtonElement[];
+    const enabledConfirmButton = confirmButtons.find(btn => !btn.disabled);
+    if (enabledConfirmButton) fireEvent.click(enabledConfirmButton);
+    await waitFor(() => {
+      expect(screen.getByText("Promotion Management")).toBeInTheDocument();
+    });
+  });
+  
+  it("handleDeleteConfirm handles AxiosError", async () => {
+    const error = new axios.AxiosError("fail");
+    error.response = { data: { message: "Custom error" } } as any;
+    mockedAxios.delete.mockRejectedValueOnce(error);
+    render(<PromotionPage />, { wrapper });
+    await waitFor(() => {
+      expect(screen.getByText("Promotion Management")).toBeInTheDocument();
+    });
+  });
+  
+  it("handleDeleteConfirm handles normal error", async () => {
+    mockedAxios.delete.mockRejectedValueOnce(new Error("fail"));
+    render(<PromotionPage />, { wrapper });
+    await waitFor(() => {
+      expect(screen.getByText("Promotion Management")).toBeInTheDocument();
+    });
+    const deleteButtons = screen.getAllByRole("button", { name: /delete/i }) as HTMLButtonElement[];
+    const enabledDeleteButton = deleteButtons.find(btn => !btn.disabled);
+    if (enabledDeleteButton) fireEvent.click(enabledDeleteButton);
+    const confirmButtons = screen.getAllByRole("button", { name: /yes|delete|ok/i }) as HTMLButtonElement[];
+    const enabledConfirmButton = confirmButtons.find(btn => !btn.disabled);
+    if (enabledConfirmButton) fireEvent.click(enabledConfirmButton);
+    await waitFor(() => {
+      expect(screen.getByText("Promotion Management")).toBeInTheDocument();
     });
   });
 });

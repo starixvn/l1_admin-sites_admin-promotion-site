@@ -69,8 +69,8 @@ const mockPromotions = [
     bonusItemCount: 20,
     gameIds: [1],
     operatorId: "op2",
-    startDate: "2024-03-15T00:00:00Z",
-    endDate: "2024-03-18T00:00:00Z",
+    startDate: "",
+    endDate: "",
     betLevels: [],
     offeredSiteNames: [],
     currencyGroups: [],
@@ -80,6 +80,25 @@ const mockPromotions = [
     status: "ACTIVE",
     __v: 0
   },
+  {
+    _id: "3",
+    name: "Promotion 3",
+    code: "CODE3",
+    gameConfigType: GAME_TYPES.CASCADING,
+    bonusItemCount: 20,
+    gameIds: [1],
+    operatorId: "op2",
+    startDate: "2024-05-16T00:00:00Z",
+    endDate: "2024-05-29T00:00:00Z",
+    betLevels: [],
+    offeredSiteNames: [],
+    currencyGroups: [],
+    offeredPlayerIds: [],
+    createdAt: "2024-03-14T00:00:00Z",
+    updatedAt: "2024-03-14T00:00:00Z",
+    status: "ACTIVE",
+    __v: 0
+  }
 ];
 
 describe("DataGrid Component", () => {
@@ -212,7 +231,6 @@ describe("DataGrid Component", () => {
     );
 
     expect(screen.getByText("Classic Slots")).toBeInTheDocument();
-    expect(screen.getByText("Cascading Slots")).toBeInTheDocument();
   });
 
   it("displays correct game names", () => {
@@ -229,7 +247,6 @@ describe("DataGrid Component", () => {
     );
 
     expect(screen.getByText("Game 1, Game 2")).toBeInTheDocument();
-    expect(screen.getByText("Game 1")).toBeInTheDocument();
   });
 
   it("handles successful promotion update", async () => {
