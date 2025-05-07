@@ -88,8 +88,8 @@ const mockPromotions = [
     bonusItemCount: 20,
     gameIds: [1],
     operatorId: "op2",
-    startDate: "2024-05-16T00:00:00Z",
-    endDate: "2024-05-29T00:00:00Z",
+    startDate: "2025-05-16T00:00:00Z",
+    endDate: "2025-05-29T00:00:00Z",
     betLevels: [],
     offeredSiteNames: [],
     currencyGroups: [],
@@ -390,7 +390,7 @@ describe("DataGrid Component", () => {
       { wrapper }
     );
     const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
-    fireEvent.click(deleteButtons[0]);
+    fireEvent.click(deleteButtons[2]);
   });
 
   it("handleSaveEdit catch logs error", async () => {
@@ -407,7 +407,7 @@ describe("DataGrid Component", () => {
       { wrapper }
     );
     const editButtons = screen.getAllByRole("button", { name: /edit/i });
-    fireEvent.click(editButtons[0]);
+    fireEvent.click(editButtons[2]);
   });
 
   it("calls setEditPromotion(null) on PromotionEditDialog close", () => {
@@ -440,5 +440,23 @@ describe("DataGrid Component", () => {
     );
     const detailsButton = screen.getAllByText("Details")[0];
     fireEvent.click(detailsButton);
+  });
+
+  it("calls onDelete with correct id when delete button is clicked", () => {
+    const mockOnDelete = jest.fn();
+    render(
+      <DataGrid
+        promotions={mockPromotions}
+        loading={false}
+        error={null}
+        games={mockGames}
+        onDelete={mockOnDelete}
+        onRefresh={mockOnRefresh}
+      />, { wrapper }
+    );
+    const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
+    console.log(deleteButtons);
+    fireEvent.click(deleteButtons[2]);
+    expect(mockOnDelete).toHaveBeenCalledWith(mockPromotions[2]._id);
   });
 });
