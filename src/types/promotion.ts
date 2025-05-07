@@ -23,7 +23,6 @@ export interface Promotion {
   __v: number;
   status?: string;
   announcement?: string;
-  fileName?: string;
 }
 
 export type CreatePromotionResponse = {
@@ -42,7 +41,6 @@ export type CreatePromotionResponse = {
     currencyGroup: string;
     betLevel: number;
   }[];
-  fileName?: string;
 };
 
 export type PromotionPayload = {
@@ -58,5 +56,4 @@ export type PromotionPayload = {
   gameConfigType: number;
   gameIds: number[];
   betLevels: { currencyGroup: string; betLevel: number }[];
-  fileName?: string;
 };

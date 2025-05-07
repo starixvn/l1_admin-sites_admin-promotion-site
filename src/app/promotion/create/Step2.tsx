@@ -55,7 +55,6 @@ export default function Step2({
   const allPlayers = useWatch({ control, name: "allPlayers" });
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const betLevels = useWatch({ control, name: "betLevels" });
-  const fileName = useWatch({ control, name: "fileName" });
   const offeredPlayerIds = useWatch({ control, name: "offeredPlayerIds" }) ?? [];
   const [showPlayerList, setShowPlayerList] = useState(false);
 
@@ -210,7 +209,6 @@ export default function Step2({
               operatorId={operatorId}
               disabled={isRunning}
               setShowPlayerList={setShowPlayerList}
-              fileName={fileName || ""}
               offeredPlayerIds={offeredPlayerIds || []}
               uploadedFile={uploadedFile}
               onValidFile={(file, data) => {
@@ -218,7 +216,6 @@ export default function Step2({
                   .map((row) => row.PlayerID?.toString())
                   .filter(Boolean);
                 setUploadedFile(file);
-                setValue("fileName", file.name);
                 setValue("uploadedFile", file);
                 setValue("offeredPlayerIds", playerIds);
               }}
@@ -242,7 +239,7 @@ export default function Step2({
                   onClick={e => e.stopPropagation()}
                 >
                   <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-gray-800">Player List: {fileName?.replace(/\.csv$/i, "")}</h2>
+                    <h2 className="text-xl font-bold text-gray-800">Player List</h2>
                     <button
                       className="text-gray-400 hover:text-red-500 text-2xl font-bold transition"
                       onClick={() => setShowPlayerList(false)}

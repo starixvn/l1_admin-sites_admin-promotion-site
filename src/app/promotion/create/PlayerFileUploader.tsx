@@ -2,7 +2,6 @@ import Papa from "papaparse";
 
 interface Props {
   operatorId: string;
-  fileName: string;
   uploadedFile: File | null;
   onValidFile: (
     file: File,
@@ -16,7 +15,6 @@ interface Props {
 export default function PlayerFileUploader({
   operatorId,
   onValidFile,
-  fileName,
   uploadedFile,
   offeredPlayerIds,
   setShowPlayerList,
@@ -96,9 +94,6 @@ export default function PlayerFileUploader({
         >
           Review
         </button>
-      )}
-      {fileName && !uploadedFile && (
-        <label className="text-blue-700 text-sm mt-2">📎 {fileName}</label>
       )}
       {uploadedFile && (
         <a
