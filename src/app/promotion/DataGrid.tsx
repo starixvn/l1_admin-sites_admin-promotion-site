@@ -20,7 +20,9 @@ interface DataGridProps {
 }
 
 function toGMTString(dateStr: string, gmtOffset: number) {
-  if (!dateStr) return "";
+  if (!dateStr) {
+    return "";
+  }
   const date = new Date(dateStr);
   const gmtDate = new Date(date.getTime() + gmtOffset * 60 * 60 * 1000);
   return gmtDate
@@ -55,7 +57,7 @@ export default function DataGrid({
   onRefresh,
 }: DataGridProps) {
   const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
-  
+
   function getStatusColorByDate(promotion: Promotion) {
     const status = getStatus(promotion);
     switch (status) {
@@ -84,7 +86,9 @@ export default function DataGrid({
     currencyGroups: string[];
     betLevels: { currencyGroup: string; betLevel: number }[];
   }) => {
-    if (!selectedPromotion) return;
+    if (!selectedPromotion) {
+      return;
+    }
 
     const payload = {
       name: selectedPromotion.name,
@@ -142,8 +146,8 @@ export default function DataGrid({
     try {
       const { _id, ...payload } = updatedPromotion;
       await fetch(`/api/promotions/${_id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       toast.success("Promotion updated successfully", {
@@ -153,7 +157,7 @@ export default function DataGrid({
       setEditPromotion(null);
       onRefresh();
     } catch (error) {
-      console.error('Failed to update promotion:', error);
+      console.error("Failed to update promotion:", error);
     }
   };
 

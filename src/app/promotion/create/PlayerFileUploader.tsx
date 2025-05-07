@@ -22,7 +22,9 @@ export default function PlayerFileUploader({
 }: Props) {
   const handleFileValidation = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (!selectedFile) return;
+    if (!selectedFile) {
+      return;
+    }
 
     if (!selectedFile.name.endsWith(".csv")) {
       alert("Only CSV files are allowed.");

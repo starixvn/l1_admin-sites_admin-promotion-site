@@ -38,9 +38,17 @@ export async function GET(req: NextRequest) {
     const code = searchParams.get("promotionCode");
 
     const params = new URLSearchParams();
-    if (status) params.append("status", status);
-    if (operator) params.append("operatorIds", operator);
-    if (code) params.append("code", code);
+    if (status) {
+      params.append("status", status);
+    }
+
+    if (operator) {
+      params.append("operatorIds", operator);
+    }
+
+    if (code) {
+      params.append("code", code);
+    }
     console.log("Request body:", params.toString());
     const response = await axios.get(
       `${configs.apiPromotionUrl}/promotions?${params.toString()}`

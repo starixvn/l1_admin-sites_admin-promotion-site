@@ -5,10 +5,11 @@ import axios, { AxiosError } from "axios";
 import Filter from "./Filter";
 import DataGrid from "./DataGrid";
 import { Game } from "@/types/game";
-import ConfirmModal from '@/components/ConfirmModal';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import ConfirmModal from "@/components/ConfirmModal";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { Promotion } from "@/types/promotion";
+import { ERROR_MESSAGES } from "@/constants/messages";
 
 interface PromotionFilters {
   status: string;
@@ -18,16 +19,20 @@ interface PromotionFilters {
 
 export default function PromotionPage() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [operators, setOperators] = useState<{ name: string; id: string }[]>([]);
+  const [operators, setOperators] = useState<{ name: string; id: string }[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [games, setGames] = useState<Game[]>([]);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deletingPromotionId, setDeletingPromotionId] = useState<string | null>(null);
+  const [deletingPromotionId, setDeletingPromotionId] = useState<string | null>(
+    null
+  );
   const [currentFilters, setCurrentFilters] = useState<PromotionFilters>({
     status: "All",
     operator: operators.map((op) => op.id),
-    promotionCode: ""
+    promotionCode: "",
   });
 
   const handleFilterSubmit = useCallback(async (filters: PromotionFilters) => {
@@ -35,18 +40,24 @@ export default function PromotionPage() {
     try {
       setError(null);
       const queryParams = new URLSearchParams();
-      if (filters.status !== "All") queryParams.append("status", filters.status);
-      const allOperatorIds = operators.map(op => op.id);
+      if (filters.status !== "All") {
+        queryParams.append("status", filters.status);
+      }
+      const allOperatorIds = operators.map((op) => op.id);
       const isAllSelected =
         filters.operator.length === allOperatorIds.length &&
-        allOperatorIds.every(id => filters.operator.includes(id));
+        allOperatorIds.every((id) => filters.operator.includes(id));
 
       if (filters.operator && filters.operator.length > 0 && !isAllSelected) {
-          queryParams.append("operator", filters.operator.toString());
+        queryParams.append("operator", filters.operator.toString());
       }
-      if (filters.promotionCode) queryParams.append("promotionCode", filters.promotionCode);
+      if (filters.promotionCode) {
+        queryParams.append("promotionCode", filters.promotionCode);
+      }
 
-      const response = await axios.get(`/api/promotions?${queryParams.toString()}`);
+      const response = await axios.get(
+        `/api/promotions?${queryParams.toString()}`
+      );
       setPromotions(response.data);
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -70,7 +81,9 @@ export default function PromotionPage() {
       setOperators(operatorsList);
       handleFilterSubmit({
         status: "All",
-        operator: operatorsList.map((op: { name: string; id: string }) => op.id),
+        operator: operatorsList.map(
+          (op: { name: string; id: string }) => op.id
+        ),
         promotionCode: "",
       });
     } catch (error) {
@@ -93,11 +106,15 @@ export default function PromotionPage() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deletingPromotionId) return;
-    
+    if (!deletingPromotionId) {
+      return;
+    }
+
     try {
       await axios.delete(`/api/promotions/${deletingPromotionId}`);
-      setPromotions((prev) => prev.filter((p) => p._id !== deletingPromotionId));
+      setPromotions((prev) =>
+        prev.filter((p) => p._id !== deletingPromotionId)
+      );
       setIsDeleteModalOpen(false);
       toast.success("Promotion deleted successfully", {
         position: "top-right",
@@ -105,11 +122,15 @@ export default function PromotionPage() {
       });
     } catch (error) {
       if (error instanceof AxiosError) {
-        setError(error.response?.data?.message || "Failed to delete promotion");
-        toast.error(error.response?.data?.message || "Failed to delete promotion");
+        setError(
+          error.response?.data?.message || ERROR_MESSAGES.DELETE_PROMOTION_FAIL
+        );
+        toast.error(
+          error.response?.data?.message || ERROR_MESSAGES.DELETE_PROMOTION_FAIL
+        );
       } else {
-        setError("Failed to delete promotion");
-        toast.error("Failed to delete promotion");
+        setError(ERROR_MESSAGES.DELETE_PROMOTION_FAIL);
+        toast.error(ERROR_MESSAGES.DELETE_PROMOTION_FAIL);
       }
       console.error("Error deleting promotion:", error);
     }
@@ -133,8 +154,10 @@ export default function PromotionPage() {
 
   return (
     <div className="space-y-4 w-full">
-      <h1 className="text-2xl font-semibold text-gray-800 mb-6">Promotion Management</h1>
-      
+      <h1 className="text-2xl font-semibold text-gray-800 mb-6">
+        Promotion Management
+      </h1>
+
       {/* Filter section */}
       <div className="w-full bg-white rounded-xl shadow-sm">
         <Filter
@@ -166,7 +189,7 @@ export default function PromotionPage() {
         title="Delete Promotion"
         message="Are you sure you want to delete this promotion? This action cannot be undone."
       />
-      
+
       <ToastContainer />
     </div>
   );

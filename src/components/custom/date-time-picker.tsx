@@ -50,7 +50,9 @@ export default function DateTimePicker({
   }, [value]);
 
   const handleDateChange = (selected?: Date) => {
-    if (!selected) return;
+    if (!selected) {
+      return;
+    }
     const newDate = new Date(selected);
     newDate.setHours(Number(hour));
     newDate.setMinutes(Number(minute));

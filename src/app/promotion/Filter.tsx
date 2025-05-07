@@ -69,9 +69,15 @@ export default function Filter({
   }, [filters.operator]);
 
   const getSelectedOperatorDisplay = () => {
-    if (filters.operator.length === 0) return "";
-    if (filters.operator.length === operatorOptions.length) return "All";
-    if (isOverflowing) return `${filters.operator.length} selected`;
+    if (filters.operator.length === 0) {
+      return "";
+    }
+    if (filters.operator.length === operatorOptions.length) {
+      return "All";
+    }
+    if (isOverflowing) {
+      return `${filters.operator.length} selected`;
+    }
 
     return filters.operator
       .map((id) => operatorOptions.find((op) => op.id === id)?.name)
@@ -114,7 +120,7 @@ export default function Filter({
     setFilters((prev) => {
       const newOperators = [...prev.operator];
       const index = newOperators.indexOf(operatorId);
-       
+
       if (operatorId === "All") {
         return {
           ...prev,
@@ -146,7 +152,9 @@ export default function Filter({
       <div className="flex items-end gap-4">
         {/* Status Filter */}
         <div className="flex flex-col min-w-[140px]">
-          <label className="text-sm font-medium text-gray-700 mb-2">Status</label>
+          <label className="text-sm font-medium text-gray-700 mb-2">
+            Status
+          </label>
           <div className="relative">
             <select
               name="status"
@@ -164,7 +172,10 @@ export default function Filter({
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
               <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-                <path d="M1.41 0.590088L6 5.17009L10.59 0.590088L12 2.00009L6 8.00009L0 2.00009L1.41 0.590088Z" fill="#6B7280"/>
+                <path
+                  d="M1.41 0.590088L6 5.17009L10.59 0.590088L12 2.00009L6 8.00009L0 2.00009L1.41 0.590088Z"
+                  fill="#6B7280"
+                />
               </svg>
             </div>
           </div>
@@ -172,7 +183,9 @@ export default function Filter({
 
         {/* Operator Filter */}
         <div className="flex flex-col flex-1">
-          <label className="text-sm font-medium text-gray-700 mb-2">Operator</label>
+          <label className="text-sm font-medium text-gray-700 mb-2">
+            Operator
+          </label>
           <div className="relative" ref={dropdownRef}>
             <div
               onClick={() => setShowOperatorDropdown(true)}
@@ -184,12 +197,17 @@ export default function Filter({
                 {getSelectedOperatorDisplay() || "All"}
               </span>
               <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-                <path d="M1.41 0.590088L6 5.17009L10.59 0.590088L12 2.00009L6 8.00009L0 2.00009L1.41 0.590088Z" fill="#6B7280"/>
+                <path
+                  d="M1.41 0.590088L6 5.17009L10.59 0.590088L12 2.00009L6 8.00009L0 2.00009L1.41 0.590088Z"
+                  fill="#6B7280"
+                />
               </svg>
             </div>
             {showOperatorDropdown && (
-              <div className="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 
-              rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+              <div
+                className="absolute top-full left-0 w-full mt-1 bg-white border border-gray-200 
+              rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto"
+              >
                 <div className="py-1">
                   <div className="px-4 py-2">
                     <input
@@ -200,11 +218,13 @@ export default function Filter({
                       className="w-full px-2 py-1 border rounded"
                     />
                   </div>
-                  
+
                   <label className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100">
                     <input
                       type="checkbox"
-                      checked={filters.operator.length === operatorOptions.length}
+                      checked={
+                        filters.operator.length === operatorOptions.length
+                      }
                       onChange={() => handleOperatorSelect("All")}
                       className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out cursor-pointer"
                     />
@@ -232,7 +252,9 @@ export default function Filter({
 
         {/* Promotion Code Input */}
         <div className="flex flex-col flex-1">
-          <label className="text-sm font-medium text-gray-700 mb-2">Promotion Code</label>
+          <label className="text-sm font-medium text-gray-700 mb-2">
+            Promotion Code
+          </label>
           <input
             type="text"
             name="promotionCode"

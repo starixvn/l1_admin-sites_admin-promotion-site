@@ -74,8 +74,11 @@ const promotionSchema = z
 
 export type PromotionFormValues = z.infer<typeof promotionSchema>;
 
-type PromotionFormSubmission = Omit<Promotion, '_id' | 'createdAt' | 'updatedAt' | '__v' | 'betLevels'> & {
-  betLevels: { currencyGroup: string; betLevel: number; }[];
+type PromotionFormSubmission = Omit<
+  Promotion,
+  "_id" | "createdAt" | "updatedAt" | "__v" | "betLevels"
+> & {
+  betLevels: { currencyGroup: string; betLevel: number }[];
 };
 
 interface PromotionFormProps {
@@ -86,12 +89,12 @@ interface PromotionFormProps {
 }
 
 export default function PromotionForm({
-  mode = "create", 
+  mode = "create",
   initialValues,
   onClose,
   onSubmit,
 }: PromotionFormProps) {
-  const status = initialValues ? getStatus(initialValues as Promotion) : "";
+  const status = initialValues ? getStatus(initialValues) : "";
   const {
     register,
     handleSubmit,
@@ -102,31 +105,35 @@ export default function PromotionForm({
   } = useForm<PromotionFormValues>({
     resolver: zodResolver(promotionSchema),
     mode: "onSubmit",
-    defaultValues: initialValues ? {
-      ...initialValues,
-      startDate: new Date(initialValues.startDate),
-      endDate: new Date(initialValues.endDate),
-      gameConfigType: initialValues.gameConfigType as 2 | 3,
-      offeredSiteNames: initialValues.offeredSiteNames || [],
-      offeredPlayerIds: initialValues.offeredPlayerIds || [],
-      betLevels: initialValues.betLevels || [],
-      allPlayers: !initialValues.offeredPlayerIds || initialValues.offeredPlayerIds.length === 0,
-    } : {
-      name: "",
-      code: "",
-      bonusItemCount: 0,
-      startDate: getNowInGMT7(),
-      endDate: getNowInGMT7(),
-      operatorId: "",
-      offeredSiteNames: [],
-      gameIds: [],
-      currencyGroups: [],
-      allPlayers: true,
-      offeredPlayerIds: [],
-      uploadedFile: undefined,
-      gameConfigType: GAME_TYPES.CLASSIC,
-      betLevels: []
-    },
+    defaultValues: initialValues
+      ? {
+          ...initialValues,
+          startDate: new Date(initialValues.startDate),
+          endDate: new Date(initialValues.endDate),
+          gameConfigType: initialValues.gameConfigType as 2 | 3,
+          offeredSiteNames: initialValues.offeredSiteNames || [],
+          offeredPlayerIds: initialValues.offeredPlayerIds || [],
+          betLevels: initialValues.betLevels || [],
+          allPlayers:
+            !initialValues.offeredPlayerIds ||
+            initialValues.offeredPlayerIds.length === 0,
+        }
+      : {
+          name: "",
+          code: "",
+          bonusItemCount: 0,
+          startDate: getNowInGMT7(),
+          endDate: getNowInGMT7(),
+          operatorId: "",
+          offeredSiteNames: [],
+          gameIds: [],
+          currencyGroups: [],
+          allPlayers: true,
+          offeredPlayerIds: [],
+          uploadedFile: undefined,
+          gameConfigType: GAME_TYPES.CLASSIC,
+          betLevels: [],
+        },
   });
 
   const [step, setStep] = useState(1);
@@ -198,7 +205,11 @@ export default function PromotionForm({
   return (
     <div className="flex flex-col h-[80vh]">
       <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
-        <form id="promotionForm" onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <form
+          id="promotionForm"
+          onSubmit={handleSubmit(handleFormSubmit)}
+          className="space-y-6"
+        >
           {/* Step Progress UI */}
           <div className="space-y-1">
             <div className="flex justify-between items-center text-sm font-medium text-gray-600 px-1">

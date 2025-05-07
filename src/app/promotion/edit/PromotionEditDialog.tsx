@@ -15,7 +15,9 @@ export default function PromotionEditDialog({
   onClose,
   onSave,
 }: PromotionEditDialogProps) {
-  if (!open || !promotion) return null;
+  if (!open || !promotion) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

@@ -21,7 +21,10 @@ import { GAME_TYPES } from "@/constants/gameTypes";
 import { CurrencyGroup } from "@/types/currency-group";
 import { useCurrencyGroupGames } from "@/hooks/useCurrencyGroupGames";
 import { Game } from "@/types/game";
-import { selectSuggestedBetLevel, validateBetRows } from "@/lib/promotion/bet-settings.utils";
+import {
+  selectSuggestedBetLevel,
+  validateBetRows,
+} from "@/lib/promotion/bet-settings.utils";
 
 type Props = {
   open: boolean;
@@ -103,7 +106,9 @@ export default function BetSettingsDialog({
   };
 
   const handleToggle = async (index: number, enabled: boolean) => {
-    if (readonly) return;
+    if (readonly) {
+      return;
+    }
     let suggested = rows[index].betLevel;
     if (enabled && !suggested) {
       const groupGames = await getCurrencyGroupGames(rows[index].id);
@@ -120,7 +125,9 @@ export default function BetSettingsDialog({
   };
 
   const handleChangeBet = (index: number, value: string) => {
-    if (readonly) return;
+    if (readonly) {
+      return;
+    }
     const num = parseFloat(value);
     setRows((prev) => {
       const updated = [...prev];

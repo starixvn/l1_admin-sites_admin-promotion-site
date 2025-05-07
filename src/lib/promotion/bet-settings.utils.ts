@@ -7,7 +7,9 @@ export const selectSuggestedBetLevel = (
   gameIds?: number[]
 ): number => {
   const filtered = groupGames.filter((gg) => gameIds?.includes(gg.GameId));
-  if (filtered.length === 0) return type === GAME_TYPES.CASCADING ? 1 : 0.1;
+  if (filtered.length === 0) {
+    return type === GAME_TYPES.CASCADING ? 1 : 0.1;
+  }
 
   const selected = filtered[Math.floor(Math.random() * filtered.length)];
   return type === GAME_TYPES.CASCADING
@@ -15,11 +17,13 @@ export const selectSuggestedBetLevel = (
     : selected.DefaultBetLevel ?? 0.1;
 };
 
-export const validateBetRows = (rows: {
-  id: string;
-  enabled: boolean;
-  betLevel: number;
-}[]): Set<string> => {
+export const validateBetRows = (
+  rows: {
+    id: string;
+    enabled: boolean;
+    betLevel: number;
+  }[]
+): Set<string> => {
   const invalid = new Set<string>();
   rows.forEach((r) => {
     if (r.enabled && r.betLevel === 0) invalid.add(r.id);

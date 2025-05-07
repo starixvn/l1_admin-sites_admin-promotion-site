@@ -11,7 +11,7 @@ interface TokenResponse {
 }
 
 let cachedToken: string | null = null;
-let tokenExpiresAt: number = 0;
+let tokenExpiresAt = 0;
 
 export async function getAccessToken(): Promise<string> {
   const now = Date.now();

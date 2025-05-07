@@ -9,7 +9,9 @@ export const useFilteredGames = (
   return useQuery<Game[]>({
     queryKey: ["filteredGames", currencyGroups, gameType],
     queryFn: async () => {
-      if (gameType === undefined) return [];
+      if (gameType === undefined) {
+        return [];
+      }
       const url =
         currencyGroups.length > 0
           ? `/api/games?type=${gameType}&currencyGroups=${currencyGroups.join(
@@ -18,7 +20,9 @@ export const useFilteredGames = (
           : `/api/games?type=${gameType}`;
 
       const res = await fetch(url);
-      if (!res.ok) throw new Error("Failed to fetch games");
+      if (!res.ok) {
+        throw new Error("Failed to fetch games");
+      }
 
       return res.json();
     },
