@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import DataGrid from "../DataGrid";
 import { GAME_TYPES } from "../../../constants/gameTypes";
@@ -37,8 +37,8 @@ const wrapper = ({ children }: { children: React.ReactNode }) => {
 
 // Mock data
 const mockGames = [
-  { GameId: 1, DisplayName: "Game 1" },
-  { GameId: 2, DisplayName: "Game 2" },
+  { GameId: 1, DisplayName: "Game 1", Type: 1 },
+  { GameId: 2, DisplayName: "Game 2", Type: 1 },
 ];
 
 const mockPromotions = [
@@ -53,6 +53,13 @@ const mockPromotions = [
     startDate: "2024-03-20T00:00:00Z",
     endDate: "2024-03-25T00:00:00Z",
     betLevels: [],
+    offeredSiteNames: [],
+    currencyGroups: [],
+    offeredPlayerIds: [],
+    createdAt: "2024-03-19T00:00:00Z",
+    updatedAt: "2024-03-19T00:00:00Z",
+    status: "ACTIVE",
+    __v: 0
   },
   {
     _id: "2",
@@ -65,6 +72,13 @@ const mockPromotions = [
     startDate: "2024-03-15T00:00:00Z",
     endDate: "2024-03-18T00:00:00Z",
     betLevels: [],
+    offeredSiteNames: [],
+    currencyGroups: [],
+    offeredPlayerIds: [],
+    createdAt: "2024-03-14T00:00:00Z",
+    updatedAt: "2024-03-14T00:00:00Z",
+    status: "ACTIVE",
+    __v: 0
   },
 ];
 

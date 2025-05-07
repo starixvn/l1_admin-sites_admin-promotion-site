@@ -111,7 +111,7 @@ export default function DataGrid({
         onSuccess: () => {
           setShowDialog(false);
         },
-        onError: (err: any) => {
+        onError: (err) => {
           console.error(err);
           alert("Failed to update promotion");
         },
