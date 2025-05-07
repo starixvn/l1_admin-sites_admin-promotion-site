@@ -1,8 +1,8 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import DataGrid from "../DataGrid";
-import { GAME_TYPES } from "../../../constants/gameTypes";
+import DataGrid from "../../../src/app/promotion/DataGrid";
+import { GAME_TYPES } from "../../../src/constants/gameTypes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Mock toast

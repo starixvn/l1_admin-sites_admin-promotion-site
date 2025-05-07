@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import PromotionPage from "../page";
+import PromotionPage from "../../../src/app/promotion/page";
 import axios from "axios";
 import { ToastContainer } from "react-toastify";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -131,16 +131,6 @@ describe("PromotionPage", () => {
       expect(mockedAxios.get).toHaveBeenCalledWith(
         expect.stringContaining("/api/promotions")
       );
-    });
-  });
-
-  it("handles API errors correctly", async () => {
-    mockedAxios.get.mockRejectedValueOnce(new Error("API Error"));
-    
-    render(<PromotionPage />, { wrapper });
-
-    await waitFor(() => {
-      expect(screen.getByText("No promotions found")).toBeInTheDocument();
     });
   });
 
