@@ -10,8 +10,8 @@ export const selectSuggestedBetLevel = (
   if (filtered.length === 0) {
     return type === GAME_TYPES.CASCADING ? 1 : 0.1;
   }
-
-  const selected = filtered[Math.floor(Math.random() * filtered.length)];
+  const index = getSecureRandomIndex(filtered.length);
+  const selected = filtered[index];
   return type === GAME_TYPES.CASCADING
     ? selected.DefaultCoinValue ?? 1
     : selected.DefaultBetLevel ?? 0.1;
@@ -26,7 +26,16 @@ export const validateBetRows = (
 ): Set<string> => {
   const invalid = new Set<string>();
   rows.forEach((r) => {
-    if (r.enabled && r.betLevel === 0) invalid.add(r.id);
+    if (r.enabled && r.betLevel === 0) {
+      invalid.add(r.id);
+    }
   });
   return invalid;
 };
+
+export function getSecureRandomIndex(max: number): number {
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return array[0] % max;
+  }
+  

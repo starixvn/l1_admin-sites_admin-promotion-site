@@ -170,7 +170,9 @@ export default function PromotionForm({
       "endDate",
       "operatorId",
     ]);
-    if (valid) setStep(2);
+    if (valid) {
+      setStep(2);
+    }
   };
 
   const { mutate: createPromotion, isPending } = useCreatePromotion();

@@ -120,7 +120,9 @@ export default function DataGrid({
   };
 
   const getGameNames = (gameIds: number[]) => {
-    if (!gameIds || !games.length) return "";
+    if (!gameIds || !games.length) {
+      return "";
+    }
 
     return gameIds
       .map((id) => {

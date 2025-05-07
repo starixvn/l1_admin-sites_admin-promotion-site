@@ -295,7 +295,9 @@ export default function Filter({
         open={openDialog}
         onClose={(shouldRefresh = false) => {
           setOpenDialog(false);
-          if (shouldRefresh) triggerSubmit();
+          if (shouldRefresh) {
+            triggerSubmit();
+          }
         }}
       />
     </div>
