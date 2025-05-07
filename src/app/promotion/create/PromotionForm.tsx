@@ -246,7 +246,7 @@ export default function PromotionForm({
                 setValue(
                   "gameIds",
                   gameIds.includes(id)
-                    ? gameIds.filter((gid) => gid !== id)
+                    ? gameIds.filter((gid: number) => gid !== id)
                     : [...gameIds, id]
                 );
               }}

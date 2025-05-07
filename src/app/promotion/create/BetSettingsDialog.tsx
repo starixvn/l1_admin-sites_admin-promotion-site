@@ -21,7 +21,7 @@ import { GAME_TYPES } from "@/constants/gameTypes";
 import { CurrencyGroup } from "@/types/currency-group";
 import { useCurrencyGroupGames } from "@/hooks/useCurrencyGroupGames";
 import { Game } from "@/types/game";
-import { CurrencyGroupGame } from "@/types/currency-group-game";
+import { selectSuggestedBetLevel, validateBetRows } from "@/lib/promotion/bet-settings.utils";
 
 type Props = {
   open: boolean;
@@ -78,7 +78,8 @@ export default function BetSettingsDialog({
             const existingBetLevel = initialBetMap.get(cg.Id);
             const groupGames = await getCurrencyGroupGames(cg.Id);
             const betLevel =
-              existingBetLevel ?? selectSuggestedBetLevel(gameType, groupGames);
+              existingBetLevel ??
+              selectSuggestedBetLevel(gameType, groupGames, gameIds);
 
             return {
               id: cg.Id,
@@ -95,18 +96,6 @@ export default function BetSettingsDialog({
     fetchData();
   }, [open]);
 
-  const selectSuggestedBetLevel = (
-    type: number,
-    groupGames: CurrencyGroupGame[]
-  ): number => {
-    const filtered = groupGames.filter((gg) => gameIds?.includes(gg.GameId));
-    if (filtered.length === 0) return type === GAME_TYPES.CASCADING ? 1 : 0.1;
-    const selected = filtered[Math.floor(Math.random() * filtered.length)];
-    return type === GAME_TYPES.CASCADING
-      ? selected.DefaultCoinValue ?? 1
-      : selected.DefaultBetLevel ?? 0.1;
-  };
-
   const getTotalBet = (betLevel: number) => {
     return gameType === GAME_TYPES.CASCADING
       ? 1 * betLevel * 20
@@ -118,7 +107,7 @@ export default function BetSettingsDialog({
     let suggested = rows[index].betLevel;
     if (enabled && !suggested) {
       const groupGames = await getCurrencyGroupGames(rows[index].id);
-      suggested = selectSuggestedBetLevel(gameType, groupGames);
+      suggested = selectSuggestedBetLevel(gameType, groupGames, gameIds);
     }
     setRows((prev) => {
       const updated = [...prev];
@@ -141,12 +130,7 @@ export default function BetSettingsDialog({
   };
 
   const handleSave = () => {
-    const newInvalidRows = new Set<string>();
-    rows.forEach((row) => {
-      if (row.enabled && row.betLevel === 0) {
-        newInvalidRows.add(row.id);
-      }
-    });
+    const newInvalidRows = validateBetRows(rows);
 
     if (newInvalidRows.size > 0) {
       setInvalidRows(newInvalidRows);
