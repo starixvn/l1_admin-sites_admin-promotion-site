@@ -11,6 +11,7 @@ import { useFilteredGames } from "@/hooks/useFilteredGames";
 import { Promotion } from "@/types/promotion";
 import { getStatus } from "@/constants/promotionStatusMap";
 import { getNowInGMT7 } from "@/lib/date-time.utils";
+import { checkPromotionCodeExists } from "@/lib/api/checkPromotionCodeExists";
 
 const promotionSchema = z
   .object({
@@ -97,6 +98,8 @@ export default function PromotionForm({
     trigger,
     control,
     formState: { errors },
+    setError,
+    getValues,
   } = useForm<PromotionFormValues>({
     resolver: zodResolver(promotionSchema),
     mode: "onSubmit",
@@ -152,8 +155,10 @@ export default function PromotionForm({
     }
   }, [initialValues]);
 
+  const [lastCheckedCode, setLastCheckedCode] = useState("");
+
   const handleNextStep = async () => {
-    const valid = await trigger([
+    const isValid = await trigger([
       "name",
       "code",
       "bonusItemCount",
@@ -161,9 +166,27 @@ export default function PromotionForm({
       "endDate",
       "operatorId",
     ]);
-    if (valid) {
-      setStep(2);
+
+    if (!isValid) return;
+
+    const values = getValues();
+
+    if (mode === "create" && values.code) {
+      if (values.code !== lastCheckedCode) {
+        const exists = await checkPromotionCodeExists(values.code);
+        if (exists) {
+          setError("code", {
+            type: "manual",
+            message:
+              "This promotion code already exists. Please choose another.",
+          });
+          return;
+        }
+        setLastCheckedCode(values.code);
+      }
     }
+
+    setStep(2);
   };
 
   const { mutate: createPromotion, isPending } = useCreatePromotion();
