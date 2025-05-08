@@ -213,7 +213,7 @@ export default function DataGrid({
                   <span>Games</span>
                 </div>
               </th>
-              <th className="w-[8%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200 whitespace-nowrap">
+              <th className="w-[8%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
                 <div className="flex items-center justify-center">
                   <span>Operators</span>
                 </div>
@@ -261,7 +261,7 @@ export default function DataGrid({
                   <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-gray-600 break-all">
                     {promotion.code}
                   </td>
-                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-gray-600">
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-gray-600 whitespace-nowrap">
                     {promotion.createdAt ? format(new Date(promotion.createdAt), "dd/MM/yyyy HH:mm") : ""}
                   </td>
                   <td className="px-3 py-2 text-sm border-b border-r border-gray-200">
@@ -292,7 +292,7 @@ export default function DataGrid({
                   <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center whitespace-nowrap">
                     {toGMTString(promotion.endDate, 7)}
                   </td>
-                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center whitespace-nowrap">
                     <span
                       className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
                       ${getStatusColorByDate(promotion)}`}
@@ -302,7 +302,7 @@ export default function DataGrid({
                         : status.charAt(0).toUpperCase() + status.slice(1)}
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center whitespace-nowrap">
                     <span className="text-green-400">Linked</span>
                   </td>
                   <td className="px-3 py-2 border-b border-gray-200">
