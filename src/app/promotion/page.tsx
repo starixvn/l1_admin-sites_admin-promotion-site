@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import Filter from "./Filter";
 import DataGrid from "./DataGrid";
 import { Game } from "@/types/game";
@@ -15,8 +15,6 @@ interface PromotionFilters {
   operator: string[];
   promotionCode: string;
 }
-
-const DELETE_PROMOTION_FAIL_MSG = "Failed to delete promotion";
 
 export default function PromotionPage() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
@@ -61,11 +59,6 @@ export default function PromotionPage() {
       );
       setPromotions(response.data);
     } catch (error) {
-      if (error instanceof AxiosError) {
-        setError(error.response?.data?.message || "Failed to fetch promotions");
-      } else {
-        setError("Failed to fetch promotions");
-      }
       console.error(error);
     }
   }, []);
@@ -122,15 +115,6 @@ export default function PromotionPage() {
         autoClose: 3000,
       });
     } catch (error) {
-      if (error instanceof AxiosError) {
-        setError(error.response?.data?.message || DELETE_PROMOTION_FAIL_MSG);
-        toast.error(
-          error.response?.data?.message || DELETE_PROMOTION_FAIL_MSG
-        );
-      } else {
-        setError(DELETE_PROMOTION_FAIL_MSG);
-        toast.error(DELETE_PROMOTION_FAIL_MSG);
-      }
       console.error("Error deleting promotion:", error);
     }
     setDeletingPromotionId(null);

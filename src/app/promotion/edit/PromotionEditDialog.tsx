@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import PromotionForm from "../create/PromotionForm";
 import { Promotion } from "@/types/promotion";
 
@@ -32,6 +32,9 @@ export default function PromotionEditDialog({
             aria-label="Close"
           ></button>
         </div>
+        <DialogDescription className="sr-only">
+          Edit promotion details and settings
+        </DialogDescription>
         <PromotionForm 
           mode="edit"
           initialValues={promotion}

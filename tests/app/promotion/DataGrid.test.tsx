@@ -198,7 +198,7 @@ describe("DataGrid Component", () => {
     );
 
     const deleteButtons = screen.getAllByRole("button", { name: /delete/i });
-    fireEvent.click(deleteButtons[0]);
+    fireEvent.click(deleteButtons[2]);
   });
 
   it("handles edit promotion", async () => {

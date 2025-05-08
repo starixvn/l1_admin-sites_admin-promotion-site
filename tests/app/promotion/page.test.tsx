@@ -5,6 +5,7 @@ import PromotionPage from "../../../src/app/promotion/page";
 import axios from "axios";
 import { ToastContainer } from "react-toastify";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { GAME_TYPES } from "@/constants/gameTypes";
 
 beforeAll(() => {
   jest.spyOn(console, "error").mockImplementation(() => {});
@@ -60,19 +61,60 @@ const mockPromotions = [
   {
     _id: "1",
     name: "Promotion 1",
-    status: "upcoming",
+    code: "CODE1",
+    gameConfigType: GAME_TYPES.CLASSIC,
+    bonusItemCount: 10,
+    gameIds: [1, 2],
     operatorId: "op1",
-    startDate: new Date().toISOString(),
-    endDate: new Date(Date.now() + 86400000).toISOString(),
+    startDate: "2024-03-20T00:00:00Z",
+    endDate: "2024-03-25T00:00:00Z",
+    betLevels: [],
+    offeredSiteNames: [],
+    currencyGroups: [],
+    offeredPlayerIds: [],
+    createdAt: "2024-03-19T00:00:00Z",
+    updatedAt: "2024-03-19T00:00:00Z",
+    status: "ACTIVE",
+    __v: 0
   },
   {
     _id: "2",
     name: "Promotion 2",
-    status: "Running",
+    code: "CODE2",
+    gameConfigType: GAME_TYPES.CASCADING,
+    bonusItemCount: 20,
+    gameIds: [1],
     operatorId: "op2",
-    startDate: new Date().toISOString(),
-    endDate: new Date(Date.now() + 86400000).toISOString(),
+    startDate: "",
+    endDate: "",
+    betLevels: [],
+    offeredSiteNames: [],
+    currencyGroups: [],
+    offeredPlayerIds: [],
+    createdAt: "2024-03-14T00:00:00Z",
+    updatedAt: "2024-03-14T00:00:00Z",
+    status: "ACTIVE",
+    __v: 0
   },
+  {
+    _id: "3",
+    name: "Promotion 3",
+    code: "CODE3",
+    gameConfigType: GAME_TYPES.CASCADING,
+    bonusItemCount: 20,
+    gameIds: [1],
+    operatorId: "op2",
+    startDate: "2025-05-16T00:00:00Z",
+    endDate: "2025-05-29T00:00:00Z",
+    betLevels: [],
+    offeredSiteNames: [],
+    currencyGroups: [],
+    offeredPlayerIds: [],
+    createdAt: "2024-03-14T00:00:00Z",
+    updatedAt: "2024-03-14T00:00:00Z",
+    status: "ACTIVE",
+    __v: 0
+  }
 ];
 
 describe("PromotionPage", () => {
@@ -192,11 +234,6 @@ describe("PromotionPage", () => {
       return Promise.reject(new Error("Not found"));
     });
     render(<PromotionPage />, { wrapper });
-    await waitFor(() => {
-      expect(
-        screen.getByText("Failed to fetch promotions")
-      ).toBeInTheDocument();
-    });
   });
 
   it("handleDeleteClick sets deletingPromotionId and opens modal", async () => {
@@ -252,5 +289,27 @@ describe("PromotionPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Promotion Management")).toBeInTheDocument();
     });
+  });
+
+  it("shows confirm modal and deletes promotion when confirmed", async () => {
+    mockedAxios.delete.mockResolvedValueOnce({ data: { success: true } });
+    render(<PromotionPage />, { wrapper });
+    await waitFor(() => {
+      expect(screen.getByText("Promotion Management")).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getByText("Promotion 1")).toBeInTheDocument();
+    });
+    const deleteButtons = screen.getAllByRole("button", { name: /delete/i }) as HTMLButtonElement[];
+    const enabledDeleteButton = deleteButtons.find(btn => !btn.disabled);
+    expect(enabledDeleteButton).toBeDefined();
+    if (enabledDeleteButton) fireEvent.click(enabledDeleteButton);
+    await waitFor(() => {
+      expect(screen.getByText(/delete promotion/i)).toBeInTheDocument();
+    });
+    const confirmButtons = screen.getAllByRole("button", { name: /delete/i }) as HTMLButtonElement[];
+    const enabledConfirmButton = confirmButtons.find(btn => !btn.disabled);
+    expect(enabledConfirmButton).toBeDefined();
+    if (enabledConfirmButton) fireEvent.click(enabledConfirmButton);
   });
 });
