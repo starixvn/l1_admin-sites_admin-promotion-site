@@ -9,6 +9,7 @@ import PromotionEditDialog from "./edit/PromotionEditDialog";
 import { Promotion } from "@/types/promotion";
 import { toast } from "react-toastify";
 import { getStatus } from "@/constants/promotionStatusMap";
+import { format } from "date-fns";
 
 interface DataGridProps {
   promotions: Promotion[];
@@ -162,6 +163,9 @@ export default function DataGrid({
     }
   };
 
+  // Sort promotions by createdAt descending
+  const sortedPromotions = [...promotions].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
   if (loading) {
     return <div className="text-center py-4">Loading...</div>;
   }
@@ -179,150 +183,160 @@ export default function DataGrid({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-      <table className="w-full border-collapse min-w-[1200px]">
-        <thead>
-          <tr>
-            <th className="w-[15%] px-3 py-4 bg-gray-50 text-left text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
-              <div className="flex items-center">
-                <span>Promotion Name</span>
-              </div>
-            </th>
-            <th className="w-[15%] px-3 py-4 bg-gray-50 text-left text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
-              <div className="flex items-center">
-                <span>Promotion Code</span>
-              </div>
-            </th>
-            <th className="w-[18%] px-3 py-4 bg-gray-50 text-left text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
-              <div className="flex items-center">
-                <span>Details</span>
-              </div>
-            </th>
-            <th className="w-[15%] px-3 py-4 bg-gray-50 text-left text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
-              <div className="flex items-center">
-                <span>Games</span>
-              </div>
-            </th>
-            <th className="w-[8%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
-              <div className="flex items-center justify-center">
-                <span>Operators</span>
-              </div>
-            </th>
-            <th className="w-[9%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200 whitespace-nowrap">
-              <div className="flex items-center justify-center">
-                <span>Bet Settings</span>
-              </div>
-            </th>
-            <th className="w-[7%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
-              <div className="flex items-center justify-center">
-                <span>Start</span>
-              </div>
-            </th>
-            <th className="w-[7%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
-              <div className="flex items-center justify-center">
-                <span>End</span>
-              </div>
-            </th>
-            <th className="w-[6%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
-              <div className="flex items-center justify-center">
-                <span>Status</span>
-              </div>
-            </th>
-            <th className="w-[6%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
-              <div className="flex items-center justify-center">
-                <span>Notice</span>
-              </div>
-            </th>
-            <th className="w-[7%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-gray-200">
-              <div className="flex items-center justify-center">
-                <span>Action</span>
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {promotions.map((promotion) => {
-            const status = getStatus(promotion);
-            return (
-              <tr key={promotion._id} className="hover:bg-gray-50">
-                <td className="px-3 py-2 text-sm border-b border-r border-gray-200">
-                  {promotion.name}
-                </td>
-                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-gray-600">
-                  {promotion.code}
-                </td>
-                <td className="px-3 py-2 text-sm border-b border-r border-gray-200">
-                  <div>{getGameTypeName(promotion.gameConfigType)}</div>
-                  <div className="text-gray-500">
-                    Free Spins: {promotion.bonusItemCount}
-                  </div>
-                </td>
-                <td className="px-3 py-2 text-sm border-b border-r border-gray-200">
-                  {promotion.gameIds && promotion.gameIds.length > 0
-                    ? getGameNames(promotion.gameIds)
-                    : ""}
-                </td>
-                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
-                  {promotion.operatorId}
-                </td>
-                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
-                  <button
-                    onClick={() => handleShowBetSettings(promotion)}
-                    className="text-blue-600 hover:text-blue-800 cursor-pointer"
-                  >
-                    Details
-                  </button>
-                </td>
-                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center whitespace-nowrap">
-                  {toGMTString(promotion.startDate, 7)}
-                </td>
-                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center whitespace-nowrap">
-                  {toGMTString(promotion.endDate, 7)}
-                </td>
-                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
-                  <span
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                    ${getStatusColorByDate(promotion)}`}
-                  >
-                    {status === "upcoming"
-                      ? "Up Coming"
-                      : status.charAt(0).toUpperCase() + status.slice(1)}
-                  </span>
-                </td>
-                <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
-                  <span className="text-green-400">Linked</span>
-                </td>
-                <td className="px-3 py-2 border-b border-gray-200">
-                  <div className="flex flex-col gap-1 items-center">
+    <div className="bg-white rounded-lg shadow-sm">
+      <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
+        <table className="w-full border-collapse min-w-[1200px]">
+          <thead className="sticky top-0 z-10 bg-gray-50">
+            <tr>
+              <th className="w-[14%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200 whitespace-nowrap">
+                <div className="flex items-center justify-center">
+                  <span>Promotion Name</span>
+                </div>
+              </th>
+              <th className="w-[14%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200 whitespace-nowrap">
+                <div className="flex items-center justify-center">
+                  <span>Promotion Code</span>
+                </div>
+              </th>
+              <th className="w-[11%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200 whitespace-nowrap">
+                <div className="flex items-center justify-center">
+                  <span>Create Date</span>
+                </div>
+              </th>
+              <th className="w-[12%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200 whitespace-nowrap">
+                <div className="flex items-center justify-center">
+                  <span>Details</span>
+                </div>
+              </th>
+              <th className="w-[13%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200 whitespace-nowrap">
+                <div className="flex items-center justify-center">
+                  <span>Games</span>
+                </div>
+              </th>
+              <th className="w-[8%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200 whitespace-nowrap">
+                <div className="flex items-center justify-center">
+                  <span>Operators</span>
+                </div>
+              </th>
+              <th className="w-[8%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200 whitespace-nowrap">
+                <div className="flex items-center justify-center">
+                  <span>Bet Settings</span>
+                </div>
+              </th>
+              <th className="w-[9%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200 whitespace-nowrap">
+                <div className="flex items-center justify-center">
+                  <span>Start Date (GMT +7)</span>
+                </div>
+              </th>
+              <th className="w-[11%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200 whitespace-nowrap">
+                <div className="flex items-center justify-center">
+                  <span>End Date (GMT +7)</span>
+                </div>
+              </th>
+              <th className="w-[5%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
+                <div className="flex items-center justify-center">
+                  <span>Status</span>
+                </div>
+              </th>
+              <th className="w-[5%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-r border-gray-200">
+                <div className="flex items-center justify-center">
+                  <span>Notice</span>
+                </div>
+              </th>
+              <th className="w-[4%] px-3 py-4 bg-gray-50 text-center text-sm font-semibold text-gray-700 border-b border-gray-200">
+                <div className="flex items-center justify-center">
+                  <span>Action</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {sortedPromotions.map((promotion) => {
+              const status = getStatus(promotion);
+              return (
+                <tr key={promotion._id} className="hover:bg-gray-50">
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200">
+                    {promotion.name}
+                  </td>
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-gray-600 break-all">
+                    {promotion.code}
+                  </td>
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-gray-600">
+                    {promotion.createdAt ? format(new Date(promotion.createdAt), "dd/MM/yyyy HH:mm") : ""}
+                  </td>
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200">
+                    <div>{getGameTypeName(promotion.gameConfigType)}</div>
+                    <div className="text-gray-500">
+                      Free Spins: {promotion.bonusItemCount}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200">
+                    {promotion.gameIds && promotion.gameIds.length > 0
+                      ? getGameNames(promotion.gameIds)
+                      : ""}
+                  </td>
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
+                    {promotion.operatorId}
+                  </td>
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
                     <button
-                      onClick={() => handleEdit(promotion)}
-                      className={`min-w-[60px] px-3 py-1 rounded text-xs font-medium ${
-                        status === "completed"
-                          ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer"
-                      }`}
-                      disabled={status === "completed"}
+                      onClick={() => handleShowBetSettings(promotion)}
+                      className="text-blue-600 hover:text-blue-800 cursor-pointer"
                     >
-                      Edit
+                      Details
                     </button>
-                    <button
-                      onClick={() => handleDelete(promotion._id)}
-                      className={`min-w-[60px] px-3 py-1 rounded text-xs font-medium ${
-                        status === "completed" || status === "running"
-                          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                          : "bg-red-500 text-white hover:bg-red-600 cursor-pointer"
-                      }`}
-                      disabled={status === "completed" || status === "running"}
+                  </td>
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center whitespace-nowrap">
+                    {toGMTString(promotion.startDate, 7)}
+                  </td>
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center whitespace-nowrap">
+                    {toGMTString(promotion.endDate, 7)}
+                  </td>
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                      ${getStatusColorByDate(promotion)}`}
                     >
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                      {status === "upcoming"
+                        ? "Up Coming"
+                        : status.charAt(0).toUpperCase() + status.slice(1)}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-sm border-b border-r border-gray-200 text-center">
+                    <span className="text-green-400">Linked</span>
+                  </td>
+                  <td className="px-3 py-2 border-b border-gray-200">
+                    <div className="flex flex-col gap-1 items-center">
+                      <button
+                        onClick={() => handleEdit(promotion)}
+                        className={`min-w-[60px] px-3 py-1 rounded text-xs font-medium ${
+                          status === "completed"
+                            ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                            : "bg-emerald-500 text-white hover:bg-emerald-600 cursor-pointer"
+                        }`}
+                        disabled={status === "completed"}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(promotion._id)}
+                        className={`min-w-[60px] px-3 py-1 rounded text-xs font-medium ${
+                          status === "completed" || status === "running"
+                            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                            : "bg-red-500 text-white hover:bg-red-600 cursor-pointer"
+                        }`}
+                        disabled={status === "completed" || status === "running"}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
       <PromotionEditDialog
         open={!!editPromotion}
         promotion={editPromotion}
