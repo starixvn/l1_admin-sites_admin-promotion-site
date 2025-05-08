@@ -1,3 +1,4 @@
+import { isSabaPlay } from "@/constants/operators";
 import Papa from "papaparse";
 
 interface Props {
@@ -18,7 +19,7 @@ export default function PlayerFileUploader({
   uploadedFile,
   offeredPlayerIds,
   setShowPlayerList,
-  disabled
+  disabled,
 }: Props) {
   const handleFileValidation = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -56,10 +57,9 @@ export default function PlayerFileUploader({
 
         const processedData = data.map((row) => ({
           SiteID: row.SiteID,
-          PlayerID:
-            operatorId === "SabaPlay"
-              ? `${row.SiteID}~${row.PlayerID}`
-              : row.PlayerID,
+          PlayerID: isSabaPlay(operatorId)
+            ? `${row.SiteID}~${row.PlayerID}`
+            : row.PlayerID,
         }));
 
         onValidFile(selectedFile, processedData);
