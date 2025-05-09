@@ -280,7 +280,7 @@ export default function DataGrid({
                       </button>
                     )}
                     {status !== "completed" && status !== "running" && (
-                      <button onClick={() => handleDelete(p._id)}>
+                      <button aria-label="delete-promotion" onClick={() => handleDelete(p._id)}>
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </button>
                     )}

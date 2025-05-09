@@ -12,6 +12,7 @@ import { Promotion } from "@/types/promotion";
 import { getStatus } from "@/constants/promotionStatusMap";
 import { getNowInGMT7 } from "@/lib/date-time.utils";
 import { checkPromotionCodeExists } from "@/lib/api/checkPromotionCodeExists";
+import ConfirmDialog from "@/components/ConfirmModal";
 
 const promotionSchema = z
   .object({
@@ -138,6 +139,7 @@ export default function PromotionForm({
   const [codeEdited, setCodeEdited] = useState(false);
   const [openBetSettings, setOpenBetSettings] = useState(false);
   const [siteInput, setSiteInput] = useState("");
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const currencyGroups = useWatch({ control, name: "currencyGroups" });
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
@@ -303,7 +305,13 @@ export default function PromotionForm({
           ) : step === 2 ? (
             <button
               type="button"
-              onClick={handleSubmit(handleFormSubmit)}
+              onClick={() => {
+                if (mode === "edit") {
+                  setShowConfirmDialog(true);
+                } else {
+                  handleSubmit(handleFormSubmit)();
+                }
+              }}
               disabled={isPending}
               className="btn-primary flex items-center gap-2"
             >
@@ -312,6 +320,18 @@ export default function PromotionForm({
           ) : null}
         </div>
       </div>
+      <ConfirmDialog
+        open={showConfirmDialog}
+        title="Confirm Update"
+        message="Are you sure you want to update this promotion?"
+        confirmText="Confirm"
+        cancelText="Cancel"
+        onCancel={() => setShowConfirmDialog(false)}
+        onConfirm={() => {
+          setShowConfirmDialog(false);
+          handleSubmit(handleFormSubmit)();
+        }}
+      />
     </div>
   );
 }

@@ -1,49 +1,48 @@
-interface ConfirmModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+import React from "react";
+
+interface ConfirmDialogProps {
+  open: boolean;
+  title?: string;
+  message?: string;
+  confirmText?: string;
+  cancelText?: string;
   onConfirm: () => void;
-  title: string;
-  message: string;
+  onCancel: () => void;
 }
 
-export default function ConfirmModal({ isOpen, onClose, onConfirm, title, message }: ConfirmModalProps) {
-  if (!isOpen) {
-    return null;
-  }
+export default function ConfirmDialog({
+  open,
+  title = "Confirm Action",
+  message = "Are you sure you want to proceed?",
+  confirmText = "Confirm",
+  cancelText = "Cancel",
+  onConfirm,
+  onCancel,
+}: ConfirmDialogProps) {
+  if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Overlay */}
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      
-      {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl w-[400px] animate-fadeIn">
-        {/* Header */}
-        <div className="px-6 py-4 border-b">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-        </div>
-        
-        {/* Content */}
-        <div className="px-6 py-4">
-          <p className="text-gray-600">{message}</p>
-        </div>
-        
-        {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 rounded-b-lg flex justify-end gap-2">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+      <div className="bg-white rounded-lg p-6 w-[480px] space-y-4 shadow-lg">
+        <h2 className="text-base font-semibold text-gray-900 border-b border-gray-200">
+          {title}
+        </h2>
+        <p className="mt-1 text-sm text-gray-600">{message}</p>
+        <div className="flex justify-end gap-3">
           <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-800 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
+            onClick={onCancel}
+            className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
           >
-            Cancel
+            {cancelText}
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 cursor-pointer"
+            className="px-3 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-700"
           >
-            Delete
+            {confirmText}
           </button>
         </div>
       </div>
     </div>
   );
-} 
+}

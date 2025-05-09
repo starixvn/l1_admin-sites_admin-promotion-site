@@ -163,14 +163,16 @@ export default function Page() {
       </div>
 
       <ConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => {
+        open={isDeleteModalOpen}
+        title="Confirm Deletion"
+        message="Are you sure you want to delete this promotion? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onCancel={() => {
           setIsDeleteModalOpen(false);
           setDeletingPromotionId(null);
         }}
         onConfirm={handleDeleteConfirm}
-        title="Delete Promotion"
-        message="Are you sure you want to delete this promotion? This action cannot be undone."
       />
 
       <ToastContainer />

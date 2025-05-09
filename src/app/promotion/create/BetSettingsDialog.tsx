@@ -70,7 +70,9 @@ export default function BetSettingsDialog({
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!currencyGroups || !currencyGroupsLoaded) return;
+      if (!currencyGroups || !currencyGroupsLoaded) {
+        return;
+      }
       const initialBetMap = new Map<string, number>();
       if (initialValues) {
         for (const b of initialValues) {

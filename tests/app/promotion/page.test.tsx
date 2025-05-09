@@ -117,9 +117,11 @@ describe("PromotionPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockedAxios.get.mockImplementation((url) => {
-      if (url === "/api/operators") return Promise.resolve({ data: mockOperators });
+      if (url === "/api/operators")
+        return Promise.resolve({ data: mockOperators });
       if (url === "/api/games") return Promise.resolve({ data: mockGames });
-      if (url.includes("/api/promotions")) return Promise.resolve({ data: mockPromotions });
+      if (url.includes("/api/promotions"))
+        return Promise.resolve({ data: mockPromotions });
       return Promise.reject(new Error("Not found"));
     });
   });
@@ -151,25 +153,29 @@ describe("PromotionPage", () => {
     fireEvent.change(filterInput, { target: { value: "test" } });
     fireEvent.click(screen.getByRole("button", { name: /search/i }));
     await waitFor(() => {
-      expect(mockedAxios.get).toHaveBeenCalledWith(expect.stringContaining("/api/promotions"));
+      expect(mockedAxios.get).toHaveBeenCalledWith(
+        expect.stringContaining("/api/promotions")
+      );
     });
   });
 
-  it("handles delete confirmation correctly", async () => {
-    mockedAxios.delete.mockResolvedValueOnce({ data: { success: true } });
+  it("cancels delete when Cancel is clicked", async () => {
     render(<PromotionPage />, { wrapper });
+
     await waitForDataToLoad();
-    const deleteButtons = screen.getAllByRole("button").filter(btn => /trash/i.test(btn.innerHTML));
-    if (deleteButtons.length > 0) {
-      fireEvent.click(deleteButtons[0]);
-      await waitFor(() => {
-        expect(screen.getByText(/delete promotion/i)).toBeInTheDocument();
-      });
-      const confirm = screen.getByRole("button", { name: /delete/i });
-      fireEvent.click(confirm);
-      await waitFor(() => {
-        expect(screen.getByText("Promotion Management")).toBeInTheDocument();
-      });
-    }
+
+    const deleteButton = screen.getAllByLabelText("delete-promotion")[0];
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/confirm deletion/i)).toBeInTheDocument();
+    });
+
+    const cancelButton = screen.getByRole("button", { name: /^cancel$/i });
+    fireEvent.click(cancelButton);
+
+    await waitFor(() => {
+      expect(mockedAxios.delete).not.toHaveBeenCalled();
+    });
   });
 });
