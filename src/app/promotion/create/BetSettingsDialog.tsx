@@ -60,7 +60,8 @@ export default function BetSettingsDialog({
   readonly = false,
   initialValues,
 }: Props) {
-  const { data: currencyGroups = [] } = useCurrencyGroups(partnerId);
+  const { data: currencyGroups, isSuccess: currencyGroupsLoaded } =
+    useCurrencyGroups(partnerId);
   const [rows, setRows] = useState<RowState[]>([]);
   const { mutateAsync: getCurrencyGroupGames } = useCurrencyGroupGames();
   const gameIds = games?.map((g) => g.GameId);
@@ -69,35 +70,38 @@ export default function BetSettingsDialog({
 
   useEffect(() => {
     const fetchData = async () => {
-      if (currencyGroups.length > 0) {
-        const initialBetMap = new Map<string, number>();
-        if (initialValues) {
-          for (const b of initialValues) {
-            initialBetMap.set(b.currencyGroup, b.betLevel);
-          }
+      if (!currencyGroups || !currencyGroupsLoaded) return;
+      const initialBetMap = new Map<string, number>();
+      if (initialValues) {
+        for (const b of initialValues) {
+          initialBetMap.set(b.currencyGroup, b.betLevel);
         }
-        const mapped = await Promise.all(
-          currencyGroups.map(async (cg: CurrencyGroup) => {
-            const existingBetLevel = initialBetMap.get(cg.Id);
-            const groupGames = await getCurrencyGroupGames(cg.Id);
-            const betLevel =
-              existingBetLevel ??
-              selectSuggestedBetLevel(gameType, groupGames, gameIds);
-
-            return {
-              id: cg.Id,
-              name: cg.Name,
-              enabled: existingBetLevel !== undefined,
-              betLevel,
-            };
-          })
-        );
-
-        setRows(mapped);
       }
+
+      const mapped = await Promise.all(
+        currencyGroups.map(async (cg: CurrencyGroup) => {
+          const existingBetLevel = initialBetMap.get(cg.Id);
+          const groupGames = await getCurrencyGroupGames(cg.Id);
+          const betLevel =
+            existingBetLevel ??
+            selectSuggestedBetLevel(gameType, groupGames, gameIds);
+
+          return {
+            id: cg.Id,
+            name: cg.Name,
+            enabled: existingBetLevel !== undefined,
+            betLevel,
+          };
+        })
+      );
+
+      setRows(mapped);
     };
-    fetchData();
-  }, [open]);
+
+    if (open) {
+      fetchData();
+    }
+  }, [open, currencyGroupsLoaded]);
 
   const getTotalBet = (betLevel: number) => {
     return gameType === GAME_TYPES.CASCADING
