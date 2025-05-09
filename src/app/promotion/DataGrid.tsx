@@ -85,7 +85,9 @@ export default function DataGrid({
 
   const getCountdown = (endDate: Date) => {
     const daysLeft = differenceInDays(endDate, new Date());
-    return daysLeft > 0 ? `${daysLeft} days left` : "Expired";
+    const colorClass = daysLeft > 0 ? "text-green-500" : "text-red-500";
+    const text = daysLeft > 0 ? `${daysLeft} days left` : "Expired";
+    return <div className={`text-xs font-medium ${colorClass}`}>{text}</div>;
   };
 
   const getStatusStyle = (status: string) => {
@@ -253,9 +255,8 @@ export default function DataGrid({
                 <td className="px-4 py-4">{toGMTString(p.startDate, 7)}</td>
                 <td className="px-4 py-4">
                   <div>{toGMTString(p.endDate, 7)}</div>
-                  <div className="text-xs text-green-500">
-                    {getCountdown(new Date(p.endDate))}
-                  </div>
+
+                  {getCountdown(new Date(p.endDate))}
                 </td>
                 <td className="px-4 py-4">
                   <button
