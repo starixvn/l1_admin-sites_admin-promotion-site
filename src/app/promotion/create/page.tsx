@@ -1,7 +1,7 @@
 'use client';
 import { useState } from "react";
 import PromotionDialog from "./PromotionDialog"; 
-export default function PromotionCreatePage() {
+export default function Page() {
   const [open, setOpen] = useState(false);
 
   return (

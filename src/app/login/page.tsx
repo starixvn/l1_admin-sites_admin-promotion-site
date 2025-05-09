@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-export default function Login() {
+export default function Page() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     username: "",

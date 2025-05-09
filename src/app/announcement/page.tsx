@@ -16,7 +16,7 @@ const mockAnnouncements = [
   {
     id: 2,
     title: "Summer Free Spin Bonus",
-    banner: "Get 60 Free Spins Bonus on eligible Slot Games! Hurry Up!! Grab It Now While Still Available.",
+    banner: "Get 60 Free Spins Bonus on eligible Slot Games1! Hurry Up!! Grab It Now While Still Available.",
     terms: "Players must complete all pending Free Spins (including in-game Free Spins and FSBs from other promotions) before receiving a new Promotion Bonus. When the Promotion ends, all remaining Free Spin Bonus will be lost.",
     displayDate: { from: "10/04/2025 00:00", to: "20/04/2025 00:00" },
     mapping: "Details",
@@ -25,7 +25,7 @@ const mockAnnouncements = [
   {
     id: 3,
     title: "Crazy with Slot",
-    banner: "Get 10 Free Spins Bonus on eligible Slot Games! Hurry Up!! Grab It Now While Still Available.",
+    banner: "Get 10 Free Spins Bonus on eligible Slot Games2! Hurry Up!! Grab It Now While Still Available.",
     terms: "Players must complete all pending Free Spins (including in-game Free Spins and FSBs from other promotions) before receiving a new Promotion Bonus. When the Promotion ends, all remaining Free Spin Bonus will be lost.",
     displayDate: { from: "10/04/2025 00:00", to: "20/04/2025 00:00" },
     mapping: "Details",

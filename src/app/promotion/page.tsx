@@ -16,7 +16,7 @@ interface PromotionFilters {
   promotionCode: string;
 }
 
-export default function PromotionPage() {
+export default function Page() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [operators, setOperators] = useState<{ name: string; id: string }[]>(
     []
