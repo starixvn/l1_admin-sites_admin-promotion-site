@@ -55,7 +55,8 @@ export default function Step2({
   const allPlayers = useWatch({ control, name: "allPlayers" });
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const betLevels = useWatch({ control, name: "betLevels" });
-  const offeredPlayerIds = useWatch({ control, name: "offeredPlayerIds" }) ?? [];
+  const offeredPlayerIds =
+    useWatch({ control, name: "offeredPlayerIds" }) ?? [];
   const [showPlayerList, setShowPlayerList] = useState(false);
 
   return (
@@ -114,7 +115,10 @@ export default function Step2({
         <legend className="legend-wrapper">🎮 Game Selection</legend>
         {isLoading && <p className="text-blue-700">Loading games...</p>}
         {error && <p className="text-red-500">Failed to load games</p>}
-
+        <p className="text-xs text-muted-foreground mb-4">
+          ** The list of slot games is based on the selected Operator, Game
+          Type, and Currency Groups that have been enabled for the promotion.
+        </p>
         {/* Check all */}
         <div className="flex items-center space-x-2 mb-4">
           <Checkbox
@@ -126,6 +130,7 @@ export default function Step2({
             }}
             disabled={isRunning}
           />
+
           <label
             htmlFor="game-check-all"
             className="text-sm font-semibold text-gray-800"
@@ -133,6 +138,7 @@ export default function Step2({
             Check All
           </label>
         </div>
+
         <div className="border-b mb-4" />
 
         {/* Game list */}
@@ -226,8 +232,8 @@ export default function Step2({
               className="inline-flex items-center gap-2 text-blue-700 hover:text-blue-900 text-sm font-medium"
             >
               📥 Download Sample File
-            </a>            
-            
+            </a>
+
             {/* Player List Modal */}
             {showPlayerList && (
               <div
@@ -236,10 +242,12 @@ export default function Step2({
               >
                 <div
                   className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-[480px] p-8 relative"
-                  onClick={e => e.stopPropagation()}
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-gray-800">Player List</h2>
+                    <h2 className="text-xl font-bold text-gray-800">
+                      Player List
+                    </h2>
                     <button
                       className="text-gray-400 hover:text-red-500 text-2xl font-bold transition"
                       onClick={() => setShowPlayerList(false)}
@@ -252,14 +260,23 @@ export default function Step2({
                     <table className="w-full text-base">
                       <thead>
                         <tr className="bg-gray-100 border-b">
-                          <th className="px-4 py-2 text-center font-medium text-gray-700 border-r">No.</th>
-                          <th className="px-4 py-2 text-center font-medium text-gray-700">PlayerID</th>
+                          <th className="px-4 py-2 text-center font-medium text-gray-700 border-r">
+                            No.
+                          </th>
+                          <th className="px-4 py-2 text-center font-medium text-gray-700">
+                            PlayerID
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         {(offeredPlayerIds ?? []).map((id, idx) => (
-                          <tr key={id + idx} className="border-b last:border-b-0">
-                            <td className="px-4 py-2 text-center border-r">{idx + 1}</td>
+                          <tr
+                            key={id + idx}
+                            className="border-b last:border-b-0"
+                          >
+                            <td className="px-4 py-2 text-center border-r">
+                              {idx + 1}
+                            </td>
                             <td className="px-4 py-2 text-center">{id}</td>
                           </tr>
                         ))}
