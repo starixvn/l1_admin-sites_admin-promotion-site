@@ -65,7 +65,7 @@ export default function Step2({
         <legend className="legend-wrapper">⚙️ Configuration</legend>
         {/* Bet Settings */}
         <div className="flex items-center gap-2 mb-6">
-          <span className="form-label font-semibold text-base">
+          <span className="form-label font-semibold text-base leading-tight">
             * Bet Settings
           </span>
           <button
@@ -74,7 +74,7 @@ export default function Step2({
             className="text-gray-700 hover:text-blue-600 transition"
             aria-label="Edit Bet Settings"
           >
-            <SquarePen className="w-5 h-5" />
+            <SquarePen className="w-5 mb-3" />
           </button>
         </div>
         {errors.currencyGroups && (

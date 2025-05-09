@@ -173,15 +173,16 @@ export default function BetSettingsDialog({
         </DialogHeader>
 
         <div className="space-y-6 mt-6">
-          <p className="text-base text-gray-700">
-            <strong className="text-red-500">**</strong> Turn ON the Promotion
-            for the currency group which you want to offer the Free Spin Bonus
-          </p>
+          {!readonly && (
+            <p className="text-base text-gray-700">
+              <strong className="text-red-500">**</strong> Turn ON the Promotion
+              for the currency group which you want to offer the Free Spin Bonus
+            </p>
+          )}
           <p className="text-base text-gray-700">
             The suggested Bet Level value is based on the default setting
             currently displayed in the game for each currency group.{" "}
           </p>
-
           <div className="overflow-x-auto border rounded-2xl bg-white shadow-sm">
             <table className="w-full text-base border-collapse">
               <thead>
@@ -279,7 +280,6 @@ export default function BetSettingsDialog({
               </tbody>
             </table>
           </div>
-
           <div className="flex justify-end gap-4 pt-6">
             <Button type="button" onClick={onClose} className="btn-cancel">
               Close
