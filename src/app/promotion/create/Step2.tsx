@@ -120,24 +120,26 @@ export default function Step2({
           Type, and Currency Groups that have been enabled for the promotion.
         </p>
         {/* Check all */}
-        <div className="flex items-center space-x-2 mb-4">
-          <Checkbox
-            id="game-check-all"
-            checked={games.length > 0 && gameIds.length === games.length}
-            onCheckedChange={(checked) => {
-              const allGameIds = games.map((g) => g.GameId);
-              setValue("gameIds", checked ? allGameIds : []);
-            }}
-            disabled={isRunning}
-          />
+        {games.length > 0 && (
+          <div className="flex items-center space-x-2 mb-4">
+            <Checkbox
+              id="game-check-all"
+              checked={gameIds.length === games.length}
+              onCheckedChange={(checked) => {
+                const allGameIds = games.map((g) => g.GameId);
+                setValue("gameIds", checked ? allGameIds : []);
+              }}
+              disabled={isRunning}
+            />
 
-          <label
-            htmlFor="game-check-all"
-            className="text-sm font-semibold text-gray-800"
-          >
-            Check All
-          </label>
-        </div>
+            <label
+              htmlFor="game-check-all"
+              className="text-sm font-semibold text-gray-800"
+            >
+              Check All
+            </label>
+          </div>
+        )}
 
         <div className="border-b mb-4" />
 
