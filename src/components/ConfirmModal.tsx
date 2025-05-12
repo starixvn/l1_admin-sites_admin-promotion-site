@@ -27,7 +27,10 @@ export default function ConfirmDialog({
         <h2 className="text-base font-semibold text-gray-900 border-b border-gray-200">
           {title}
         </h2>
-        <p className="mt-1 text-sm text-gray-600">{message}</p>
+        <p 
+          className="mt-1 text-sm text-gray-600"
+          dangerouslySetInnerHTML={{ __html: message }}
+        />
         <div className="flex justify-end gap-3">
           <button
             onClick={onCancel}

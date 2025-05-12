@@ -28,6 +28,9 @@ export default function Page() {
   const [deletingPromotionId, setDeletingPromotionId] = useState<string | null>(
     null
   );
+  const [deletingPromotionCode, setDeletingPromotionCode] = useState<string | null>(
+    null
+  );
   const [currentFilters, setCurrentFilters] = useState<PromotionFilters>({
     status: "All",
     operator: operators.map((op) => op.id),
@@ -94,8 +97,9 @@ export default function Page() {
     }
   };
 
-  const handleDeleteClick = async (id: string): Promise<void> => {
+  const handleDeleteClick = async (id: string, code: string): Promise<void> => {
     setDeletingPromotionId(id);
+    setDeletingPromotionCode(code);
     setIsDeleteModalOpen(true);
   };
 
@@ -118,6 +122,7 @@ export default function Page() {
       console.error("Error deleting promotion:", error);
     }
     setDeletingPromotionId(null);
+    setDeletingPromotionCode(null);
   };
 
   useEffect(() => {
@@ -165,12 +170,13 @@ export default function Page() {
       <ConfirmModal
         open={isDeleteModalOpen}
         title="Confirm Deletion"
-        message="Are you sure you want to delete this promotion? This action cannot be undone."
+        message={`Are you sure you want to delete promotion with code <strong style="color: black; font-weight: 600;">${deletingPromotionCode}</strong>? This action cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         onCancel={() => {
           setIsDeleteModalOpen(false);
           setDeletingPromotionId(null);
+          setDeletingPromotionCode(null);
         }}
         onConfirm={handleDeleteConfirm}
       />

@@ -17,7 +17,7 @@ interface DataGridProps {
   loading: boolean;
   error: string | null;
   games: Game[];
-  onDelete: (id: string) => Promise<void>;
+  onDelete: (id: string, code: string) => Promise<void>;
   onRefresh: () => void;
 }
 
@@ -150,9 +150,9 @@ export default function DataGrid({
       .join(", ");
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: string, code: string) => {
     try {
-      await onDelete(id);
+      await onDelete(id, code);
     } catch (error) {
       console.error("Failed to delete promotion:", error);
     }
@@ -280,7 +280,7 @@ export default function DataGrid({
                       </button>
                     )}
                     {status !== "completed" && status !== "running" && (
-                      <button aria-label="delete-promotion" onClick={() => handleDelete(p._id)}>
+                      <button aria-label="delete-promotion" onClick={() => handleDelete(p._id, p.code)}>
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </button>
                     )}
