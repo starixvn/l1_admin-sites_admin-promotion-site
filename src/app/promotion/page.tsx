@@ -9,21 +9,28 @@ import ConfirmModal from "@/components/ConfirmModal";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Promotion } from "@/types/promotion";
+import { Operator } from "@/types/operator";
 
 interface PromotionFilters {
   status: string;
   operator: string[];
   promotionCode: string;
+  pageIndex: number;
+  pageSize: number;
+}
+
+interface OperatorDisplay {
+  name: string;
+  id: string;
 }
 
 export default function Page() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [operators, setOperators] = useState<{ name: string; id: string }[]>(
-    []
-  );
+  const [operators, setOperators] = useState<OperatorDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [games, setGames] = useState<Game[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingPromotionId, setDeletingPromotionId] = useState<string | null>(
     null
@@ -33,60 +40,86 @@ export default function Page() {
   );
   const [currentFilters, setCurrentFilters] = useState<PromotionFilters>({
     status: "All",
-    operator: operators.map((op) => op.id),
+    operator: [],
     promotionCode: "",
+    pageIndex: 1,
+    pageSize: 10
   });
 
   const handleFilterSubmit = useCallback(async (filters: PromotionFilters) => {
-    setCurrentFilters(filters);
+    setCurrentFilters((prev) => ({
+      ...filters,
+      pageSize: filters.pageSize || prev.pageSize,
+    }));
     try {
       setError(null);
       const queryParams = new URLSearchParams();
       if (filters.status !== "All") {
         queryParams.append("status", filters.status);
       }
-      const allOperatorIds = operators.map((op) => op.id);
-      const isAllSelected =
-        filters.operator.length === allOperatorIds.length &&
-        allOperatorIds.every((id) => filters.operator.includes(id));
 
-      if (filters.operator && filters.operator.length > 0 && !isAllSelected) {
-        queryParams.append("operator", filters.operator.toString());
+      if (filters.operator && filters.operator.length > 0) {
+        const allOperatorIds = operators.map((op) => op.id);
+        const isAllSelected =
+          filters.operator.length === allOperatorIds.length &&
+          allOperatorIds.every((id) => filters.operator.includes(id));
+
+        if (!isAllSelected) {
+          queryParams.append("operator", filters.operator.toString());
+        }
       }
+
       if (filters.promotionCode) {
         queryParams.append("promotionCode", filters.promotionCode);
       }
 
+      queryParams.append("pageIndex", filters.pageIndex.toString());
+      queryParams.append("pageSize", (filters.pageSize || currentFilters.pageSize).toString());
+
       const response = await axios.get(
         `/api/promotions?${queryParams.toString()}`
       );
-      setPromotions(response.data);
+      setPromotions(response.data.promotions);
+      setTotalItems(response.data.pagination.total);
     } catch (error) {
       console.error(error);
     }
   }, []);
 
+  const handlePageChange = (newPage: number) => {
+    handleFilterSubmit({
+      ...currentFilters,
+      pageIndex: newPage
+    });
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    handleFilterSubmit({
+      ...currentFilters,
+      pageSize: size,
+      pageIndex: 1,
+    });
+  }
+
   const fetchOperators = useCallback(async () => {
     try {
       const response = await axios.get("/api/operators");
-      const operatorsList = response.data.map(
-        (op: { Name: string; PartnerId: string }) => ({
-          name: op.Name,
-          id: op.PartnerId,
-        })
-      );
+      const operatorsList = response.data.map((op: Operator) => ({
+        name: op.Name,
+        id: op.PartnerId,
+      }));
       setOperators(operatorsList);
-      handleFilterSubmit({
-        status: "All",
-        operator: operatorsList.map(
-          (op: { name: string; id: string }) => op.id
-        ),
-        promotionCode: "",
-      });
+      
+      const newFilters = {
+        ...currentFilters,
+        operator: operatorsList.map((op: OperatorDisplay) => op.id)
+      };
+      setCurrentFilters(newFilters);
+      handleFilterSubmit(newFilters);
     } catch (error) {
       console.error("Failed to fetch operators:", error);
     }
-  }, [handleFilterSubmit]);
+  }, [currentFilters, handleFilterSubmit]);
 
   const fetchGames = async () => {
     try {
@@ -138,7 +171,7 @@ export default function Page() {
     };
 
     initializeData();
-  }, [fetchOperators]);
+  }, []);
 
   return (
     <div className="space-y-4 w-full">
@@ -164,6 +197,11 @@ export default function Page() {
           games={games}
           onDelete={handleDeleteClick}
           onRefresh={() => handleFilterSubmit(currentFilters)}
+          currentPage={currentFilters.pageIndex}
+          pageSize={currentFilters.pageSize}
+          totalItems={totalItems}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
         />
       </div>
 

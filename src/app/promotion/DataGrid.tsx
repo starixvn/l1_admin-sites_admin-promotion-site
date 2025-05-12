@@ -2,14 +2,14 @@
 
 import { GAME_TYPES } from "@/constants/gameTypes";
 import { Game } from "@/types/game";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import BetSettingsDialog from "./create/BetSettingsDialog";
 import { useUpdatePromotion } from "@/hooks/useUpdatePromotion";
 import PromotionEditDialog from "./edit/PromotionEditDialog";
 import { Promotion } from "@/types/promotion";
 import { toast } from "react-toastify";
 import { getStatus } from "@/constants/promotionStatusMap";
-import { format, differenceInDays } from "date-fns";
+import { differenceInDays } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
 
 interface DataGridProps {
@@ -19,6 +19,11 @@ interface DataGridProps {
   games: Game[];
   onDelete: (id: string, code: string) => Promise<void>;
   onRefresh: () => void;
+  currentPage: number;
+  pageSize: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
 }
 
 function toGMTString(dateStr: string, gmtOffset: number): string {
@@ -57,31 +62,19 @@ export default function DataGrid({
   games,
   onDelete,
   onRefresh,
+  currentPage,
+  pageSize,
+  totalItems,
+  onPageChange,
+  onPageSizeChange
 }: DataGridProps) {
   const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(
     null
   );
-  const [openGameListId, setOpenGameListId] = useState<string | null>(null);
-  const gameListRef = useRef<HTMLDivElement | null>(null);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 10;
-
-  const sortedPromotions = [...promotions].sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-
-  const totalPages = Math.ceil(promotions.length / rowsPerPage);
-  const paginatedPromotions = sortedPromotions.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
-
-  const toggleGameList = (id: string) => {
-    setOpenGameListId((prev) => (prev === id ? null : id));
-  };
+  const totalPages = Math.ceil(totalItems / pageSize);
 
   const getCountdown = (endDate: Date) => {
     const daysLeft = differenceInDays(endDate, new Date());
@@ -101,11 +94,6 @@ export default function DataGrid({
       default:
         return "bg-gray-100 text-gray-500";
     }
-  };
-
-  const handleShowBetSettings = (promotion: Promotion) => {
-    setSelectedPromotion(promotion);
-    setShowDialog(true);
   };
 
   const updatePromotionMutation = useUpdatePromotion();
@@ -129,25 +117,6 @@ export default function DataGrid({
         onError: () => alert("Failed to update promotion"),
       }
     );
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        gameListRef.current &&
-        !gameListRef.current.contains(event.target as Node)
-      ) {
-        setOpenGameListId(null);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const getGameNames = (gameIds: number[]) => {
-    return gameIds
-      .map((id) => games.find((g) => g.GameId === id)?.DisplayName || id)
-      .join(", ");
   };
 
   const handleDelete = async (id: string, code: string) => {
@@ -196,18 +165,15 @@ export default function DataGrid({
             <th className="px-4 py-3 text-left">Status</th>
             <th className="px-4 py-3 text-left">Promotion</th>
             <th className="px-4 py-3 text-left">Operator</th>
-            <th className="px-4 py-3 text-left">Game List</th>
-            <th className="px-4 py-3 text-left">Details</th>
+            <th className="px-4 py-3 text-center">No. of Free Spins</th>
             <th className="px-4 py-3 text-left">Start Date</th>
             <th className="px-4 py-3 text-left">End Date</th>
-            <th className="px-4 py-3 text-left">Bet Settings</th>
-            <th className="px-4 py-3 text-left">Created At</th>
-            <th className="px-4 py-3 text-left">Notice</th>
-            <th className="px-4 py-3 text-left">Actions</th>
+            {/* <th className="px-4 py-3 text-left">Notice</th> */}
+            <th className="px-4 py-3 text-center">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {paginatedPromotions.map((p) => {
+          {promotions.map((p) => {
             const status = getStatus(p);
             return (
               <tr key={p._id} className="hover:bg-green-50">
@@ -227,29 +193,9 @@ export default function DataGrid({
                   </div>
                 </td>
                 <td className="px-4 py-4">{p.operatorId}</td>
-                <td className="px-4 py-4 relative">
-                  <div>{getGameTypeName(p.gameConfigType)}</div>
-                  <div className="text-xs text-gray-500">
-                    {p.gameIds.length} games
-                  </div>
-                  <button
-                    onClick={() => toggleGameList(p._id)}
-                    className="text-blue-500 text-xs hover:underline mt-1"
-                  >
-                    View All
-                  </button>
-                  {openGameListId === p._id && (
-                    <div
-                      ref={gameListRef}
-                      className="absolute z-50 mt-2 bg-white border border-gray-300 shadow-md rounded p-2 text-xs text-gray-800 whitespace-pre-wrap w-64"
-                    >
-                      {getGameNames(p.gameIds)}
-                    </div>
-                  )}
-                </td>
                 <td className="px-4 py-4">
-                  <div className="text-gray-500">
-                    Free Spins: {p.bonusItemCount}
+                  <div className="text-gray-500 text-center">
+                    {p.bonusItemCount}
                   </div>
                 </td>
                 <td className="px-4 py-4">{toGMTString(p.startDate, 7)}</td>
@@ -258,28 +204,15 @@ export default function DataGrid({
 
                   {getCountdown(new Date(p.endDate))}
                 </td>
-                <td className="px-4 py-4">
-                  <button
-                    onClick={() => handleShowBetSettings(p)}
-                    className="text-blue-600 hover:text-blue-800 cursor-pointer"
-                  >
-                    Details
-                  </button>
-                </td>
-                <td className="px-4 py-4">
-                  {p.createdAt
-                    ? format(new Date(p.createdAt), "dd/MM/yyyy HH:mm")
-                    : ""}
-                </td>
-                <td className="px-4 py-4 text-green-500">Linked</td>
+                {/* <td className="px-4 py-4 text-green-500">Linked</td> */}
                 <td className="px-4 py-4">
                   <div className="flex justify-center gap-3">
-                    {status !== "completed" && (
+                    {status == "upcoming" && (
                       <button onClick={() => handleEdit(p)}>
                         <Pencil className="w-4 h-4 text-blue-600" />
                       </button>
                     )}
-                    {status !== "completed" && status !== "running" && (
+                    {status == "upcoming" && (
                       <button aria-label="delete-promotion" onClick={() => handleDelete(p._id, p.code)}>
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </button>
@@ -293,40 +226,73 @@ export default function DataGrid({
       </table>
 
       {/* Pagination UI */}
-      <div className="flex items-center justify-between px-4 py-3 text-sm text-gray-500">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 py-3 text-sm text-gray-500 gap-2">
         <div>
-          Showing {(currentPage - 1) * rowsPerPage + 1} to{" "}
-          {Math.min(currentPage * rowsPerPage, promotions.length)} of{" "}
-          {promotions.length} results
+          <span>
+            Showing <span className="font-semibold">{((currentPage - 1) * pageSize) + 1}</span> to <span className="font-semibold">{Math.min(currentPage * pageSize, totalItems)}</span> of <span className="font-semibold">{totalItems}</span> results
+          </span>
         </div>
-        <div className="flex gap-1">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-          >
-            &lt;
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1">
             <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`px-3 py-1 border rounded ${
-                page === currentPage ? "bg-blue-500 text-white" : ""
-              }`}
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-100 transition disabled:opacity-50"
+              aria-label="Previous page"
             >
-              {page}
+              <span className="sr-only">Previous</span>
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
-          ))}
-          <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-          >
-            &gt;
-          </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter(page => (
+                page === 1 ||
+                page === totalPages ||
+                Math.abs(page - currentPage) <= 1
+              ))
+              .map((page, idx, arr) => {
+                // Add dots if needed
+                if (idx > 0 && page - arr[idx - 1] > 1) {
+                  return (
+                    <span key={`dots-${page}`} className="px-2 text-gray-400 select-none">...</span>
+                  );
+                }
+                return (
+                  <button
+                    key={page}
+                    onClick={() => onPageChange(page)}
+                    className={`w-9 h-9 flex items-center justify-center rounded-full border transition
+                      ${page === currentPage
+                        ? "bg-blue-600 text-white border-blue-600 font-bold shadow"
+                        : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50"}
+                    `}
+                    aria-current={page === currentPage ? "page" : undefined}
+                  >
+                    {page}
+                  </button>
+                );
+              })}
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="w-9 h-9 flex items-center justify-center rounded-full border border-gray-300 bg-white hover:bg-gray-100 transition disabled:opacity-50"
+              aria-label="Next page"
+            >
+              <span className="sr-only">Next</span>
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </button>
+          </div>
+          <label className="flex items-center gap-1 ml-4">
+            <span>Rows per page:</span>
+            <select
+              value={pageSize}
+              onChange={e => onPageSizeChange(Number(e.target.value))}
+              className="border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500"
+            >
+              <option value={10}>10</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </label>
         </div>
       </div>
 

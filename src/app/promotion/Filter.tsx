@@ -19,6 +19,8 @@ interface FilterValues {
   status: string;
   operator: string[];
   promotionCode: string;
+  pageIndex: number;
+  pageSize: number;
 }
 
 export default function Filter({
@@ -40,9 +42,10 @@ export default function Filter({
       setFilters((prev) => ({
         ...prev,
         operator: operatorOptions.map((op) => op.id),
+        pageSize: initialFilters.pageSize,
       }));
     }
-  }, [operatorOptions]);
+  }, [operatorOptions, initialFilters.pageSize]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -91,7 +94,7 @@ export default function Filter({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onFilterChange(filters);
+    onFilterChange({ ...filters, pageSize: initialFilters.pageSize });
   };
 
   const handleInputChange = (

@@ -36,6 +36,8 @@ export async function GET(req: NextRequest) {
 
     const operator = searchParams.get("operator");
     const code = searchParams.get("promotionCode");
+    const pageIndex = searchParams.get("pageIndex") || "1";
+    const pageSize = searchParams.get("pageSize") || "10";
 
     const params = new URLSearchParams();
     if (status) {
@@ -49,6 +51,10 @@ export async function GET(req: NextRequest) {
     if (code) {
       params.append("code", code);
     }
+
+    params.append("pageIndex", pageIndex);
+    params.append("pageSize", pageSize);
+
     const response = await axios.get(
       `${configs.apiPromotionUrl}/promotions?${params.toString()}`
     );
