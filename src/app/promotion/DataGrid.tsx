@@ -3,8 +3,6 @@
 import { GAME_TYPES } from "@/constants/gameTypes";
 import { Game } from "@/types/game";
 import { useState } from "react";
-import BetSettingsDialog from "./create/BetSettingsDialog";
-import { useUpdatePromotion } from "@/hooks/useUpdatePromotion";
 import PromotionEditDialog from "./edit/PromotionEditDialog";
 import { Promotion } from "@/types/promotion";
 import { toast } from "react-toastify";
@@ -16,7 +14,6 @@ interface DataGridProps {
   promotions: Promotion[];
   loading: boolean;
   error: string | null;
-  games: Game[];
   onDelete: (id: string, code: string) => Promise<void>;
   onRefresh: () => void;
   currentPage: number;
@@ -59,7 +56,6 @@ export default function DataGrid({
   promotions = [],
   loading,
   error,
-  games,
   onDelete,
   onRefresh,
   currentPage,
@@ -69,10 +65,6 @@ export default function DataGrid({
   onPageSizeChange
 }: DataGridProps) {
   const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
-  const [showDialog, setShowDialog] = useState(false);
-  const [selectedPromotion, setSelectedPromotion] = useState<Promotion | null>(
-    null
-  );
 
   const totalPages = Math.ceil(totalItems / pageSize);
 
@@ -94,29 +86,6 @@ export default function DataGrid({
       default:
         return "bg-gray-100 text-gray-500";
     }
-  };
-
-  const updatePromotionMutation = useUpdatePromotion();
-  const handleSaveBetSettings = (data: {
-    currencyGroups: string[];
-    betLevels: { currencyGroup: string; betLevel: number }[];
-  }) => {
-    if (!selectedPromotion) {
-      toast.error("No promotion selected");
-      return;
-    }
-    const payload = {
-      ...selectedPromotion,
-      currencyGroups: data.currencyGroups,
-      betLevels: data.betLevels,
-    };
-    updatePromotionMutation.mutate(
-      { id: selectedPromotion._id, data: payload },
-      {
-        onSuccess: () => setShowDialog(false),
-        onError: () => alert("Failed to update promotion"),
-      }
-    );
   };
 
   const handleDelete = async (id: string, code: string) => {
@@ -207,12 +176,12 @@ export default function DataGrid({
                 {/* <td className="px-4 py-4 text-green-500">Linked</td> */}
                 <td className="px-4 py-4">
                   <div className="flex justify-center gap-3">
-                    {status == "upcoming" && (
+                    {status === "upcoming" && (
                       <button onClick={() => handleEdit(p)}>
                         <Pencil className="w-4 h-4 text-blue-600" />
                       </button>
                     )}
-                    {status == "upcoming" && (
+                    {status === "upcoming" && (
                       <button aria-label="delete-promotion" onClick={() => handleDelete(p._id, p.code)}>
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </button>
@@ -302,19 +271,6 @@ export default function DataGrid({
         onClose={() => setEditPromotion(null)}
         onSave={handleSaveEdit}
       />
-
-      {selectedPromotion && (
-        <BetSettingsDialog
-          open={showDialog}
-          onClose={() => setShowDialog(false)}
-          partnerId={selectedPromotion.operatorId}
-          gameType={selectedPromotion.gameConfigType}
-          onSave={handleSaveBetSettings}
-          games={games}
-          readonly={true}
-          initialValues={selectedPromotion.betLevels}
-        />
-      )}
     </div>
   );
 }

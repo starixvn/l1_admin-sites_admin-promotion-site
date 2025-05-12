@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import Filter from "./Filter";
 import DataGrid from "./DataGrid";
-import { Game } from "@/types/game";
 import ConfirmModal from "@/components/ConfirmDialog";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -29,7 +28,6 @@ export default function Page() {
   const [operators, setOperators] = useState<OperatorDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [games, setGames] = useState<Game[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingPromotionId, setDeletingPromotionId] = useState<string | null>(
@@ -121,15 +119,6 @@ export default function Page() {
     }
   }, [currentFilters, handleFilterSubmit]);
 
-  const fetchGames = async () => {
-    try {
-      const response = await axios.get("/api/games");
-      setGames(response.data);
-    } catch (err) {
-      console.error("Failed to fetch games:", err);
-    }
-  };
-
   const handleDeleteClick = async (id: string, code: string): Promise<void> => {
     setDeletingPromotionId(id);
     setDeletingPromotionCode(code);
@@ -162,7 +151,7 @@ export default function Page() {
     setLoading(true);
     const initializeData = async () => {
       try {
-        await Promise.all([fetchOperators(), fetchGames()]);
+        await Promise.all([fetchOperators()]);
       } catch (err) {
         console.error("Error initializing data:", err);
       } finally {
@@ -194,7 +183,6 @@ export default function Page() {
           promotions={promotions}
           loading={loading}
           error={error}
-          games={games}
           onDelete={handleDeleteClick}
           onRefresh={() => handleFilterSubmit(currentFilters)}
           currentPage={currentFilters.pageIndex}
