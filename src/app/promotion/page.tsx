@@ -79,8 +79,8 @@ export default function Page() {
       const response = await axios.get(
         `/api/promotions?${queryParams.toString()}`
       );
-      setPromotions(response.data.promotions);
-      setTotalItems(response.data.pagination.total);
+      setPromotions(response.data.items);
+      setTotalItems(response.data.metadata.total);
     } catch (error) {
       console.error(error);
     }
