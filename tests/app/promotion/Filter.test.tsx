@@ -14,6 +14,8 @@ const mockInitialFilters = {
   status: "All",
   operator: ["op1", "op2", "op3"],
   promotionCode: "",
+  pageIndex: 1,
+  pageSize: 10,
 };
 
 describe("Filter Component", () => {
