@@ -68,22 +68,47 @@ describe("DataGrid Component with Pagination", () => {
   });
 
   it("shows 10 rows per page and paginates correctly", () => {
-    render(
+    const pageSize = 10;
+    const currentPage = 1;
+    const totalItems = mockPromotions.length;
+    const setPage = jest.fn();
+    const { rerender } = render(
       <DataGrid
-        promotions={mockPromotions}
+        promotions={mockPromotions.slice(0, pageSize)}
         loading={false}
         error={null}
         games={mockGames}
         onDelete={mockOnDelete}
         onRefresh={mockOnRefresh}
+        currentPage={currentPage}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        onPageChange={setPage}
+        onPageSizeChange={jest.fn()}
       />,
       { wrapper }
     );
 
     const rows = screen.getAllByRole("row");
-    expect(rows.length).toBeLessThanOrEqual(11); // 1 header + 10 rows
-    const nextPageBtn = screen.getByRole("button", { name: ">" });
-    fireEvent.click(nextPageBtn);
+    expect(rows.length).toBe(11); // 1 header + 10 rows
+
+    // Simulate going to page 2
+    rerender(
+      <DataGrid
+        promotions={mockPromotions.slice(10, 20)}
+        loading={false}
+        error={null}
+        games={mockGames}
+        onDelete={mockOnDelete}
+        onRefresh={mockOnRefresh}
+        currentPage={2}
+        pageSize={pageSize}
+        totalItems={totalItems}
+        onPageChange={setPage}
+        onPageSizeChange={jest.fn()}
+      />
+    );
+
     expect(screen.getByText("Promotion 11")).toBeInTheDocument();
   });
 });

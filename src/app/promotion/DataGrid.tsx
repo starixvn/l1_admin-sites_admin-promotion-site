@@ -56,7 +56,7 @@ const getGameTypeName = (gameConfigType: number) => {
 };
 
 export default function DataGrid({
-  promotions,
+  promotions = [],
   loading,
   error,
   games,
@@ -151,7 +151,7 @@ export default function DataGrid({
   if (error) {
     return <div className="text-red-500 text-center py-4">{error}</div>;
   }
-  if (promotions.length === 0) {
+  if (!Array.isArray(promotions) || promotions.length === 0) {
     return (
       <div className="text-center py-8 text-gray-400">No promotions found</div>
     );

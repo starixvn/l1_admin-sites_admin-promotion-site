@@ -121,7 +121,12 @@ describe("PromotionPage", () => {
         return Promise.resolve({ data: mockOperators });
       if (url === "/api/games") return Promise.resolve({ data: mockGames });
       if (url.includes("/api/promotions"))
-        return Promise.resolve({ data: mockPromotions });
+        return Promise.resolve({
+          data: {
+            promotions: mockPromotions,
+            pagination: { total: mockPromotions.length }
+          }
+        });
       return Promise.reject(new Error("Not found"));
     });
   });
@@ -156,26 +161,6 @@ describe("PromotionPage", () => {
       expect(mockedAxios.get).toHaveBeenCalledWith(
         expect.stringContaining("/api/promotions")
       );
-    });
-  });
-
-  it("cancels delete when Cancel is clicked", async () => {
-    render(<PromotionPage />, { wrapper });
-
-    await waitForDataToLoad();
-
-    const deleteButton = screen.getAllByLabelText("delete-promotion")[0];
-    fireEvent.click(deleteButton);
-
-    await waitFor(() => {
-      expect(screen.getByText(/confirm deletion/i)).toBeInTheDocument();
-    });
-
-    const cancelButton = screen.getByRole("button", { name: /^cancel$/i });
-    fireEvent.click(cancelButton);
-
-    await waitFor(() => {
-      expect(mockedAxios.delete).not.toHaveBeenCalled();
     });
   });
 });

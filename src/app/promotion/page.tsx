@@ -5,7 +5,7 @@ import axios from "axios";
 import Filter from "./Filter";
 import DataGrid from "./DataGrid";
 import { Game } from "@/types/game";
-import ConfirmModal from "@/components/ConfirmModal";
+import ConfirmModal from "@/components/ConfirmDialog";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Promotion } from "@/types/promotion";

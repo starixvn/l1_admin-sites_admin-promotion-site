@@ -12,7 +12,7 @@ import { Promotion } from "@/types/promotion";
 import { getStatus } from "@/constants/promotionStatusMap";
 import { getNowInGMT7 } from "@/lib/date-time.utils";
 import { checkPromotionCodeExists } from "@/lib/api/checkPromotionCodeExists";
-import ConfirmDialog from "@/components/ConfirmModal";
+import ConfirmDialog from "@/components/ConfirmDialog";
 
 const promotionSchema = z
   .object({
@@ -169,7 +169,9 @@ export default function PromotionForm({
       "operatorId",
     ]);
 
-    if (!isValid) return;
+    if (!isValid) {
+      return;
+    }
 
     const values = getValues();
 
