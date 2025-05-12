@@ -57,8 +57,10 @@ export default function Step2({
   const betLevels = useWatch({ control, name: "betLevels" });
   const offeredPlayerIds =
     useWatch({ control, name: "offeredPlayerIds" }) ?? [];
+  const currencyGroups = useWatch({ control, name: "currencyGroups" }) || [];
   const [showPlayerList, setShowPlayerList] = useState(false);
-
+  const shouldShowGames =
+    currencyGroups.length > 0 && gameConfigType !== undefined;
   return (
     <div className="space-y-6">
       <fieldset className="fieldset-wrapper-operator">
@@ -66,7 +68,7 @@ export default function Step2({
         {/* Bet Settings */}
         <div className="flex items-center gap-2 mb-6">
           <span className="form-label font-semibold text-base leading-tight">
-            * Bet Settings
+            Bet Settings<span className="text-red-500">*</span>
           </span>
           <button
             type="button"
@@ -113,64 +115,71 @@ export default function Step2({
 
       <fieldset className="fieldset-wrapper-games">
         <legend className="legend-wrapper">🎮 Game Selection</legend>
-        {isLoading && <p className="text-blue-700">Loading games...</p>}
-        {error && <p className="text-red-500">Failed to load games</p>}
-        <p className="text-xs text-muted-foreground mb-4">
-          ** The list of slot games is based on the selected Operator, Game
-          Type, and Currency Groups that have been enabled for the promotion.
-        </p>
-        {/* Check all */}
-        {games.length > 0 && (
-          <div className="flex items-center space-x-2 mb-4">
-            <Checkbox
-              id="game-check-all"
-              checked={gameIds.length === games.length}
-              onCheckedChange={(checked) => {
-                const allGameIds = games.map((g) => g.GameId);
-                setValue("gameIds", checked ? allGameIds : []);
-              }}
-              disabled={isRunning}
-            />
-
-            <label
-              htmlFor="game-check-all"
-              className="text-sm font-semibold text-gray-800"
-            >
-              Check All
-            </label>
-          </div>
-        )}
-
-        <div className="border-b mb-4" />
-
-        {/* Game list */}
-        <div className="grid gap-3 max-h-[15rem] overflow-y-auto pr-2">
-          {games.map((game) => {
-            const isChecked = gameIds.includes(game.GameId);
-            return (
+        {!shouldShowGames ? (
+          <p className="text-sm text-gray-500 italic">
+            No games available. Please select Game Type and Currency Groups.
+          </p>
+        ) : isLoading ? (
+          <p className="text-blue-700">Loading games...</p>
+        ) : error ? (
+          <p className="text-red-500">Failed to load games</p>
+        ) : games.length === 0 ? (
+          <p className="text-sm text-gray-500 italic">
+            No games found for the selected configuration.
+          </p>
+        ) : (
+          <>
+            {/* Check all */}
+            <div className="flex items-center space-x-2 mb-4">
+              <Checkbox
+                id="game-check-all"
+                checked={gameIds.length === games.length}
+                onCheckedChange={(checked) => {
+                  const allGameIds = games.map((g) => g.GameId);
+                  setValue("gameIds", checked ? allGameIds : []);
+                }}
+                disabled={isRunning}
+              />
               <label
-                key={game.GameId}
-                htmlFor={`game-${game.GameId}`}
-                className={cn(
-                  "flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer",
-                  isChecked
-                    ? "bg-green-50 border-green-200 text-green-800 font-small"
-                    : "bg-white border-green-100 hover:bg-green-50"
-                )}
+                htmlFor="game-check-all"
+                className="text-sm font-semibold text-gray-800"
               >
-                <div className="flex items-center space-x-3">
-                  <Checkbox
-                    id={`game-${game.GameId}`}
-                    checked={isChecked}
-                    onCheckedChange={() => toggleGame(game.GameId)}
-                    disabled={isRunning}
-                  />
-                  <span className="text-sm">{game.DisplayName}</span>
-                </div>
+                Check All
               </label>
-            );
-          })}
-        </div>
+            </div>
+
+            <div className="border-b mb-4" />
+
+            {/* Game list */}
+            <div className="grid gap-3 max-h-[15rem] overflow-y-auto pr-2">
+              {games.map((game) => {
+                const isChecked = gameIds.includes(game.GameId);
+                return (
+                  <label
+                    key={game.GameId}
+                    htmlFor={`game-${game.GameId}`}
+                    className={cn(
+                      "flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer",
+                      isChecked
+                        ? "bg-green-50 border-green-200 text-green-800 font-small"
+                        : "bg-white border-green-100 hover:bg-green-50"
+                    )}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <Checkbox
+                        id={`game-${game.GameId}`}
+                        checked={isChecked}
+                        onCheckedChange={() => toggleGame(game.GameId)}
+                        disabled={isRunning}
+                      />
+                      <span className="text-sm">{game.DisplayName}</span>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         {errors.gameIds && (
           <p className="error-message mt-2">{errors.gameIds.message}</p>

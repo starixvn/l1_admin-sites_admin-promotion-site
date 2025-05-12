@@ -12,7 +12,12 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import { generateHourOptions, generateMinuteOptions, getNowInGMT7, mergeDateAndTime } from "@/lib/date-time.utils";
+import {
+  generateHourOptions,
+  generateMinuteOptions,
+  getNowInGMT7,
+  mergeDateAndTime,
+} from "@/lib/date-time.utils";
 
 interface DateTimePickerProps {
   disabled?: boolean;
@@ -68,7 +73,9 @@ export default function DateTimePicker({
     <div className="space-y-1">
       {label && (
         <label className="form-label">
-          {label} <span className="text-gray-400 text-sm ml-1">(GMT+7)</span>
+          {label}
+          <span className="text-red-500">*</span>{" "}
+          <span className="text-gray-400 text-sm ml-1">(GMT+7)</span>
         </label>
       )}
 

@@ -58,25 +58,28 @@ export default function Step1({
   return (
     <div className="space-y-6">
       <div>
-        <div className="flex items-center gap-2 mb-2">
-          {" "}
-          <Label className="form-label">Promotion Name</Label>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="tooltip-icon" />
-              </TooltipTrigger>
-              <TooltipContent
-                side="right"
-                className="z-50 max-w-xl break-words p-3 text-base text-gray-700 leading-relaxed"
-              >
-                <p>
-                  Each promotion must have a name. Can include letters, numbers,
-                  or underscores. No special characters allowed.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <div className="flex items-center gap-1 mb-2">
+          <Label className="form-label flex items-center gap-1">
+            Promotion Name<span className="text-red-500">*</span>
+          </Label>
+          <div className="mb-3">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="tooltip-icon" />
+                </TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  className="z-50 max-w-xl break-words p-3 text-sm text-gray-700 leading-relaxed"
+                >
+                  <p>
+                    Each promotion must have a name. Can include letters,
+                    numbers, or underscores. No special characters allowed.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
 
         <Input
@@ -104,24 +107,28 @@ export default function Step1({
       </div>
 
       <div>
-        <div className="flex items-center gap-2 mb-2">
-          <Label className="form-label">Promotion Code</Label>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Info className="tooltip-icon" />
-              </TooltipTrigger>
-              <TooltipContent
-                side="right"
-                className="max-w-xl break-words p-3 text-base text-gray-700 leading-relaxed"
-              >
-                <p>
-                  Automatically generated from Promotion Name. Must be unique.
-                  Only letters, numbers, or underscores allowed.
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        <div className="flex items-center gap-2">
+          <Label className="form-label">
+            Promotion Code<span className="text-red-500">*</span>
+          </Label>
+          <div className="mb-3">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="tooltip-icon" />
+                </TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  className="max-w-xl break-words p-3 text-sm text-gray-700 leading-relaxed"
+                >
+                  <p>
+                    Automatically generated from Promotion Name. Must be unique.
+                    Only letters, numbers, or underscores allowed.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
 
         <Input
@@ -134,42 +141,45 @@ export default function Step1({
 
         {errors.code && <p className="error-message">{errors.code.message}</p>}
       </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label className="form-label">Game Type<span className="text-red-500">*</span></Label>
+          <Select
+            value={String(gameConfigType)}
+            onValueChange={(val) => {
+              const parsed = Number(val) as GameType;
+              setValue("gameConfigType", parsed);
+            }}
+            disabled={isRunning}
+          >
+            <SelectTrigger className="select-wrapper">
+              <SelectValue placeholder="Select game type" />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              <SelectItem value={String(GAME_TYPES.CLASSIC)}>
+                Classic Slot
+              </SelectItem>
+              <SelectItem value={String(GAME_TYPES.CASCADING)}>
+                Cascading Slot
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div>
-        <Label className="form-label">Game Type</Label>
-        <Select
-          value={String(gameConfigType)}
-          onValueChange={(val) => {
-            const parsed = Number(val) as GameType;
-            setValue("gameConfigType", parsed);
-          }}
-          disabled={isRunning}
-        >
-          <SelectTrigger className="select-wrapper">
-            <SelectValue placeholder="Select game type" />
-          </SelectTrigger>
-          <SelectContent className="bg-white">
-            <SelectItem value={String(GAME_TYPES.CLASSIC)}>
-              Classic Slot
-            </SelectItem>
-            <SelectItem value={String(GAME_TYPES.CASCADING)}>
-              Cascading Slot
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label className="form-label">No. of Free Spins</Label>
-        <Input
-          type="number"
-          {...register("bonusItemCount", { valueAsNumber: true })}
-          className="form-input"
-          disabled={isRunning}
-        />
-        {errors.bonusItemCount && (
-          <p className="error-message">{errors.bonusItemCount.message}</p>
-        )}
+        <div>
+          <Label className="form-label">
+            No. of Free Spins<span className="text-red-500">*</span>
+          </Label>
+          <Input
+            type="number"
+            {...register("bonusItemCount", { valueAsNumber: true })}
+            className="form-input"
+            disabled={isRunning}
+          />
+          {errors.bonusItemCount && (
+            <p className="error-message">{errors.bonusItemCount.message}</p>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -190,7 +200,7 @@ export default function Step1({
       </div>
 
       <div>
-        <Label className="form-label">Operator</Label>
+        <Label className="form-label">Operator<span className="text-red-500">*</span></Label>
         <Select
           value={useWatch({ control, name: "operatorId" })}
           onValueChange={(val) => setValue("operatorId", val)}

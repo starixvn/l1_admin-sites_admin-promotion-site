@@ -13,6 +13,7 @@ import { getStatus } from "@/constants/promotionStatusMap";
 import { getNowInGMT7 } from "@/lib/date-time.utils";
 import { checkPromotionCodeExists } from "@/lib/api/checkPromotionCodeExists";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import { addDays } from "date-fns";
 
 const promotionSchema = z
   .object({
@@ -121,8 +122,8 @@ export default function PromotionForm({
           name: "",
           code: "",
           bonusItemCount: 0,
-          startDate: getNowInGMT7(),
-          endDate: getNowInGMT7(),
+          startDate: addDays(getNowInGMT7(), 1),
+          endDate: addDays(getNowInGMT7(), 1),
           operatorId: "",
           offeredSiteNames: [],
           gameIds: [],
@@ -145,11 +146,15 @@ export default function PromotionForm({
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
   const gameIds = useWatch({ control, name: "gameIds" });
   const { data: operators = [] } = useOperators();
+  const shouldFetchGames = currencyGroups.length > 0 && !!gameConfigType;
   const {
     data: games = [],
     isLoading,
     error,
-  } = useFilteredGames(currencyGroups, gameConfigType);
+  } = useFilteredGames(
+    shouldFetchGames ? currencyGroups : [],
+    shouldFetchGames ? gameConfigType : undefined
+  );
 
   useEffect(() => {
     if (initialValues && initialValues.offeredSiteNames) {
