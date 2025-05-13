@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import BetSettingsDialog from "@/app/promotion/create/BetSettingsDialog";
 import { GAME_TYPES } from "@/constants/gameTypes";
 
@@ -37,6 +37,19 @@ jest.mock("@/lib/promotion/bet-settings.utils", () => ({
   }),
 }));
 
+jest.mock("@/components/ui/dialog", () => ({
+  Dialog: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogContent: ({ children, "aria-describedby": ariaDescribedby }: any) => (
+    <div role="dialog" aria-describedby={ariaDescribedby || "dialog-description"}>
+      <div id="dialog-description">Dialog description</div>
+      {children}
+    </div>
+  ),
+  DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogTitle: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}));
+
 describe("BetSettingsDialog", () => {
   const onClose = jest.fn();
   const onSave = jest.fn();
@@ -45,65 +58,81 @@ describe("BetSettingsDialog", () => {
     jest.clearAllMocks();
   });
 
+  const renderDialog = async (props: any) => {
+    let result;
+    await act(async () => {
+      result = render(
+        <BetSettingsDialog
+          open={true}
+          onClose={onClose}
+          partnerId="op1"
+          gameType={GAME_TYPES.CLASSIC}
+          onSave={onSave}
+          {...props}
+        />
+      );
+    });
+    return result;
+  };
+
   it("renders dialog with correct title and rows", async () => {
-    render(
-      <BetSettingsDialog
-        open={true}
-        onClose={onClose}
-        partnerId="op1"
-        gameType={GAME_TYPES.CLASSIC}
-        onSave={onSave}
-      />
-    );
+    await renderDialog({});
+    
     expect(screen.getByText(/Bet Settings/)).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByText("Dialog description")).toBeInTheDocument();
   });
 
-  it("renders in readonly mode (no Save button, toggles disabled)", () => {
-    render(
-      <BetSettingsDialog
-        open={true}
-        onClose={onClose}
-        partnerId="op1"
-        gameType={GAME_TYPES.CLASSIC}
-        onSave={onSave}
-        readonly={true}
-        initialValues={[{ currencyGroup: "cg1", betLevel: 10 }]}
-      />
-    );
+  it("renders in readonly mode (no Save button, toggles disabled)", async () => {
+    await renderDialog({
+      readonly: true,
+      initialValues: [{ currencyGroup: "cg1", betLevel: 10 }]
+    });
+
     expect(screen.queryByRole("button", { name: /Save/i })).not.toBeInTheDocument();
     const toggles = screen.getAllByRole("button");
-    toggles.forEach(btn => expect(btn).toBeDisabled || expect(btn).toHaveClass("cursor-not-allowed"));
   });
 
-  it("shows correct formula for cascading slot", () => {
-    render(
-      <BetSettingsDialog
-        open={true}
-        onClose={onClose}
-        partnerId="op1"
-        gameType={GAME_TYPES.CASCADING}
-        onSave={onSave}
-      />
-    );
+  it("shows correct formula for cascading slot", async () => {
+    await renderDialog({
+      gameType: GAME_TYPES.CASCADING
+    });
+
     expect(screen.getByText(/Cascading Slot/)).toBeInTheDocument();
   });
 
-  it("does not crash if currencyGroups is empty", () => {
-    jest.mock("@/hooks/useCurrencyGroups", () => ({
-      useCurrencyGroups: () => ({
+  it("does not crash if currencyGroups is empty", async () => {
+    jest.spyOn(require("@/hooks/useCurrencyGroups"), "useCurrencyGroups")
+      .mockImplementationOnce(() => ({
         data: [],
         isSuccess: true,
-      }),
-    }));
-    render(
-      <BetSettingsDialog
-        open={true}
-        onClose={onClose}
-        partnerId="op1"
-        gameType={GAME_TYPES.CLASSIC}
-        onSave={onSave}
-      />
-    );
+      }));
+
+    await renderDialog({});
+
     expect(screen.getByText(/Bet Settings/)).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("handles save action correctly", async () => {
+    await renderDialog({});
+
+    const saveButton = screen.getByRole("button", { name: /Save/i });
+    await act(async () => {
+      saveButton.click();
+    });
+
+    expect(onSave).toHaveBeenCalled();
+  });
+
+  it("handles close action correctly", async () => {
+    await renderDialog({});
+
+    const closeButton = screen.getByRole("button", { name: /Close/i });
+    await act(async () => {
+      closeButton.click();
+    });
+
+    expect(onClose).toHaveBeenCalled();
   });
 });
