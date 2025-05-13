@@ -1,7 +1,6 @@
 "use client";
 
 import { GAME_TYPES } from "@/constants/gameTypes";
-import { Game } from "@/types/game";
 import { useState } from "react";
 import PromotionEditDialog from "./edit/PromotionEditDialog";
 import { Promotion } from "@/types/promotion";
@@ -9,6 +8,7 @@ import { toast } from "react-toastify";
 import { getStatus } from "@/constants/promotionStatusMap";
 import { differenceInDays } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
+import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 
 interface DataGridProps {
   promotions: Promotion[];
@@ -257,9 +257,9 @@ export default function DataGrid({
               onChange={e => onPageSizeChange(Number(e.target.value))}
               className="border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500"
             >
-              <option value={10}>10</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <option key={size} value={size}>{size}</option>
+              ))}
             </select>
           </label>
         </div>

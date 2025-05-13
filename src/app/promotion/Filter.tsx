@@ -3,11 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import PromotionDialog from "./create/PromotionDialog";
 import { PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
-
-interface Operator {
-  name: string;
-  id: string;
-}
+import { Operator } from "@/types/operator";
 
 interface FilterProps {
   onFilterChange: (filters: FilterValues) => void;
@@ -41,7 +37,7 @@ export default function Filter({
     if (operatorOptions.length > 0) {
       setFilters((prev) => ({
         ...prev,
-        operator: operatorOptions.map((op) => op.id),
+        operator: operatorOptions.map((op) => op.PartnerId),
         pageSize: initialFilters.pageSize,
       }));
     }
@@ -83,13 +79,13 @@ export default function Filter({
     }
 
     return filters.operator
-      .map((id) => operatorOptions.find((op) => op.id === id)?.name)
+      .map((id) => operatorOptions.find((op) => op.PartnerId === id)?.Name)
       .filter(Boolean)
       .join(", ");
   };
 
   const filteredOperators = operatorOptions.filter((op) =>
-    op.name.toLowerCase().includes(operatorSearch.toLowerCase())
+    op.Name && op.Name.toLowerCase().includes(operatorSearch.toLowerCase())
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -130,7 +126,7 @@ export default function Filter({
           operator:
             newOperators.length === operatorOptions.length
               ? []
-              : operatorOptions.map((op) => op.id),
+              : operatorOptions.map((op) => op.PartnerId),
         };
       }
 
@@ -245,18 +241,18 @@ export default function Filter({
                   
                   {filteredOperators.map((option) => (
                     <div
-                      key={option.id}
+                      key={option.PartnerId}
                       role="option"
                       className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
                     >
                       <input
                         type="checkbox"
-                        checked={filters.operator.includes(option.id)}
-                        onChange={() => handleOperatorSelect(option.id)}
+                        checked={filters.operator.includes(option.PartnerId)}
+                        onChange={() => handleOperatorSelect(option.PartnerId)}
                         className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out cursor-pointer"
-                        aria-label={`Select ${option.name}`}
+                        aria-label={`Select ${option.Name}`}
                       />
-                      <span className="ml-2">{option.name}</span>
+                      <span className="ml-2">{option.Name}</span>
                     </div>
                   ))}
                 </div>

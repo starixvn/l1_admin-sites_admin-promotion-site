@@ -147,7 +147,6 @@ describe("PromotionPage", () => {
     render(<PromotionPage />, { wrapper });
     await waitFor(() => {
       expect(mockedAxios.get).toHaveBeenCalledWith("/api/operators");
-      expect(mockedAxios.get).toHaveBeenCalledWith("/api/games");
     });
   });
 

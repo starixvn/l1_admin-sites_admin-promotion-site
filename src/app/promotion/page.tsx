@@ -18,14 +18,9 @@ interface PromotionFilters {
   pageSize: number;
 }
 
-interface OperatorDisplay {
-  name: string;
-  id: string;
-}
-
 export default function Page() {
   const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [operators, setOperators] = useState<OperatorDisplay[]>([]);
+  const [operators, setOperators] = useState<Operator[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalItems, setTotalItems] = useState(0);
@@ -57,7 +52,7 @@ export default function Page() {
       }
 
       if (filters.operator && filters.operator.length > 0) {
-        const allOperatorIds = operators.map((op) => op.id);
+        const allOperatorIds = operators.map((op) => op.PartnerId);
         const isAllSelected =
           filters.operator.length === allOperatorIds.length &&
           allOperatorIds.every((id) => filters.operator.includes(id));
@@ -103,14 +98,14 @@ export default function Page() {
     try {
       const response = await axios.get("/api/operators");
       const operatorsList = response.data.map((op: Operator) => ({
-        name: op.Name,
-        id: op.PartnerId,
+        Name: op.Name,
+        PartnerId: op.PartnerId,
       }));
       setOperators(operatorsList);
       
       const newFilters = {
         ...currentFilters,
-        operator: operatorsList.map((op: OperatorDisplay) => op.id)
+        operator: operatorsList.map((op: Operator) => op.PartnerId)
       };
       setCurrentFilters(newFilters);
       handleFilterSubmit(newFilters);
