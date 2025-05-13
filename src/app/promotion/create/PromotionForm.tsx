@@ -156,7 +156,8 @@ export default function PromotionForm({
     shouldFetchGames ? gameConfigType : undefined
   );
   const operatorId = useWatch({ control, name: "operatorId" });
-  const { data: currencyGroupsInfo = [], isLoading: isLoadingCurrencyGroups } = useCurrencyGroups(operatorId);
+  const { data: currencyGroupsInfo = [], isLoading: isLoadingCurrencyGroups } =
+    useCurrencyGroups(operatorId);
 
   useEffect(() => {
     if (initialValues && initialValues.offeredSiteNames) {
@@ -207,7 +208,10 @@ export default function PromotionForm({
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const handleFormSubmit = (data: PromotionFormValues) => {
     const payload: PromotionFormSubmission = {
-      betLevels: data.betLevels || [],
+      betLevels: (data.betLevels || []).map(({ currencyGroup, betLevel }) => ({
+        currencyGroup,
+        betLevel,
+      })),
       bonusItemCount: data.bonusItemCount,
       code: data.code,
       currencyGroups: data.currencyGroups,
@@ -344,7 +348,8 @@ export default function PromotionForm({
           onClose={() => setShowPreviewDialog(false)}
           data={previewData}
           operatorName={
-            operators.find((op) => op.PartnerId === previewData?.operatorId)?.Name
+            operators.find((op) => op.PartnerId === previewData?.operatorId)
+              ?.Name
           }
           gameList={games}
           currencyGroupsInfo={currencyGroupsInfo}
@@ -352,7 +357,7 @@ export default function PromotionForm({
           mode={mode as "create" | "edit"}
           initialId={initialValues?._id}
           onConfirm={(finalPayload) => {
-            handleFormSubmit(finalPayload); 
+            handleFormSubmit(finalPayload);
           }}
         />
       )}
