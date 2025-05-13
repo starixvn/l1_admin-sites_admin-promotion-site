@@ -4,7 +4,6 @@ import type { Game } from "@/types/game";
 import type { CurrencyGroup } from "@/types/currency-group";
 import { getTotalBet } from "@/lib/promotion/bet-settings.utils";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { PlayerListModal } from "./PlayerListModal";
 interface PromotionViewFormProps {
   data: PromotionFormValues;
@@ -75,7 +74,7 @@ export default function PromotionViewForm({
         <h2 className="text-md font-semibold mb-4">
           🎰 Currency Group Settings <span className="text-red-500">*</span>
         </h2>
-        <table className="w-full border text-sm">
+        <table className="w-auto border text-sm">
           <thead>
             <tr className="bg-gray-100 text-left">
               <th className=" text-center border px-4 py-2">Currency Group</th>

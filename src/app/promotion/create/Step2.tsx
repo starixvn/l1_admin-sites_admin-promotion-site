@@ -45,7 +45,6 @@ interface GameSelectionProps {
   setValue: UseFormSetValue<PromotionFormValues>;
   isRunning: boolean;
   toggleGame: (id: number) => void;
-  errors: FieldErrors<PromotionFormValues>;
 }
 
 function GameSelection({
@@ -57,7 +56,6 @@ function GameSelection({
   setValue,
   isRunning,
   toggleGame,
-  errors,
 }: GameSelectionProps) {
   if (!shouldShowGames) {
     return (
@@ -79,6 +77,7 @@ function GameSelection({
       </p>
     );
   }
+
   return (
     <>
       <p className="text-xs text-muted-foreground mb-3">
@@ -133,13 +132,9 @@ function GameSelection({
           );
         })}
       </div>
-      {errors.gameIds && (
-        <p className="error-message mt-2">{errors.gameIds.message}</p>
-      )}
     </>
   );
 }
-
 
 export default function Step2({
   mode,
@@ -250,8 +245,10 @@ export default function Step2({
           setValue={setValue}
           isRunning={isRunning}
           toggleGame={toggleGame}
-          errors={errors}
         />
+        {errors.gameIds && (
+          <p className="text-sm text-red-600 mt-2">{errors.gameIds.message}</p>
+        )}
       </fieldset>
 
       <div>

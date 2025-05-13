@@ -32,8 +32,8 @@ export default function PromotionPreviewDialog({
 }: PromotionPreviewDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[40vw] max-w-[1200px] md:max-w-[98vw] overflow-y-auto p-3 bg-white rounded-lg">
-        <DialogTitle className="text-xl font-semibold pt-2 pb-1">Promotion Details</DialogTitle>
+      <DialogContent className="w-[70vw] !max-w-[800px] max-h-[90vh] overflow-y-auto p-6 bg-white rounded-lg">
+        <DialogTitle className="text-xl font-semibold ">
 
         <PromotionViewForm
           data={data}

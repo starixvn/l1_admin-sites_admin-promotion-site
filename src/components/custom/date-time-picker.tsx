@@ -102,7 +102,10 @@ export default function DateTimePicker({
             mode="single"
             selected={date}
             onSelect={handleDateChange}
-            disabled={disabled}
+            disabled={[
+              disabled,
+              { before: new Date() },
+            ]}
             className="custom-day-picker"
           />
 
