@@ -6,7 +6,7 @@ import PromotionEditDialog from "./edit/PromotionEditDialog";
 import { Promotion } from "@/types/promotion";
 import { toast } from "react-toastify";
 import { getStatus } from "@/constants/promotionStatusMap";
-import { differenceInDays } from "date-fns";
+import { differenceInCalendarDays } from "date-fns";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import PromotionPreviewDialog from "./create/PromotionPreviewDialog";
@@ -100,7 +100,7 @@ export default function DataGrid({
     }
   );
   const getCountdown = (endDate: Date) => {
-    const daysLeft = differenceInDays(endDate, new Date());
+    const daysLeft = differenceInCalendarDays(endDate, new Date());
     const colorClass = daysLeft > 0 ? "text-green-500" : "text-red-500";
     const text = daysLeft > 0 ? `${daysLeft} days left` : "Expired";
     return <div className={`text-xs font-medium ${colorClass}`}>{text}</div>;

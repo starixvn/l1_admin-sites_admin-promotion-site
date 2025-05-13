@@ -338,22 +338,24 @@ export default function PromotionForm({
           ) : null}
         </div>
       </div>
-      <PromotionPreviewDialog
-        open={showPreviewDialog}
-        onClose={() => setShowPreviewDialog(false)}
-        data={previewData!}
-        operatorName={
-          operators.find((op) => op.PartnerId === previewData?.operatorId)?.Name
-        }
-        gameList={games}
-        currencyGroupsInfo={currencyGroupsInfo}
-        isSubmitting={isPending}
-        mode={mode as "create" | "edit"}
-        initialId={initialValues?._id}
-        onConfirm={(finalPayload) => {
-          handleFormSubmit(finalPayload); 
-        }}
-      />
+      {previewData && (
+        <PromotionPreviewDialog
+          open={showPreviewDialog}
+          onClose={() => setShowPreviewDialog(false)}
+          data={previewData}
+          operatorName={
+            operators.find((op) => op.PartnerId === previewData?.operatorId)?.Name
+          }
+          gameList={games}
+          currencyGroupsInfo={currencyGroupsInfo}
+          isSubmitting={isPending}
+          mode={mode as "create" | "edit"}
+          initialId={initialValues?._id}
+          onConfirm={(finalPayload) => {
+            handleFormSubmit(finalPayload); 
+          }}
+        />
+      )}
     </div>
   );
 }

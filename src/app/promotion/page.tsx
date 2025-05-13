@@ -25,52 +25,62 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [totalItems, setTotalItems] = useState(0);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deletingPromotionId, setDeletingPromotionId] = useState<string | null>(null);
-  const [deletingPromotionCode, setDeletingPromotionCode] = useState<string | null>(null);
+  const [deletingPromotionId, setDeletingPromotionId] = useState<string | null>(
+    null
+  );
+  const [deletingPromotionCode, setDeletingPromotionCode] = useState<
+    string | null
+  >(null);
   const [currentFilters, setCurrentFilters] = useState<PromotionFilters>({
     status: "All",
     operator: [],
     promotionCode: "",
     pageIndex: 1,
-    pageSize: 10
+    pageSize: 10,
   });
 
   // Memoize the filter handler to prevent unnecessary re-renders
-  const handleFilterSubmit = useCallback(async (filters: PromotionFilters) => {
-    setCurrentFilters(filters);
-    try {
-      setError(null);
-      const queryParams = new URLSearchParams();
-      
-      if (filters.status !== "All") {
-        queryParams.append("status", filters.status);
-      }
+  const handleFilterSubmit = useCallback(
+    async (filters: PromotionFilters) => {
+      setCurrentFilters(filters);
+      try {
+        setError(null);
+        const queryParams = new URLSearchParams();
 
-      if (filters.operator?.length > 0) {
-        const allOperatorIds = operators.map(op => op.PartnerId);
-        const isAllSelected = filters.operator.length === allOperatorIds.length && 
-          allOperatorIds.every(id => filters.operator.includes(id));
-
-        if (!isAllSelected) {
-          queryParams.append("operator", filters.operator.toString());
+        if (filters.status !== "All") {
+          queryParams.append("status", filters.status);
         }
+
+        if (filters.operator?.length > 0) {
+          const allOperatorIds = operators.map((op) => op.PartnerId);
+          const isAllSelected =
+            filters.operator.length === allOperatorIds.length &&
+            allOperatorIds.every((id) => filters.operator.includes(id));
+
+          if (!isAllSelected) {
+            queryParams.append("operator", filters.operator.toString());
+          }
+        }
+
+        if (filters.promotionCode) {
+          queryParams.append("promotionCode", filters.promotionCode);
+        }
+
+        queryParams.append("pageIndex", filters.pageIndex.toString());
+        queryParams.append("pageSize", filters.pageSize.toString());
+
+        const response = await axios.get(
+          `/api/promotions?${queryParams.toString()}`
+        );
+        setPromotions(response.data.items);
+        setTotalItems(response.data.metadata.total);
+      } catch (error) {
+        console.error(error);
+        setError("Failed to fetch promotions");
       }
-
-      if (filters.promotionCode) {
-        queryParams.append("promotionCode", filters.promotionCode);
-      }
-
-      queryParams.append("pageIndex", filters.pageIndex.toString());
-      queryParams.append("pageSize", filters.pageSize.toString());
-
-      const response = await axios.get(`/api/promotions?${queryParams.toString()}`);
-      setPromotions(response.data.items);
-      setTotalItems(response.data.metadata.total);
-    } catch (error) {
-      console.error(error);
-      setError("Failed to fetch promotions");
-    }
-  }, [operators]);
+    },
+    [operators]
+  );
 
   // Fetch operators only once on mount
   useEffect(() => {
@@ -83,12 +93,12 @@ export default function Page() {
           PartnerId: op.PartnerId,
         }));
         setOperators(operatorsList);
-        
+
         // Set initial operator filter only if empty
         if (currentFilters.operator.length === 0) {
           const newFilters = {
             ...currentFilters,
-            operator: operatorsList.map((op: Operator) => op.PartnerId)
+            operator: operatorsList.map((op: Operator) => op.PartnerId),
           };
           setCurrentFilters(newFilters);
           handleFilterSubmit(newFilters);
@@ -104,20 +114,26 @@ export default function Page() {
     fetchOperators();
   }, []); // Empty dependency array - only run on mount
 
-  const handlePageChange = useCallback((newPage: number) => {
-    handleFilterSubmit({
-      ...currentFilters,
-      pageIndex: newPage
-    });
-  }, [currentFilters, handleFilterSubmit]);
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      handleFilterSubmit({
+        ...currentFilters,
+        pageIndex: newPage,
+      });
+    },
+    [currentFilters, handleFilterSubmit]
+  );
 
-  const handlePageSizeChange = useCallback((size: number) => {
-    handleFilterSubmit({
-      ...currentFilters,
-      pageSize: size,
-      pageIndex: 1,
-    });
-  }, [currentFilters, handleFilterSubmit]);
+  const handlePageSizeChange = useCallback(
+    (size: number) => {
+      handleFilterSubmit({
+        ...currentFilters,
+        pageSize: size,
+        pageIndex: 1,
+      });
+    },
+    [currentFilters, handleFilterSubmit]
+  );
 
   const handleDeleteClick = useCallback(async (id: string, code: string) => {
     setDeletingPromotionId(id);
@@ -126,11 +142,15 @@ export default function Page() {
   }, []);
 
   const handleDeleteConfirm = useCallback(async () => {
-    if (!deletingPromotionId) return;
+    if (!deletingPromotionId) {
+      return;
+    }
 
     try {
       await axios.delete(`/api/promotions/${deletingPromotionId}`);
-      setPromotions(prev => prev.filter(p => p._id !== deletingPromotionId));
+      setPromotions((prev) =>
+        prev.filter((p) => p._id !== deletingPromotionId)
+      );
       setIsDeleteModalOpen(false);
       toast.success("Promotion deleted successfully");
       handleFilterSubmit(currentFilters); // Refresh the list
