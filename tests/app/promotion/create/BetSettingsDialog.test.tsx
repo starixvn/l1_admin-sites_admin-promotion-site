@@ -16,13 +16,6 @@ const mockCurrencyGroups = [
   { Id: "cg2", Name: "VND" },
 ];
 
-jest.mock("@/hooks/useCurrencyGroups", () => ({
-  useCurrencyGroups: () => ({
-    data: mockCurrencyGroups,
-    isSuccess: true,
-  }),
-}));
-
 const mockGetCurrencyGroupGames = jest.fn().mockResolvedValue([]);
 jest.mock("@/hooks/useCurrencyGroupGames", () => ({
   useCurrencyGroupGames: () => ({
@@ -40,10 +33,12 @@ jest.mock("@/lib/promotion/bet-settings.utils", () => ({
         .map((r: Row) => r.id)
     );
   }),
+  getTotalBet: jest.fn(() => 25),
 }));
 
 jest.mock("@/components/ui/dialog", () => ({
-  Dialog: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Dialog: ({ children, open }: { children: React.ReactNode; open?: boolean }) => 
+    open ? <div>{children}</div> : null,
   DialogContent: ({ children, "aria-describedby": ariaDescribedby }: any) => (
     <div role="dialog" aria-describedby={ariaDescribedby || "dialog-description"}>
       <div id="dialog-description">Dialog description</div>
@@ -52,7 +47,6 @@ jest.mock("@/components/ui/dialog", () => ({
   ),
   DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DialogTitle: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DialogFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
 describe("BetSettingsDialog", () => {
@@ -64,33 +58,39 @@ describe("BetSettingsDialog", () => {
     mockGetCurrencyGroupGames.mockClear();
   });
 
-  const renderDialog = async (props: any) => {
+  const renderDialog = async (props: any = {}) => {
+    const defaultProps = {
+      open: true,
+      onClose,
+      partnerId: "op1",
+      gameType: GAME_TYPES.CLASSIC,
+      onSave,
+      currencyGroupsInfo: mockCurrencyGroups,
+      ...props,
+    };
+
     let result;
     await act(async () => {
-      result = render(
-        <BetSettingsDialog
-          open={true}
-          onClose={onClose}
-          partnerId="op1"
-          gameType={GAME_TYPES.CLASSIC}
-          onSave={onSave}
-          {...props}
-        />
-      );
+      result = render(<BetSettingsDialog {...defaultProps} />);
     });
-    await waitFor(() => {
-      expect(mockGetCurrencyGroupGames).toHaveBeenCalledTimes(mockCurrencyGroups.length);
-    });
+
+    // Only wait for API calls if we have currency groups
+    if (defaultProps.currencyGroupsInfo?.length > 0) {
+      await waitFor(() => {
+        expect(mockGetCurrencyGroupGames).toHaveBeenCalledTimes(defaultProps.currencyGroupsInfo.length);
+      }, { timeout: 5000 });
+    }
+
     return result;
   };
 
   it("renders dialog with correct title and rows", async () => {
-    await renderDialog({});
+    await renderDialog();
     
     expect(screen.getByText(/Bet Settings/)).toBeInTheDocument();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("Dialog description")).toBeInTheDocument();
-  }, 10000);
+  });
 
   it("renders in readonly mode (no Save button, toggles disabled)", async () => {
     await renderDialog({
@@ -99,7 +99,18 @@ describe("BetSettingsDialog", () => {
     });
 
     expect(screen.queryByRole("button", { name: /Save/i })).not.toBeInTheDocument();
-  }, 10000);
+    
+    // Find toggle divs by their classes instead of role
+    const toggleDivs = screen.getAllByTestId("toggle-button");
+    toggleDivs.forEach(div => {
+      expect(div).toHaveClass("opacity-50");
+      expect(div).toHaveClass("cursor-not-allowed");
+    });
+
+    // Verify input is disabled
+    const input = screen.getByRole("spinbutton");
+    expect(input).toBeDisabled();
+  });
 
   it("shows correct formula for cascading slot", async () => {
     await renderDialog({
@@ -107,23 +118,26 @@ describe("BetSettingsDialog", () => {
     });
 
     expect(screen.getByText(/Cascading Slot/)).toBeInTheDocument();
-  }, 10000);
+    expect(screen.getByText(/Coin Value/)).toBeInTheDocument();
+  });
 
   it("does not crash if currencyGroups is empty", async () => {
-    jest.spyOn(require("@/hooks/useCurrencyGroups"), "useCurrencyGroups")
-      .mockImplementationOnce(() => ({
-        data: [],
-        isSuccess: true,
-      }));
-
-    await renderDialog({});
+    await renderDialog({
+      currencyGroupsInfo: []
+    });
 
     expect(screen.getByText(/Bet Settings/)).toBeInTheDocument();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-  }, 10000);
+    expect(mockGetCurrencyGroupGames).not.toHaveBeenCalled();
+    
+    // Verify table is empty by finding tbody directly
+    const table = screen.getByRole("table");
+    const tbody = table.querySelector("tbody");
+    expect(tbody?.children.length).toBe(0);
+  });
 
   it("handles save action correctly", async () => {
-    await renderDialog({});
+    await renderDialog();
 
     const saveButton = screen.getByRole("button", { name: /Save/i });
     await act(async () => {
@@ -134,10 +148,10 @@ describe("BetSettingsDialog", () => {
       currencyGroups: [],
       betLevels: [],
     });
-  }, 10000);
+  });
 
   it("handles close action correctly", async () => {
-    await renderDialog({});
+    await renderDialog();
 
     const closeButton = screen.getByRole("button", { name: /Close/i });
     await act(async () => {
@@ -145,5 +159,5 @@ describe("BetSettingsDialog", () => {
     });
 
     expect(onClose).toHaveBeenCalled();
-  }, 10000);
+  });
 });

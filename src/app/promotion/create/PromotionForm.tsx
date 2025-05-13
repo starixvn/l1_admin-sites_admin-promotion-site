@@ -351,7 +351,7 @@ export default function PromotionForm({
         mode={mode as "create" | "edit"}
         initialId={initialValues?._id}
         onConfirm={(finalPayload) => {
-          handleFormSubmit(finalPayload); // gọi lại đúng hàm bạn đã có
+          handleFormSubmit(finalPayload); 
         }}
       />
     </div>

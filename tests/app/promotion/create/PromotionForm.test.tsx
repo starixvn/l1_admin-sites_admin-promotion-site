@@ -1,156 +1,113 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import PromotionForm from "../../../../src/app/promotion/create/PromotionForm";
-import { GAME_TYPES } from "../../../../src/constants/gameTypes";
+import { render, screen, act } from "@testing-library/react";
+import PromotionForm from "@/app/promotion/create/PromotionForm";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { GAME_TYPES } from "@/constants/gameTypes";
 
-// Mock hooks and components
-jest.mock("../../../../src/hooks/useCreatePromotion", () => ({
-  useCreatePromotion: () => ({
-    mutate: jest.fn(),
-    isPending: false,
-  }),
-}));
-
-jest.mock("../../../../src/hooks/useOperators", () => ({
+// Mock hooks
+jest.mock("@/hooks/useOperators", () => ({
   useOperators: () => ({
     data: [
-      { _id: "op1", name: "Operator 1" },
-      { _id: "op2", name: "Operator 2" },
+      { PartnerId: "op1", Name: "Operator 1" },
+      { PartnerId: "op2", Name: "Operator 2" },
     ],
   }),
 }));
 
-jest.mock("../../../../src/hooks/useFilteredGames", () => ({
+jest.mock("@/hooks/useCurrencyGroups", () => ({
+  useCurrencyGroups: () => ({
+    data: [
+      { Id: "cg1", Name: "USD" },
+      { Id: "cg2", Name: "VND" },
+    ],
+    isLoading: false,
+  }),
+}));
+
+jest.mock("@/hooks/useFilteredGames", () => ({
   useFilteredGames: () => ({
     data: [
-      { _id: 1, name: "Game 1" },
-      { _id: 2, name: "Game 2" },
+      { GameId: 1, Name: "Game 1" },
+      { GameId: 2, Name: "Game 2" },
     ],
     isLoading: false,
     error: null,
   }),
 }));
 
-jest.mock("../../../../src/lib/api/checkPromotionCodeExists", () => ({
+jest.mock("@/hooks/useCreatePromotion", () => ({
+  useCreatePromotion: () => ({
+    mutate: jest.fn(),
+    isPending: false,
+  }),
+}));
+
+jest.mock("@/lib/api/checkPromotionCodeExists", () => ({
   checkPromotionCodeExists: jest.fn().mockResolvedValue(false),
 }));
 
-jest.mock("../../../../src/app/promotion/create/Step1", () => {
-  return function MockStep1({ register, errors, operators }: any) {
-    return (
-      <div data-testid="step1">
-        <input {...register("name")} data-testid="name-input" />
-        {errors.name && <span>{errors.name.message}</span>}
-        <input {...register("code")} data-testid="code-input" />
-        {errors.code && <span>{errors.code.message}</span>}
-        <input {...register("bonusItemCount")} data-testid="bonus-input" />
-        {errors.bonusItemCount && <span>{errors.bonusItemCount.message}</span>}
-        <input {...register("startDate")} data-testid="start-date-input" />
-        {errors.startDate && <span>{errors.startDate.message}</span>}
-        <input {...register("endDate")} data-testid="end-date-input" />
-        {errors.endDate && <span>{errors.endDate.message}</span>}
-        <select {...register("operatorId")} data-testid="operator-select">
-          <option value="">Select Operator</option>
-          {operators.map((op: any) => (
-            <option key={op._id} value={op._id}>
-              {op.name}
-            </option>
-          ))}
-        </select>
-        {errors.operatorId && <span>{errors.operatorId.message}</span>}
-      </div>
-    );
-  };
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
 });
 
-jest.mock("../../../../src/app/promotion/create/Step2", () => {
-  return function MockStep2({ control, errors, games, toggleGame }: any) {
-    return (
-      <div data-testid="step2">
-        <input {...control.register("currencyGroups")} data-testid="currency-input" />
-        {errors.currencyGroups && <span>{errors.currencyGroups.message}</span>}
-        <input {...control.register("gameIds")} data-testid="game-input" />
-        {errors.gameIds && <span>{errors.gameIds.message}</span>}
-        <div data-testid="game-list">
-          {games.map((game: any) => (
-            <button
-              key={game._id}
-              onClick={() => toggleGame(game._id)}
-              data-testid={`game-${game._id}`}
-            >
-              {game.name}
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  };
-});
-
-jest.mock("../../../../src/components/ConfirmDialog", () => {
-  return function MockConfirmDialog({ open, onConfirm, onCancel }: any) {
-    if (!open) return null;
-    return (
-      <div data-testid="confirm-dialog">
-        <button onClick={onConfirm} data-testid="confirm-button">
-          Confirm
-        </button>
-        <button onClick={onCancel} data-testid="cancel-button">
-          Cancel
-        </button>
-      </div>
-    );
-  };
-});
+const renderForm = (props = {}) => {
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <PromotionForm {...props} />
+    </QueryClientProvider>
+  );
+};
 
 describe("PromotionForm", () => {
-  const mockOnClose = jest.fn();
-  const mockOnSubmit = jest.fn();
-
   beforeEach(() => {
-    jest.clearAllMocks();
+    queryClient.clear();
   });
 
-  it("renders in create mode with default values", () => {
-    render(<PromotionForm mode="create" onClose={mockOnClose} />);
-    
-    expect(screen.getByTestId("step1")).toBeInTheDocument();
+  it("renders in create mode with default values", async () => {
+    renderForm();
+
     expect(screen.getByText("Step 1 of 2")).toBeInTheDocument();
     expect(screen.getByText("Basic Details")).toBeInTheDocument();
   });
 
-  it("renders in edit mode with initial values", () => {
+  it("renders in edit mode with initial values", async () => {
     const initialValues = {
       _id: "promo1",
       name: "Test Promotion",
       code: "TEST123",
-      bonusItemCount: 100,
+      bonusItemCount: 10,
       startDate: new Date().toISOString(),
       endDate: new Date().toISOString(),
       operatorId: "op1",
       gameConfigType: GAME_TYPES.CLASSIC,
-      currencyGroups: ["USD"],
-      gameIds: [1],
-      allPlayers: true,
+      gameIds: [1, 2],
+      currencyGroups: ["cg1"],
+      betLevels: [{ currencyGroup: "cg1", betLevel: 10 }],
+      offeredSiteNames: [],
+      offeredPlayerIds: [],
     };
 
-    render(
-      <PromotionForm
-        mode="edit"
-        initialValues={initialValues as any}
-        onClose={mockOnClose}
-      />
-    );
+    renderForm({ mode: "edit", initialValues });
 
-    expect(screen.getByTestId("name-input")).toHaveValue("Test Promotion");
-    expect(screen.getByTestId("code-input")).toHaveValue("TEST123");
+    expect(screen.getByDisplayValue("Test Promotion")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("TEST123")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("10")).toBeInTheDocument();
   });
 
   it("validates required fields in step 1", async () => {
-    render(<PromotionForm mode="create" onClose={mockOnClose} />);
-    
-    const nextButton = screen.getByText("Next →");
-    fireEvent.click(nextButton);
+    renderForm();
 
+    const nextButton = screen.getByText("Next →");
+    await act(async () => {
+      nextButton.click();
+    });
+
+    expect(screen.getByText("Promotion name is required")).toBeInTheDocument();
+    expect(screen.getByText("Promotion code is required")).toBeInTheDocument();
+    expect(screen.getByText("Free spins must be greater than 0")).toBeInTheDocument();
   });
 });

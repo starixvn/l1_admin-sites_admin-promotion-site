@@ -301,6 +301,7 @@ export default function BetSettingsDialog({
                     <td className="px-4 py-3 border-r">{row.name}</td>
                     <td className="text-center border-r">
                       <div
+                        data-testid="toggle-button"
                         className={`w-12 h-7 rounded-full flex items-center transition-colors duration-300 px-1 cursor-pointer ${
                           row.enabled
                             ? "bg-green-500 justify-end mx-auto"
