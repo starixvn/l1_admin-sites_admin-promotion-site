@@ -25,7 +25,6 @@ export default function Filter({
   initialFilters,
 }: FilterProps) {
   const [filters, setFilters] = useState<FilterValues>(initialFilters);
-
   const [operatorSearch, setOperatorSearch] = useState("");
   const [showOperatorDropdown, setShowOperatorDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -33,39 +32,52 @@ export default function Filter({
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
 
+  // Update local filters when initialFilters change
   useEffect(() => {
-    if (operatorOptions.length > 0) {
-      setFilters((prev) => ({
-        ...prev,
-        operator: operatorOptions.map((op) => op.PartnerId),
-        pageSize: initialFilters.pageSize,
-      }));
-    }
-  }, [operatorOptions, initialFilters.pageSize]);
+    setFilters(initialFilters);
+  }, [initialFilters]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowOperatorDropdown(false);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
     if (inputRef.current) {
-      const isTextOverflowing =
-        inputRef.current.scrollWidth > inputRef.current.clientWidth;
-      setIsOverflowing(isTextOverflowing);
+      setIsOverflowing(inputRef.current.scrollWidth > inputRef.current.clientWidth);
     }
   }, [filters.operator]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onFilterChange(filters);
+  };
+
+  const handleOperatorSelect = (operatorId: string) => {
+    setFilters(prev => {
+      const newOperators = [...prev.operator];
+      const index = newOperators.indexOf(operatorId);
+
+      if (operatorId === "All") {
+        return {
+          ...prev,
+          operator: newOperators.length === operatorOptions.length ? [] : operatorOptions.map(op => op.PartnerId),
+        };
+      }
+
+      if (index === -1) {
+        newOperators.push(operatorId);
+      } else {
+        newOperators.splice(index, 1);
+      }
+      return { ...prev, operator: newOperators };
+    });
+  };
 
   const getSelectedOperatorDisplay = () => {
     if (filters.operator.length === 0) {
@@ -87,11 +99,6 @@ export default function Filter({
   const filteredOperators = operatorOptions.filter((op) =>
     op.Name && op.Name.toLowerCase().includes(operatorSearch.toLowerCase())
   );
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onFilterChange({ ...filters, pageSize: initialFilters.pageSize });
-  };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
@@ -115,34 +122,8 @@ export default function Filter({
     }
   };
 
-  const handleOperatorSelect = (operatorId: string) => {
-    setFilters((prev) => {
-      const newOperators = [...prev.operator];
-      const index = newOperators.indexOf(operatorId);
-
-      if (operatorId === "All") {
-        return {
-          ...prev,
-          operator:
-            newOperators.length === operatorOptions.length
-              ? []
-              : operatorOptions.map((op) => op.PartnerId),
-        };
-      }
-
-      if (index === -1) {
-        newOperators.push(operatorId);
-      } else {
-        newOperators.splice(index, 1);
-      }
-      return {
-        ...prev,
-        operator: newOperators,
-      };
-    });
-  };
-
-  const triggerSubmit = () => {
+  // Add a separate function to handle refresh after creating promotion
+  const handleRefresh = () => {
     onFilterChange(filters);
   };
 
@@ -228,7 +209,11 @@ export default function Filter({
                     />
                   </div>
 
-                  <div role="option" className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100">
+                  <div 
+                    role="option" 
+                    className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
+                    aria-selected={filters.operator.length === operatorOptions.length}
+                  >
                     <input
                       type="checkbox"
                       checked={filters.operator.length === operatorOptions.length}
@@ -244,6 +229,7 @@ export default function Filter({
                       key={option.PartnerId}
                       role="option"
                       className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
+                      aria-selected={filters.operator.includes(option.PartnerId)}
                     >
                       <input
                         type="checkbox"
@@ -311,7 +297,7 @@ export default function Filter({
         onClose={(shouldRefresh = false) => {
           setOpenDialog(false);
           if (shouldRefresh) {
-            triggerSubmit();
+            handleRefresh();
           }
         }}
       />

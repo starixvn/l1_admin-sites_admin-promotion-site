@@ -1,5 +1,18 @@
 import React from "react";
 
+export interface Announcement {
+  id: string;
+  title: string;
+  banner: string;
+  terms: string;
+  displayDate: {
+    from: string;
+    to: string;
+  };
+  mapping: string;
+  status: "Running" | "Upcoming" | "Completed";
+}
+
 function getStatusColor(status: string) {
   switch (status) {
     case "Running":
@@ -13,7 +26,11 @@ function getStatusColor(status: string) {
   }
 }
 
-export default function DataGrid({ announcements }: { announcements: any[] }) {
+interface DataGridProps {
+  announcements: Announcement[];
+}
+
+export default function DataGrid({ announcements }: DataGridProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
       <div className="w-full" style={{ maxHeight: '68vh', overflowY: 'auto' }}>

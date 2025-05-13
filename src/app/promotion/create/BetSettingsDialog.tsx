@@ -104,7 +104,7 @@ export default function BetSettingsDialog({
     if (open) {
       fetchData();
     }
-  }, [open, currencyGroupsInfo]);
+  }, [open, currencyGroupsLoaded, currencyGroups, gameIds, gameType, getCurrencyGroupGames, initialValues]);
 
   const handleToggleAll = async (enabled: boolean) => {
     if (readonly) {

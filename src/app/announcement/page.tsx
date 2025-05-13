@@ -1,35 +1,35 @@
 'use client';
 import { useState } from "react";
 import Filter from "./Filter";
-import DataGrid from "./DataGrid";
+import DataGrid, { Announcement } from "./DataGrid";
 
-const mockAnnouncements = [
+const mockAnnouncements: Announcement[] = [
   {
-    id: 1,
+    id: "1",
     title: "Hot Slot - Hot Offer Promotion",
     banner: "Get 10 Free Spin Bonus on eligible Slot Games! Take a Chance on Our Most Rewarding Slot Game – Big Wins Await!",
     terms: "Players must complete all pending Free Spins1 (including in-game Free Spins and FSBs from other promotions) before receiving a new Promotion Bonus. When the Promotion ends, all remaining Free Spin Bonus will be lost.",
     displayDate: { from: "10/05/2025 00:00", to: "25/05/2025 00:00" },
     mapping: "Details",
-    status: "Running",
+    status: "Running" as const,
   },
   {
-    id: 2,
+    id: "2",
     title: "Summer Free Spin Bonus",
     banner: "Get 60 Free Spins Bonus on eligible Slot Games1! Hurry Up!! Grab It Now While Still Available.",
     terms: "Players must complete all pending Free Spins2 (including in-game Free Spins and FSBs from other promotions) before receiving a new Promotion Bonus. When the Promotion ends, all remaining Free Spin Bonus will be lost.",
     displayDate: { from: "10/04/2025 00:00", to: "20/04/2025 00:00" },
     mapping: "Details",
-    status: "Upcoming",
+    status: "Upcoming" as const,
   },
   {
-    id: 3,
+    id: "3",
     title: "Crazy with Slot",
     banner: "Get 10 Free Spins Bonus on eligible Slot Games2! Hurry Up!! Grab It Now While Still Available.",
     terms: "Players must complete all pending Free Spins3 (including in-game Free Spins and FSBs from other promotions) before receiving a new Promotion Bonus. When the Promotion ends, all remaining Free Spin Bonus will be lost.",
     displayDate: { from: "10/04/2025 00:00", to: "20/04/2025 00:00" },
     mapping: "Details",
-    status: "Completed",
+    status: "Completed" as const,
   }
 ];
 

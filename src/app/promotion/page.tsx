@@ -25,12 +25,8 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [totalItems, setTotalItems] = useState(0);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [deletingPromotionId, setDeletingPromotionId] = useState<string | null>(
-    null
-  );
-  const [deletingPromotionCode, setDeletingPromotionCode] = useState<string | null>(
-    null
-  );
+  const [deletingPromotionId, setDeletingPromotionId] = useState<string | null>(null);
+  const [deletingPromotionCode, setDeletingPromotionCode] = useState<string | null>(null);
   const [currentFilters, setCurrentFilters] = useState<PromotionFilters>({
     status: "All",
     operator: [],
@@ -39,23 +35,21 @@ export default function Page() {
     pageSize: 10
   });
 
+  // Memoize the filter handler to prevent unnecessary re-renders
   const handleFilterSubmit = useCallback(async (filters: PromotionFilters) => {
-    setCurrentFilters((prev) => ({
-      ...filters,
-      pageSize: filters.pageSize || prev.pageSize,
-    }));
+    setCurrentFilters(filters);
     try {
       setError(null);
       const queryParams = new URLSearchParams();
+      
       if (filters.status !== "All") {
         queryParams.append("status", filters.status);
       }
 
-      if (filters.operator && filters.operator.length > 0) {
-        const allOperatorIds = operators.map((op) => op.PartnerId);
-        const isAllSelected =
-          filters.operator.length === allOperatorIds.length &&
-          allOperatorIds.every((id) => filters.operator.includes(id));
+      if (filters.operator?.length > 0) {
+        const allOperatorIds = operators.map(op => op.PartnerId);
+        const isAllSelected = filters.operator.length === allOperatorIds.length && 
+          allOperatorIds.every(id => filters.operator.includes(id));
 
         if (!isAllSelected) {
           queryParams.append("operator", filters.operator.toString());
@@ -67,95 +61,87 @@ export default function Page() {
       }
 
       queryParams.append("pageIndex", filters.pageIndex.toString());
-      queryParams.append("pageSize", (filters.pageSize || currentFilters.pageSize).toString());
+      queryParams.append("pageSize", filters.pageSize.toString());
 
-      const response = await axios.get(
-        `/api/promotions?${queryParams.toString()}`
-      );
+      const response = await axios.get(`/api/promotions?${queryParams.toString()}`);
       setPromotions(response.data.items);
       setTotalItems(response.data.metadata.total);
     } catch (error) {
       console.error(error);
+      setError("Failed to fetch promotions");
     }
-  }, []);
+  }, [operators]);
 
-  const handlePageChange = (newPage: number) => {
-    handleFilterSubmit({
-      ...currentFilters,
-      pageIndex: newPage
-    });
-  };
-
-  const handlePageSizeChange = (size: number) => {
-    handleFilterSubmit({
-      ...currentFilters,
-      pageSize: size,
-      pageIndex: 1,
-    });
-  }
-
-  const fetchOperators = useCallback(async () => {
-    try {
-      const response = await axios.get("/api/operators");
-      const operatorsList = response.data.map((op: Operator) => ({
-        Name: op.Name,
-        PartnerId: op.PartnerId,
-      }));
-      setOperators(operatorsList);
-      
-      const newFilters = {
-        ...currentFilters,
-        operator: operatorsList.map((op: Operator) => op.PartnerId)
-      };
-      setCurrentFilters(newFilters);
-      handleFilterSubmit(newFilters);
-    } catch (error) {
-      console.error("Failed to fetch operators:", error);
-    }
-  }, [currentFilters, handleFilterSubmit]);
-
-  const handleDeleteClick = async (id: string, code: string): Promise<void> => {
-    setDeletingPromotionId(id);
-    setDeletingPromotionCode(code);
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deletingPromotionId) {
-      return;
-    }
-
-    try {
-      await axios.delete(`/api/promotions/${deletingPromotionId}`);
-      setPromotions((prev) =>
-        prev.filter((p) => p._id !== deletingPromotionId)
-      );
-      setIsDeleteModalOpen(false);
-      toast.success("Promotion deleted successfully", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    } catch (error) {
-      console.error("Error deleting promotion:", error);
-    }
-    setDeletingPromotionId(null);
-    setDeletingPromotionCode(null);
-  };
-
+  // Fetch operators only once on mount
   useEffect(() => {
-    setLoading(true);
-    const initializeData = async () => {
+    const fetchOperators = async () => {
       try {
-        await Promise.all([fetchOperators()]);
-      } catch (err) {
-        console.error("Error initializing data:", err);
+        setLoading(true);
+        const response = await axios.get("/api/operators");
+        const operatorsList = response.data.map((op: Operator) => ({
+          Name: op.Name,
+          PartnerId: op.PartnerId,
+        }));
+        setOperators(operatorsList);
+        
+        // Set initial operator filter only if empty
+        if (currentFilters.operator.length === 0) {
+          const newFilters = {
+            ...currentFilters,
+            operator: operatorsList.map((op: Operator) => op.PartnerId)
+          };
+          setCurrentFilters(newFilters);
+          handleFilterSubmit(newFilters);
+        }
+      } catch (error) {
+        console.error("Failed to fetch operators:", error);
+        setError("Failed to fetch operators");
       } finally {
         setLoading(false);
       }
     };
 
-    initializeData();
+    fetchOperators();
+  }, []); // Empty dependency array - only run on mount
+
+  const handlePageChange = useCallback((newPage: number) => {
+    handleFilterSubmit({
+      ...currentFilters,
+      pageIndex: newPage
+    });
+  }, [currentFilters, handleFilterSubmit]);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    handleFilterSubmit({
+      ...currentFilters,
+      pageSize: size,
+      pageIndex: 1,
+    });
+  }, [currentFilters, handleFilterSubmit]);
+
+  const handleDeleteClick = useCallback(async (id: string, code: string) => {
+    setDeletingPromotionId(id);
+    setDeletingPromotionCode(code);
+    setIsDeleteModalOpen(true);
   }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deletingPromotionId) return;
+
+    try {
+      await axios.delete(`/api/promotions/${deletingPromotionId}`);
+      setPromotions(prev => prev.filter(p => p._id !== deletingPromotionId));
+      setIsDeleteModalOpen(false);
+      toast.success("Promotion deleted successfully");
+      handleFilterSubmit(currentFilters); // Refresh the list
+    } catch (error) {
+      console.error("Error deleting promotion:", error);
+      toast.error("Failed to delete promotion");
+    } finally {
+      setDeletingPromotionId(null);
+      setDeletingPromotionCode(null);
+    }
+  }, [deletingPromotionId, currentFilters, handleFilterSubmit]);
 
   return (
     <div className="space-y-4 w-full">

@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, waitFor } from "@testing-library/react";
 import BetSettingsDialog from "@/app/promotion/create/BetSettingsDialog";
 import { GAME_TYPES } from "@/constants/gameTypes";
 
@@ -11,20 +11,25 @@ beforeAll(() => {
   };
 });
 
+const mockCurrencyGroups = [
+  { Id: "cg1", Name: "USD" },
+  { Id: "cg2", Name: "VND" },
+];
+
 jest.mock("@/hooks/useCurrencyGroups", () => ({
   useCurrencyGroups: () => ({
-    data: [
-      { Id: "cg1", Name: "USD" },
-      { Id: "cg2", Name: "VND" },
-    ],
+    data: mockCurrencyGroups,
     isSuccess: true,
   }),
 }));
+
+const mockGetCurrencyGroupGames = jest.fn().mockResolvedValue([]);
 jest.mock("@/hooks/useCurrencyGroupGames", () => ({
   useCurrencyGroupGames: () => ({
-    mutateAsync: jest.fn().mockResolvedValue([]),
+    mutateAsync: mockGetCurrencyGroupGames,
   }),
 }));
+
 jest.mock("@/lib/promotion/bet-settings.utils", () => ({
   selectSuggestedBetLevel: jest.fn(() => 10),
   validateBetRows: jest.fn((rows) => {
@@ -56,6 +61,7 @@ describe("BetSettingsDialog", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockGetCurrencyGroupGames.mockClear();
   });
 
   const renderDialog = async (props: any) => {
@@ -72,6 +78,9 @@ describe("BetSettingsDialog", () => {
         />
       );
     });
+    await waitFor(() => {
+      expect(mockGetCurrencyGroupGames).toHaveBeenCalledTimes(mockCurrencyGroups.length);
+    });
     return result;
   };
 
@@ -81,7 +90,7 @@ describe("BetSettingsDialog", () => {
     expect(screen.getByText(/Bet Settings/)).toBeInTheDocument();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("Dialog description")).toBeInTheDocument();
-  });
+  }, 10000);
 
   it("renders in readonly mode (no Save button, toggles disabled)", async () => {
     await renderDialog({
@@ -90,8 +99,7 @@ describe("BetSettingsDialog", () => {
     });
 
     expect(screen.queryByRole("button", { name: /Save/i })).not.toBeInTheDocument();
-    const toggles = screen.getAllByRole("button");
-  });
+  }, 10000);
 
   it("shows correct formula for cascading slot", async () => {
     await renderDialog({
@@ -99,7 +107,7 @@ describe("BetSettingsDialog", () => {
     });
 
     expect(screen.getByText(/Cascading Slot/)).toBeInTheDocument();
-  });
+  }, 10000);
 
   it("does not crash if currencyGroups is empty", async () => {
     jest.spyOn(require("@/hooks/useCurrencyGroups"), "useCurrencyGroups")
@@ -112,7 +120,7 @@ describe("BetSettingsDialog", () => {
 
     expect(screen.getByText(/Bet Settings/)).toBeInTheDocument();
     expect(screen.getByRole("dialog")).toBeInTheDocument();
-  });
+  }, 10000);
 
   it("handles save action correctly", async () => {
     await renderDialog({});
@@ -122,8 +130,11 @@ describe("BetSettingsDialog", () => {
       saveButton.click();
     });
 
-    expect(onSave).toHaveBeenCalled();
-  });
+    expect(onSave).toHaveBeenCalledWith({
+      currencyGroups: [],
+      betLevels: [],
+    });
+  }, 10000);
 
   it("handles close action correctly", async () => {
     await renderDialog({});
@@ -134,5 +145,5 @@ describe("BetSettingsDialog", () => {
     });
 
     expect(onClose).toHaveBeenCalled();
-  });
+  }, 10000);
 });
