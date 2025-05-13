@@ -1,8 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import PromotionViewForm from "./PromotionViewForm";
 import type { PromotionFormValues } from "./PromotionForm";
 import type { Game } from "@/types/game";
@@ -38,7 +34,7 @@ export default function PromotionPreviewDialog({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="w-[40vw] h-[90vh] max-w-[1200px] md:max-w-[98vw] overflow-y-auto p-6 bg-white rounded-lg">
         <DialogTitle className="text-xl font-semibold">
-          Preview Promotion Details
+          Promotion Details
         </DialogTitle>
 
         <PromotionViewForm
