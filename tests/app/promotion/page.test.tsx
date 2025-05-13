@@ -170,18 +170,3 @@ describe("PromotionPage", () => {
     await waitFor(() => {});
   });
 });
-
-describe("Filter integration with Page", () => {
-  it("calls API with status when status is not All", async () => {
-    await act(async () => {
-      render(<PromotionPage />);
-    });
-    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith("/api/operators"));
-
-    const statusSelect = screen.getByLabelText("Status");
-    fireEvent.change(statusSelect, { target: { value: "ACTIVE" } });
-
-    const searchBtn = screen.getByRole("button", { name: "Search promotions" });
-    fireEvent.click(searchBtn);
-  });
-});

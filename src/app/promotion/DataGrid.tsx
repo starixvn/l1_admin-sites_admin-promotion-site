@@ -197,6 +197,7 @@ export default function DataGrid({
                     <button
                       onClick={() => setViewPromotion(p)}
                       aria-label="view-promotion"
+                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                     >
                       <Eye className="w-4 h-4 text-gray-600 hover:text-black" />
                     </button>
@@ -338,7 +339,7 @@ export default function DataGrid({
           onClose={() => setViewPromotion(null)}
           data={{
             ...viewPromotion,
-            gameConfigType: viewPromotion.gameConfigType as GameType, // cast nếu cần
+            gameConfigType: viewPromotion.gameConfigType as GameType,
             bonusItemCount: viewPromotion.bonusItemCount,
             code: viewPromotion.code,
             currencyGroups: viewPromotion.currencyGroups,
@@ -356,8 +357,8 @@ export default function DataGrid({
             betLevels: viewPromotion.betLevels,
           }}
           operatorName={viewPromotion.operatorId}
-          gameList={gameList} // nếu bạn có gameList toàn cục, truyền vào
-          currencyGroupsInfo={currencyGroupsInfo} // nếu có
+          gameList={gameList}
+          currencyGroupsInfo={currencyGroupsInfo}
           isSubmitting={false}
           mode="edit"
           onConfirm={() => {}}
