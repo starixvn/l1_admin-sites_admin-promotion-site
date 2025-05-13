@@ -115,7 +115,9 @@ interface PlayerListModalProps {
 }
 
 function PlayerListModal({ showPlayerList, setShowPlayerList, offeredPlayerIds }: PlayerListModalProps) {
-  if (!showPlayerList) return null;
+  if (!showPlayerList){
+    return null;
+  }
   return (
     <div
       className="absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full h-full flex items-center justify-center bg-white/60"
