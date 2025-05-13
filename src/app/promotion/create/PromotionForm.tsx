@@ -12,8 +12,9 @@ import { Promotion } from "@/types/promotion";
 import { getStatus } from "@/constants/promotionStatusMap";
 import { getNowInGMT7 } from "@/lib/date-time.utils";
 import { checkPromotionCodeExists } from "@/lib/api/checkPromotionCodeExists";
-import ConfirmDialog from "@/components/ConfirmDialog";
 import { addDays } from "date-fns";
+import PromotionPreviewDialog from "./PromotionPreviewDialog";
+import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 
 const promotionSchema = z
   .object({
@@ -140,7 +141,6 @@ export default function PromotionForm({
   const [codeEdited, setCodeEdited] = useState(false);
   const [openBetSettings, setOpenBetSettings] = useState(false);
   const [siteInput, setSiteInput] = useState("");
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const currencyGroups = useWatch({ control, name: "currencyGroups" });
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
@@ -155,6 +155,8 @@ export default function PromotionForm({
     shouldFetchGames ? currencyGroups : [],
     shouldFetchGames ? gameConfigType : undefined
   );
+  const operatorId = useWatch({ control, name: "operatorId" });
+  const { data: currencyGroupsInfo = [], isLoading: isLoadingCurrencyGroups } = useCurrencyGroups(operatorId);
 
   useEffect(() => {
     if (initialValues && initialValues.offeredSiteNames) {
@@ -199,7 +201,10 @@ export default function PromotionForm({
   };
 
   const { mutate: createPromotion, isPending } = useCreatePromotion();
-
+  const [previewData, setPreviewData] = useState<PromotionFormValues | null>(
+    null
+  );
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const handleFormSubmit = (data: PromotionFormValues) => {
     const payload: PromotionFormSubmission = {
       betLevels: data.betLevels || [],
@@ -216,12 +221,16 @@ export default function PromotionForm({
       offeredPlayerIds: data.offeredPlayerIds || [],
       ...(initialValues ? { _id: initialValues._id } : {}),
     };
+    console.log(payload);
 
     if (onSubmit) {
       onSubmit(payload as Promotion);
     } else {
       createPromotion(payload, {
-        onSuccess: () => onClose?.(true),
+        onSuccess: () => {
+          setShowPreviewDialog(false);
+          onClose?.(true);
+        },
         onError: (err) => console.error("Failed to create promotion", err),
       });
     }
@@ -276,6 +285,8 @@ export default function PromotionForm({
               siteInput={siteInput}
               setSiteInput={setSiteInput}
               games={games}
+              currencyGroupsInfo={currencyGroupsInfo}
+              isLoadingCurrencyGroups={isLoadingCurrencyGroups}
               isLoading={isLoading}
               error={error || null}
               toggleGame={(id: number) => {
@@ -312,31 +323,35 @@ export default function PromotionForm({
           ) : step === 2 ? (
             <button
               type="button"
-              onClick={() => {
-                if (mode === "edit") {
-                  setShowConfirmDialog(true);
-                } else {
-                  handleSubmit(handleFormSubmit)();
+              onClick={async () => {
+                const isValid = await trigger();
+                if (isValid) {
+                  setPreviewData(getValues());
+                  setShowPreviewDialog(true);
                 }
               }}
               disabled={isPending}
-              className="btn-primary flex items-center gap-2"
+              className="btn-next flex items-center gap-2"
             >
-              Save Promotion ✓
+              Preview
             </button>
           ) : null}
         </div>
       </div>
-      <ConfirmDialog
-        open={showConfirmDialog}
-        title="Confirm Update"
-        message="Are you sure you want to update this promotion?"
-        confirmText="Confirm"
-        cancelText="Cancel"
-        onCancel={() => setShowConfirmDialog(false)}
-        onConfirm={() => {
-          setShowConfirmDialog(false);
-          handleSubmit(handleFormSubmit)();
+      <PromotionPreviewDialog
+        open={showPreviewDialog}
+        onClose={() => setShowPreviewDialog(false)}
+        data={previewData!}
+        operatorName={
+          operators.find((op) => op.PartnerId === previewData?.operatorId)?.Name
+        }
+        gameList={games}
+        currencyGroupsInfo={currencyGroupsInfo}
+        isSubmitting={isPending}
+        mode={mode as "create" | "edit"}
+        initialId={initialValues?._id}
+        onConfirm={(finalPayload) => {
+          handleFormSubmit(finalPayload); // gọi lại đúng hàm bạn đã có
         }}
       />
     </div>

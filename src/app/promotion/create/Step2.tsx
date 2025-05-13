@@ -14,7 +14,8 @@ import type { PromotionFormValues } from "./PromotionForm";
 import type { Game } from "@/types/game";
 import { SquarePen } from "lucide-react";
 import PlayerFileUploader from "./PlayerFileUploader";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { CurrencyGroup } from "@/types/currency-group";
 
 interface Step2Props {
   mode: string;
@@ -27,6 +28,8 @@ interface Step2Props {
   siteInput: string;
   setSiteInput: (val: string) => void;
   games: Game[];
+  currencyGroupsInfo: CurrencyGroup[];
+  isLoadingCurrencyGroups: boolean;
   isLoading: boolean;
   error: Error | null;
   toggleGame: (id: number) => void;
@@ -179,6 +182,8 @@ export default function Step2({
   siteInput,
   setSiteInput,
   games,
+  currencyGroupsInfo,
+  isLoadingCurrencyGroups,
   isLoading,
   error,
   toggleGame,
@@ -197,30 +202,42 @@ export default function Step2({
   const [showPlayerList, setShowPlayerList] = useState(false);
   const shouldShowGames =
     currencyGroups.length > 0 && gameConfigType !== undefined;
+  useEffect(() => {
+    const validGameIds = gameIds.filter((id) =>
+      games.some((g) => g.GameId === id)
+    );
+
+    if (validGameIds.length !== gameIds.length) {
+      setValue("gameIds", validGameIds);
+    }
+  }, [games]);
   return (
     <div className="space-y-6">
       <fieldset className="fieldset-wrapper-operator">
         <legend className="legend-wrapper">⚙️ Configuration</legend>
         {/* Bet Settings */}
-        <div className="flex items-center gap-2 mb-6">
+        <div className="flex items-center gap-2 mb-2">
           <span className="form-label font-semibold text-base leading-tight">
-            Bet Settings<span className="text-red-500">*</span>
+            Currency Group Settings<span className="text-red-500">*</span>
           </span>
-          <button
-            type="button"
-            onClick={() => setOpenBetSettings(true)}
-            className="text-gray-700 hover:text-blue-600 transition"
-            aria-label="Edit Bet Settings"
-          >
-            <SquarePen className="w-5 mb-3" />
-          </button>
+          {isLoadingCurrencyGroups ? (
+            <p className="text-blue-700">Loading currency groups...</p>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setOpenBetSettings(true)}
+              className="text-gray-700 hover:text-blue-600 transition"
+              aria-label="Edit Bet Settings"
+            >
+              <SquarePen className="w-5 mb-3" />
+            </button>
+          )}
         </div>
         {errors.currencyGroups && (
           <p className="error-message mt-2">{errors.currencyGroups.message}</p>
         )}
-
         {/* Site Offering */}
-        <div>
+        <div className="mt-3">
           <Label className="form-label">Site Offering</Label>
           <Input
             className="form-input"
@@ -242,9 +259,12 @@ export default function Step2({
             disabled={isRunning}
           />
           <p className="text-xs text-muted-foreground mt-1">
-            ** Enter the site names to offer the promotion (Separate multiple
-            names with a semicolon ;). Leave the field empty to offer the
-            promotion to all sites associated with the selected Operator.
+            + Enter the site names to offer the promotion (Separate multiple
+            names with a semicolon ;).
+          </p>{" "}
+          <p className="text-xs text-muted-foreground mt-1">
+            + Leave the field empty to offer the promotion to all sites
+            associated with the selected Operator.
           </p>
         </div>
       </fieldset>
@@ -261,6 +281,12 @@ export default function Step2({
           isRunning={isRunning}
           toggleGame={toggleGame}
           errors={errors}
+            <p className="text-xs text-muted-foreground mb-3">
+              + The list of slot games is based on the selected Operator, Game
+              Type, and Currency Groups that have been enabled for the
+              promotion.
+            </p>
+            <div className="flex items-center space-x-2 mb-3">
         />
       </fieldset>
 
@@ -332,10 +358,11 @@ export default function Step2({
       </div>
 
       <BetSettingsDialog
-        open={openBetSettings}
+        open={openBetSettings && !isLoadingCurrencyGroups}
         onClose={() => setOpenBetSettings(false)}
         partnerId={operatorId}
         gameType={gameConfigType}
+        currencyGroupsInfo={currencyGroupsInfo}
         readonly={isRunning}
         onSave={({ currencyGroups, betLevels }) => {
           setValue("currencyGroups", currencyGroups);

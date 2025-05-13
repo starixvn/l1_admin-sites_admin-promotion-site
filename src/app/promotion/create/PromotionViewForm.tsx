@@ -1,18 +1,20 @@
-import { Label } from "@/components/ui/label";
 import { GAME_TYPES } from "@/constants/gameTypes";
 import type { PromotionFormValues } from "./PromotionForm";
 import type { Game } from "@/types/game";
-
+import type { CurrencyGroup } from "@/types/currency-group";
+import { getTotalBet } from "@/lib/promotion/bet-settings.utils";
 interface PromotionViewFormProps {
   data: PromotionFormValues;
   operatorName?: string;
   gameList?: Game[];
+  currencyGroupsInfo?: CurrencyGroup[];
 }
 
 export default function PromotionViewForm({
   data,
   operatorName,
   gameList,
+  currencyGroupsInfo,
 }: PromotionViewFormProps) {
   const {
     name,
@@ -25,17 +27,15 @@ export default function PromotionViewForm({
     offeredSiteNames,
     gameIds,
     allPlayers,
-    offeredPlayerIds,
-    uploadedFile,
     betLevels,
   } = data;
 
   return (
-    <div className="space-y-8 p-6">
-      {/* Section 1: Basic Info */}
+    <div className="space-y-3 text-sm text-gray-800">
+      {/* Section 1: General Info */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">📋 Basic Information</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h2 className="text-md font-semibold mb-4">📋 General Information</h2>
+        <div className="space-y-2 text-sm text-gray-800">
           <ReadOnlyField label="Promotion Name" value={name} />
           <ReadOnlyField label="Promotion Code" value={code} />
           <ReadOnlyField
@@ -45,78 +45,61 @@ export default function PromotionViewForm({
                 ? "Classic Slot"
                 : "Cascading Slot"
             }
+            require={false}
           />
           <ReadOnlyField
             label="No. of Free Spins"
             value={String(bonusItemCount)}
           />
           <ReadOnlyField
-            label="Start Date"
+            label="Start Date (GMT+7)"
             value={new Date(startDate).toLocaleString()}
           />
           <ReadOnlyField
-            label="End Date"
+            label="End Date (GMT+7)"
             value={new Date(endDate).toLocaleString()}
           />
-          <ReadOnlyField label="Operator" value={operatorName || operatorId} />
+          <ReadOnlyField
+            label="Operator Name"
+            value={operatorName || operatorId}
+          />
         </div>
       </section>
-
-      {/* Section 2: Site Offering */}
+      {/* Section 2: Bet Settings */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">🌐 Site Offering</h2>
-        <p className="text-gray-700">
-          {offeredSiteNames?.join("; ") || "(All sites)"}
-        </p>
-      </section>
-
-      {/* Section 3: Game List */}
-      <section>
-        <h2 className="text-xl font-semibold mb-4">🎮 Selected Games</h2>
-        <ul className="list-disc pl-6 space-y-1">
-          {gameList
-            ?.filter((g) => gameIds.includes(g.GameId))
-            .map((g) => <li key={g.GameId}>{g.DisplayName}</li>) || (
-            <li className="text-gray-500">No games selected</li>
-          )}
-        </ul>
-      </section>
-
-      {/* Section 4: Target Members */}
-      <section>
-        <h2 className="text-xl font-semibold mb-4">👥 Target Members</h2>
-        <p>{allPlayers ? "All Players" : "Players from File"}</p>
-        {!allPlayers && (
-          <div className="mt-2">
-            <p className="font-medium">
-              Uploaded File: {uploadedFile?.name || "(none)"}
-            </p>
-            <ul className="list-decimal pl-6 mt-1 text-sm text-gray-700 max-h-48 overflow-auto border p-2 rounded-md">
-              {offeredPlayerIds?.map((id, idx) => (
-                <li key={id + idx}>{id}</li>
-              )) || <li>No players listed</li>}
-            </ul>
-          </div>
-        )}
-      </section>
-
-      {/* Section 5: Bet Settings */}
-      <section>
-        <h2 className="text-xl font-semibold mb-4">🎰 Bet Settings</h2>
+        <h2 className="text-md font-semibold mb-4">
+          🎰 Currency Group Settings <span className="text-red-500">*</span>
+        </h2>
         <table className="w-full border text-sm">
           <thead>
             <tr className="bg-gray-100 text-left">
-              <th className="border px-4 py-2">Currency Group</th>
-              <th className="border px-4 py-2">Bet Level</th>
+              <th className=" text-center border px-4 py-2">Currency Group</th>
+              <th className=" text-center border px-4 py-2">
+                {gameConfigType === GAME_TYPES.CLASSIC
+                  ? "Bet Level"
+                  : "Coin Value"}
+              </th>
+              <th className=" text-center border px-4 py-2">Total Bet</th>
             </tr>
           </thead>
           <tbody>
-            {betLevels?.map((row, idx) => (
-              <tr key={idx}>
-                <td className="border px-4 py-2">{row.currencyGroup}</td>
-                <td className="border px-4 py-2">{row.betLevel}</td>
-              </tr>
-            )) || (
+            {betLevels?.map((row, idx) => {
+              const groupName =
+                currencyGroupsInfo?.find((cg) => cg.Id === row.currencyGroup)
+                  ?.Name ?? row.currencyGroup;
+
+              return (
+                <tr key={idx}>
+                  <td className=" text-center border px-4 py-2">{groupName}</td>
+                  <td className=" text-center border px-4 py-2">
+                    {row.betLevel}
+                  </td>
+                  <td className=" text-center border px-4 py-2">
+                    {getTotalBet(row.betLevel, gameConfigType)}
+                  </td>
+                </tr>
+              );
+            }) || (
               <tr>
                 <td colSpan={2} className="text-center py-4 text-gray-500">
                   No bet settings configured.
@@ -126,19 +109,56 @@ export default function PromotionViewForm({
           </tbody>
         </table>
       </section>
+      <ReadOnlyField
+        label="Site Offering:"
+        value={offeredSiteNames?.join("; ") || ""}
+        require={false}
+      />
+
+      {/* Section 4: Game List */}
+      <section>
+        <h2 className="text-md font-semibold mb-4">🎮 Selected Games <span className="text-red-500">*</span></h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1 pl-2">
+          {gameList
+            ?.filter((g) => gameIds.includes(g.GameId))
+            .map((g) => (
+              <div key={g.GameId} className="before:content-['•_'] before:mr-1">
+                {g.DisplayName}
+              </div>
+            )) || <div className="text-gray-500">No games selected</div>}
+        </div>
+      </section>
+
+      {/* Section 5: Target Members */}
+      <section>
+        <h2 className="text-md font-semibold mb-4">👥 Members</h2>
+        <p className="text-sm before:content-['•_'] before:mr-1">
+          {allPlayers ? "All Players" : "Players from File"}
+        </p>
+      </section>
     </div>
   );
 }
-
-function ReadOnlyField({ label, value }: { label: string; value: string }) {
+function ReadOnlyField({
+  label,
+  value,
+  require = true,
+  alignRight = false,
+}: {
+  label: string;
+  value: string;
+  require?: boolean;
+  alignRight?: boolean;
+}) {
   return (
-    <div>
-      <Label className="block mb-1 text-sm font-medium text-gray-700">
-        {label}
-      </Label>
-      <p className="border rounded-md px-3 py-2 bg-gray-50 text-gray-800 text-sm">
+    <div className="grid grid-cols-[160px_1fr] gap-2 text-sm">
+      <div className="flex items-center justify-end gap-1">
+        <span className="font-semibold">{label}</span>
+        {require && <span className="text-red-500">*</span>}
+      </div>
+      <span className={`text-gray-900 ${alignRight ? "text-right" : ""}`}>
         {value}
-      </p>
+      </span>
     </div>
   );
 }

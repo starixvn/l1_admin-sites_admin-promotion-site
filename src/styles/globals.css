@@ -60,15 +60,15 @@
 
 /* FIELDSET FOR DIFFERENT BLOCKS */
 .fieldset-wrapper-operator {
-  @apply border border-gray-200 rounded-xl p-6 bg-white shadow-sm;
+  @apply border border-gray-200 rounded-xl p-4 bg-white shadow-sm;
 }
 
 .fieldset-wrapper-games {
-  @apply border border-gray-200 rounded-xl p-6 bg-white shadow-sm;
+  @apply border border-gray-200 rounded-xl p-4 bg-white shadow-sm;
 }
 
 .legend-wrapper {
-  @apply text-xl font-semibold text-gray-800 mb-3 tracking-wide flex items-center gap-2;
+  @apply text-xl font-semibold text-gray-800 tracking-wide flex items-center gap-2;
 }
 
 /* Upload File Button */

@@ -9,7 +9,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
-import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 import { Info } from "lucide-react";
 import {
   Tooltip,
@@ -24,6 +23,7 @@ import { Game } from "@/types/game";
 import {
   selectSuggestedBetLevel,
   validateBetRows,
+  getTotalBet,
 } from "@/lib/promotion/bet-settings.utils";
 
 type Props = {
@@ -31,6 +31,7 @@ type Props = {
   onClose: () => void;
   partnerId: string;
   gameType: number;
+  currencyGroupsInfo: CurrencyGroup[];
   onSave: (data: {
     currencyGroups: string[];
     betLevels: { currencyGroup: string; betLevel: number }[];
@@ -57,20 +58,19 @@ export default function BetSettingsDialog({
   gameType,
   onSave,
   games,
+  currencyGroupsInfo,
   readonly = false,
   initialValues,
 }: Props) {
-  const { data: currencyGroups, isSuccess: currencyGroupsLoaded } =
-    useCurrencyGroups(partnerId);
   const [rows, setRows] = useState<RowState[]>([]);
   const { mutateAsync: getCurrencyGroupGames } = useCurrencyGroupGames();
   const gameIds = games?.map((g) => g.GameId);
   const [invalidRows, setInvalidRows] = useState<Set<string>>(new Set());
   const [showGlobalError, setShowGlobalError] = useState(false);
-
+  const [enableAll, setEnableAll] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
-      if (!currencyGroups || !currencyGroupsLoaded) {
+      if (!currencyGroupsInfo) {
         return;
       }
       const initialBetMap = new Map<string, number>();
@@ -81,7 +81,7 @@ export default function BetSettingsDialog({
       }
 
       const mapped = await Promise.all(
-        currencyGroups.map(async (cg: CurrencyGroup) => {
+        currencyGroupsInfo.map(async (cg: CurrencyGroup) => {
           const existingBetLevel = initialBetMap.get(cg.Id);
           const groupGames = await getCurrencyGroupGames(cg.Id);
           const betLevel =
@@ -96,19 +96,39 @@ export default function BetSettingsDialog({
           };
         })
       );
-
+      const allEnabled = mapped.every((r) => r.enabled);
+      setEnableAll(allEnabled);
       setRows(mapped);
     };
 
     if (open) {
       fetchData();
     }
-  }, [open, currencyGroupsLoaded]);
+  }, [open, currencyGroupsInfo]);
 
-  const getTotalBet = (betLevel: number) => {
-    return gameType === GAME_TYPES.CASCADING
-      ? 1 * betLevel * 20
-      : betLevel * 25;
+  const handleToggleAll = async (enabled: boolean) => {
+    if (readonly) {
+      return;
+    }
+    setEnableAll(enabled);
+
+    const updatedRows = await Promise.all(
+      rows.map(async (row) => {
+        let betLevel = row.betLevel;
+        if (enabled && !betLevel) {
+          const groupGames = await getCurrencyGroupGames(row.id);
+          betLevel = selectSuggestedBetLevel(gameType, groupGames, gameIds);
+        }
+
+        return {
+          ...row,
+          enabled,
+          betLevel: enabled && !row.betLevel ? betLevel : row.betLevel,
+        };
+      })
+    );
+
+    setRows(updatedRows);
   };
 
   const handleToggle = async (index: number, enabled: boolean) => {
@@ -126,6 +146,9 @@ export default function BetSettingsDialog({
       if (enabled && !updated[index].betLevel) {
         updated[index].betLevel = suggested;
       }
+      const total = updated.length;
+      const enabledCount = updated.filter((r) => r.enabled).length;
+      setEnableAll(enabledCount === total);
       return updated;
     });
   };
@@ -197,7 +220,27 @@ export default function BetSettingsDialog({
                   <th className="px-4 py-3 text-center border-r">
                     Currency Group
                   </th>
-                  <th className="px-4 py-3 text-center border-r">Status</th>
+                  <th className="px-4 py-3 text-center border-r">
+                    <div className="flex flex-col items-center gap-1">
+                      <span>Status</span>
+                      <div
+                        className={`w-16 h-7 rounded-full flex items-center transition-colors duration-300 px-1 cursor-pointer ${
+                          enableAll
+                            ? "bg-green-500 justify-end"
+                            : "bg-gray-300 justify-start"
+                        }`}
+                        onClick={() => handleToggleAll(!enableAll)}
+                      >
+                        <div className="w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center text-sm">
+                          {enableAll ? "✔" : ""}
+                        </div>
+                      </div>
+                      <span className="text-xs text-gray-600 mt-1">
+                        Enable All
+                      </span>
+                    </div>
+                  </th>
+
                   <th className="px-4 py-3 text-center border-r">
                     {gameType === GAME_TYPES.CLASSIC
                       ? "Bet Level"
@@ -279,7 +322,9 @@ export default function BetSettingsDialog({
                       )}
                     </td>
                     <td className="text-center font-semibold">
-                      {row.enabled ? getTotalBet(row.betLevel).toFixed(2) : "-"}
+                      {row.enabled
+                        ? getTotalBet(row.betLevel, gameType).toFixed(2)
+                        : "-"}
                     </td>
                   </tr>
                 ))}
