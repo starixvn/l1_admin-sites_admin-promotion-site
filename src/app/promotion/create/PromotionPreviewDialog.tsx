@@ -1,7 +1,6 @@
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import PromotionViewForm from "./PromotionViewForm";
@@ -47,6 +46,7 @@ export default function PromotionPreviewDialog({
           operatorName={operatorName}
           gameList={gameList}
           currencyGroupsInfo={currencyGroupsInfo}
+          readonly={readonly}
         />
         {!readonly && (
           <div className="mt-6 flex justify-between">

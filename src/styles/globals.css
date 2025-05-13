@@ -58,6 +58,11 @@
   text-white text-sm font-semibold shadow-md transition;
 }
 
+.btn-player-list {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-green-300 bg-green-50 text-green-700 text-sm font-medium 
+    hover:bg-blue-100 hover:border-green-400 hover:text-green-800 
+    transition-all shadow-sm;
+}
 /* FIELDSET FOR DIFFERENT BLOCKS */
 .fieldset-wrapper-operator {
   @apply border border-gray-200 rounded-xl p-4 bg-white shadow-sm;

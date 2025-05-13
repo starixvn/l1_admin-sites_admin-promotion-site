@@ -3,11 +3,15 @@ import type { PromotionFormValues } from "./PromotionForm";
 import type { Game } from "@/types/game";
 import type { CurrencyGroup } from "@/types/currency-group";
 import { getTotalBet } from "@/lib/promotion/bet-settings.utils";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { PlayerListModal } from "./PlayerListModal";
 interface PromotionViewFormProps {
   data: PromotionFormValues;
   operatorName?: string;
   gameList?: Game[];
   currencyGroupsInfo?: CurrencyGroup[];
+  readonly?: boolean;
 }
 
 export default function PromotionViewForm({
@@ -15,6 +19,7 @@ export default function PromotionViewForm({
   operatorName,
   gameList,
   currencyGroupsInfo,
+  readonly,
 }: PromotionViewFormProps) {
   const {
     name,
@@ -29,7 +34,7 @@ export default function PromotionViewForm({
     allPlayers,
     betLevels,
   } = data;
-
+  const [showPlayerList, setShowPlayerList] = useState(false);
   return (
     <div className="space-y-4 p-0 text-sm text-gray-800">
       {/* Section 1: General Info */}
@@ -135,9 +140,30 @@ export default function PromotionViewForm({
       <section>
         <h2 className="text-md font-semibold mb-4">👥 Members</h2>
         <p className="text-sm before:content-['•_'] before:mr-1">
-          {allPlayers ? "All Players" : "Players from File"}
+          {allPlayers ? (
+            "All Players"
+          ) : (
+            <>
+              Players from File
+              {readonly && (
+                <button
+                  className="btn-player-list ml-3"
+                  onClick={() => setShowPlayerList(true)}
+                >
+                  Player List
+                </button>
+              )}
+            </>
+          )}
         </p>
       </section>
+      {readonly && (
+        <PlayerListModal
+          showPlayerList={showPlayerList}
+          setShowPlayerList={setShowPlayerList}
+          offeredPlayerIds={data.offeredPlayerIds}
+        />
+      )}
     </div>
   );
 }
