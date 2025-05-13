@@ -1,14 +1,17 @@
 "use client";
 
-import { GAME_TYPES } from "@/constants/gameTypes";
+import { GAME_TYPES, GameType } from "@/constants/gameTypes";
 import { useState } from "react";
 import PromotionEditDialog from "./edit/PromotionEditDialog";
 import { Promotion } from "@/types/promotion";
 import { toast } from "react-toastify";
 import { getStatus } from "@/constants/promotionStatusMap";
 import { differenceInDays } from "date-fns";
-import { Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
+import PromotionPreviewDialog from "./create/PromotionPreviewDialog";
+import { useFilteredGames } from "@/hooks/useFilteredGames";
+import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 
 interface DataGridProps {
   promotions: Promotion[];
@@ -75,12 +78,27 @@ export default function DataGrid({
   pageSize,
   totalItems,
   onPageChange,
-  onPageSizeChange
+  onPageSizeChange,
 }: DataGridProps) {
   const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
-
+  const [viewPromotion, setViewPromotion] = useState<Promotion | null>(null);
   const totalPages = Math.ceil(totalItems / pageSize);
+  const { data: currencyGroupsInfo = [] } = useCurrencyGroups(
+    viewPromotion?.operatorId,
+    {
+      enabled: !!viewPromotion?.operatorId,
+    }
+  );
 
+  const { data: gameList = [] } = useFilteredGames(
+    viewPromotion?.currencyGroups || [],
+    viewPromotion?.gameConfigType as GameType,
+    {
+      enabled:
+        !!viewPromotion?.currencyGroups?.length &&
+        !!viewPromotion?.gameConfigType,
+    }
+  );
   const getCountdown = (endDate: Date) => {
     const daysLeft = differenceInDays(endDate, new Date());
     const colorClass = daysLeft > 0 ? "text-green-500" : "text-red-500";
@@ -176,13 +194,22 @@ export default function DataGrid({
                 {/* <td className="px-4 py-4 text-green-500">Linked</td> */}
                 <td className="px-4 py-4">
                   <div className="flex justify-center gap-3">
+                    <button
+                      onClick={() => setViewPromotion(p)}
+                      aria-label="view-promotion"
+                    >
+                      <Eye className="w-4 h-4 text-gray-600 hover:text-black" />
+                    </button>
                     {status === "upcoming" && (
                       <button onClick={() => handleEdit(p)}>
                         <Pencil className="w-4 h-4 text-blue-600" />
                       </button>
                     )}
                     {status === "upcoming" && (
-                      <button aria-label="delete-promotion" onClick={() => handleDelete(p._id, p.code)}>
+                      <button
+                        aria-label="delete-promotion"
+                        onClick={() => handleDelete(p._id, p.code)}
+                      >
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </button>
                     )}
@@ -198,7 +225,15 @@ export default function DataGrid({
       <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 py-3 text-sm text-gray-500 gap-2">
         <div>
           <span>
-            Showing <span className="font-semibold">{((currentPage - 1) * pageSize) + 1}</span> to <span className="font-semibold">{Math.min(currentPage * pageSize, totalItems)}</span> of <span className="font-semibold">{totalItems}</span> results
+            Showing{" "}
+            <span className="font-semibold">
+              {(currentPage - 1) * pageSize + 1}
+            </span>{" "}
+            to{" "}
+            <span className="font-semibold">
+              {Math.min(currentPage * pageSize, totalItems)}
+            </span>{" "}
+            of <span className="font-semibold">{totalItems}</span> results
           </span>
         </div>
         <div className="flex items-center gap-4">
@@ -210,19 +245,33 @@ export default function DataGrid({
               aria-label="Previous page"
             >
               <span className="sr-only">Previous</span>
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                <path
+                  d="M15 19l-7-7 7-7"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
             {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(page => (
-                page === 1 ||
-                page === totalPages ||
-                Math.abs(page - currentPage) <= 1
-              ))
+              .filter(
+                (page) =>
+                  page === 1 ||
+                  page === totalPages ||
+                  Math.abs(page - currentPage) <= 1
+              )
               .map((page, idx, arr) => {
                 // Add dots if needed
                 if (idx > 0 && page - arr[idx - 1] > 1) {
                   return (
-                    <span key={`dots-${page}`} className="px-2 text-gray-400 select-none">...</span>
+                    <span
+                      key={`dots-${page}`}
+                      className="px-2 text-gray-400 select-none"
+                    >
+                      ...
+                    </span>
                   );
                 }
                 return (
@@ -230,9 +279,11 @@ export default function DataGrid({
                     key={page}
                     onClick={() => onPageChange(page)}
                     className={`w-9 h-9 flex items-center justify-center rounded-full border transition
-                      ${page === currentPage
-                        ? "bg-blue-600 text-white border-blue-600 font-bold shadow"
-                        : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50"}
+                      ${
+                        page === currentPage
+                          ? "bg-blue-600 text-white border-blue-600 font-bold shadow"
+                          : "bg-white text-gray-700 border-gray-300 hover:bg-blue-50"
+                      }
                     `}
                     aria-current={page === currentPage ? "page" : undefined}
                   >
@@ -247,18 +298,28 @@ export default function DataGrid({
               aria-label="Next page"
             >
               <span className="sr-only">Next</span>
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
+                <path
+                  d="M9 5l7 7-7 7"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
           </div>
           <label className="flex items-center gap-1 ml-4">
             <span>Rows per page:</span>
             <select
               value={pageSize}
-              onChange={e => onPageSizeChange(Number(e.target.value))}
+              onChange={(e) => onPageSizeChange(Number(e.target.value))}
               className="border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500"
             >
               {PAGE_SIZE_OPTIONS.map((size) => (
-                <option key={size} value={size}>{size}</option>
+                <option key={size} value={size}>
+                  {size}
+                </option>
               ))}
             </select>
           </label>
@@ -271,6 +332,38 @@ export default function DataGrid({
         onClose={() => setEditPromotion(null)}
         onSave={handleSaveEdit}
       />
+      {viewPromotion && (
+        <PromotionPreviewDialog
+          open={!!viewPromotion}
+          onClose={() => setViewPromotion(null)}
+          data={{
+            ...viewPromotion,
+            gameConfigType: viewPromotion.gameConfigType as GameType, // cast nếu cần
+            bonusItemCount: viewPromotion.bonusItemCount,
+            code: viewPromotion.code,
+            currencyGroups: viewPromotion.currencyGroups,
+            endDate: new Date(viewPromotion.endDate),
+            gameIds: viewPromotion.gameIds,
+            name: viewPromotion.name,
+            offeredPlayerIds: viewPromotion.offeredPlayerIds,
+            offeredSiteNames: viewPromotion.offeredSiteNames,
+            operatorId: viewPromotion.operatorId,
+            startDate: new Date(viewPromotion.startDate),
+            allPlayers:
+              !viewPromotion.offeredPlayerIds ||
+              viewPromotion.offeredPlayerIds.length === 0,
+            uploadedFile: undefined,
+            betLevels: viewPromotion.betLevels,
+          }}
+          operatorName={viewPromotion.operatorId}
+          gameList={gameList} // nếu bạn có gameList toàn cục, truyền vào
+          currencyGroupsInfo={currencyGroupsInfo} // nếu có
+          isSubmitting={false}
+          mode="edit"
+          onConfirm={() => {}}
+          readonly={true}
+        />
+      )}
     </div>
   );
 }

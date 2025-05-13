@@ -21,6 +21,7 @@ interface PromotionPreviewDialogProps {
   isSubmitting?: boolean;
   mode?: "create" | "edit";
   initialId?: string;
+  readonly?: boolean;
 }
 
 export default function PromotionPreviewDialog({
@@ -32,15 +33,14 @@ export default function PromotionPreviewDialog({
   currencyGroupsInfo,
   onConfirm,
   isSubmitting,
+  readonly,
 }: PromotionPreviewDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="w-[40vw] h-[90vh] max-w-[1200px] md:max-w-[98vw] overflow-y-auto p-6 bg-white rounded-lg">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
-            Preview Promotion Details
-          </DialogTitle>
-        </DialogHeader>
+        <DialogTitle className="text-xl font-semibold">
+          Preview Promotion Details
+        </DialogTitle>
 
         <PromotionViewForm
           data={data}
@@ -48,19 +48,20 @@ export default function PromotionPreviewDialog({
           gameList={gameList}
           currencyGroupsInfo={currencyGroupsInfo}
         />
-
-        <div className="mt-6 flex justify-between">
-          <Button onClick={onClose} className="btn-cancel">
-            ← Back
-          </Button>
-          <Button
-            className="btn-primary flex items-center gap-2"
-            onClick={() => onConfirm(data)}
-            disabled={isSubmitting}
-          >
-            Confirm & Save
-          </Button>
-        </div>
+        {!readonly && (
+          <div className="mt-6 flex justify-between">
+            <Button onClick={onClose} className="btn-cancel">
+              ← Back
+            </Button>
+            <Button
+              className="btn-primary flex items-center gap-2"
+              onClick={() => onConfirm(data)}
+              disabled={isSubmitting}
+            >
+              Confirm & Save
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

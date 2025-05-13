@@ -1,10 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import type { Game } from "@/types/game";
 import type { GameType } from "@/constants/gameTypes";
 
 export const useFilteredGames = (
   currencyGroups: string[],
-  gameType: GameType | undefined
+  gameType: GameType | undefined,
+  options?: Omit<UseQueryOptions<Game[]>, "queryKey" | "queryFn">
 ) => {
   const shouldFetch =
     gameType !== undefined &&
@@ -25,5 +26,6 @@ export const useFilteredGames = (
     },
     enabled: shouldFetch,
     staleTime: 1000 * 60 * 5,
+    ...options,
   });
 };

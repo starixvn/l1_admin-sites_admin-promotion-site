@@ -31,7 +31,7 @@ export default function PromotionViewForm({
   } = data;
 
   return (
-    <div className="space-y-3 text-sm text-gray-800">
+    <div className="space-y-4 p-0 text-sm text-gray-800">
       {/* Section 1: General Info */}
       <section>
         <h2 className="text-md font-semibold mb-4">📋 General Information</h2>
@@ -117,7 +117,9 @@ export default function PromotionViewForm({
 
       {/* Section 4: Game List */}
       <section>
-        <h2 className="text-md font-semibold mb-4">🎮 Selected Games <span className="text-red-500">*</span></h2>
+        <h2 className="text-md font-semibold mb-4">
+          🎮 Selected Games <span className="text-red-500">*</span>
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1 pl-2">
           {gameList
             ?.filter((g) => gameIds.includes(g.GameId))

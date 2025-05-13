@@ -1,7 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 import type { CurrencyGroup } from "@/types/currency-group";
 
-export const useCurrencyGroups = (partnerId: string | undefined) => {
+export const useCurrencyGroups = (
+  partnerId: string | undefined,
+  options?: Omit<UseQueryOptions<CurrencyGroup[]>, "queryKey" | "queryFn">
+) => {
   return useQuery<CurrencyGroup[]>({
     queryKey: ["currency-groups", partnerId],
     queryFn: async () => {
@@ -16,5 +19,6 @@ export const useCurrencyGroups = (partnerId: string | undefined) => {
       return res.json();
     },
     enabled: !!partnerId,
+    ...options,
   });
 };
