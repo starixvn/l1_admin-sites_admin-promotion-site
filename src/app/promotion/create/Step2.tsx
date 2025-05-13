@@ -41,15 +41,29 @@ interface GameSelectionProps {
   error: string | null;
   games: { GameId: number; DisplayName: string }[];
   gameIds: number[];
-  setValue: UseFormSetValue<any>;
+  setValue: UseFormSetValue<PromotionFormValues>;
   isRunning: boolean;
   toggleGame: (id: number) => void;
-  errors: any;
+  errors: FieldErrors<PromotionFormValues>;
 }
 
-function GameSelection({ shouldShowGames, isLoading, error, games, gameIds, setValue, isRunning, toggleGame, errors }: GameSelectionProps) {
+function GameSelection({
+  shouldShowGames,
+  isLoading,
+  error,
+  games,
+  gameIds,
+  setValue,
+  isRunning,
+  toggleGame,
+  errors,
+}: GameSelectionProps) {
   if (!shouldShowGames) {
-    return <p className="text-sm text-gray-500 italic">No games available. Please select Game Type and Currency Groups.</p>;
+    return (
+      <p className="text-sm text-gray-500 italic">
+        No games available. Please select Game Type and Currency Groups.
+      </p>
+    );
   }
   if (isLoading) {
     return <p className="text-blue-700">Loading games...</p>;
@@ -58,10 +72,18 @@ function GameSelection({ shouldShowGames, isLoading, error, games, gameIds, setV
     return <p className="text-red-500">Failed to load games</p>;
   }
   if (games.length === 0) {
-    return <p className="text-sm text-gray-500 italic">No games found for the selected configuration.</p>;
+    return (
+      <p className="text-sm text-gray-500 italic">
+        No games found for the selected configuration.
+      </p>
+    );
   }
   return (
     <>
+      <p className="text-xs text-muted-foreground mb-3">
+        + The list of slot games is based on the selected Operator, Game Type,
+        and Currency Groups that have been enabled for the promotion.
+      </p>
       {/* Check all */}
       <div className="flex items-center space-x-2 mb-4">
         <Checkbox
@@ -73,7 +95,13 @@ function GameSelection({ shouldShowGames, isLoading, error, games, gameIds, setV
           }}
           disabled={isRunning}
         />
-        <label htmlFor="game-check-all" className="text-sm font-semibold text-gray-800">Check All</label>
+
+        <label
+          htmlFor="game-check-all"
+          className="text-sm font-semibold text-gray-800"
+        >
+          Check All
+        </label>
       </div>
       <div className="border-b mb-4" />
       {/* Game list */}
@@ -117,8 +145,12 @@ interface PlayerListModalProps {
   offeredPlayerIds: string[];
 }
 
-function PlayerListModal({ showPlayerList, setShowPlayerList, offeredPlayerIds }: PlayerListModalProps) {
-  if (!showPlayerList){
+function PlayerListModal({
+  showPlayerList,
+  setShowPlayerList,
+  offeredPlayerIds,
+}: PlayerListModalProps) {
+  if (!showPlayerList) {
     return null;
   }
   return (
@@ -144,8 +176,12 @@ function PlayerListModal({ showPlayerList, setShowPlayerList, offeredPlayerIds }
           <table className="w-full text-base">
             <thead>
               <tr className="bg-gray-100 border-b">
-                <th className="px-4 py-2 text-center font-medium text-gray-700 border-r">No.</th>
-                <th className="px-4 py-2 text-center font-medium text-gray-700">PlayerID</th>
+                <th className="px-4 py-2 text-center font-medium text-gray-700 border-r">
+                  No.
+                </th>
+                <th className="px-4 py-2 text-center font-medium text-gray-700">
+                  PlayerID
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -281,12 +317,6 @@ export default function Step2({
           isRunning={isRunning}
           toggleGame={toggleGame}
           errors={errors}
-            <p className="text-xs text-muted-foreground mb-3">
-              + The list of slot games is based on the selected Operator, Game
-              Type, and Currency Groups that have been enabled for the
-              promotion.
-            </p>
-            <div className="flex items-center space-x-2 mb-3">
         />
       </fieldset>
 

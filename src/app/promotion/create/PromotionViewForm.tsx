@@ -152,7 +152,7 @@ function ReadOnlyField({
 }) {
   return (
     <div className="grid grid-cols-[160px_1fr] gap-2 text-sm">
-      <div className="flex items-center justify-end gap-1">
+      <div className="flex items-center gap-1 ml-2">
         <span className="font-semibold">{label}</span>
         {require && <span className="text-red-500">*</span>}
       </div>
