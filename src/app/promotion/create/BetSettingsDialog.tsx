@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Info } from "lucide-react";
 import {
   Tooltip,
@@ -56,23 +56,29 @@ export default function BetSettingsDialog({
   onClose,
   partnerId,
   gameType,
+  currencyGroupsInfo,
   onSave,
   games,
-  currencyGroupsInfo,
   readonly = false,
   initialValues,
 }: Props) {
   const [rows, setRows] = useState<RowState[]>([]);
   const { mutateAsync: getCurrencyGroupGames } = useCurrencyGroupGames();
-  const gameIds = games?.map((g) => g.GameId);
+  const memoizedGameIds = useMemo(() => games?.map((g) => g.GameId), [games]);
   const [invalidRows, setInvalidRows] = useState<Set<string>>(new Set());
   const [showGlobalError, setShowGlobalError] = useState(false);
   const [enableAll, setEnableAll] = useState(false);
+
+  const memoizedGetCurrencyGroupGames = useCallback(getCurrencyGroupGames, []);
+
   useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
-      if (!currencyGroupsInfo) {
+      if (!open || !currencyGroupsInfo?.length) {
         return;
       }
+
       const initialBetMap = new Map<string, number>();
       if (initialValues) {
         for (const b of initialValues) {
@@ -80,31 +86,40 @@ export default function BetSettingsDialog({
         }
       }
 
-      const mapped = await Promise.all(
-        currencyGroupsInfo.map(async (cg: CurrencyGroup) => {
-          const existingBetLevel = initialBetMap.get(cg.Id);
-          const groupGames = await getCurrencyGroupGames(cg.Id);
-          const betLevel =
-            existingBetLevel ??
-            selectSuggestedBetLevel(gameType, groupGames, gameIds);
+      try {
+        const mapped = await Promise.all(
+          currencyGroupsInfo.map(async (cg: CurrencyGroup) => {
+            const existingBetLevel = initialBetMap.get(cg.Id);
+            const groupGames = await memoizedGetCurrencyGroupGames(cg.Id);
+            const betLevel =
+              existingBetLevel ??
+              selectSuggestedBetLevel(gameType, groupGames, memoizedGameIds);
 
-          return {
-            id: cg.Id,
-            name: cg.Name,
-            enabled: existingBetLevel !== undefined,
-            betLevel,
-          };
-        })
-      );
-      const allEnabled = mapped.every((r) => r.enabled);
-      setEnableAll(allEnabled);
-      setRows(mapped);
+            return {
+              id: cg.Id,
+              name: cg.Name,
+              enabled: existingBetLevel !== undefined,
+              betLevel,
+            };
+          })
+        );
+
+        if (isMounted) {
+          const allEnabled = mapped.every((r) => r.enabled);
+          setEnableAll(allEnabled);
+          setRows(mapped);
+        }
+      } catch (error) {
+        console.error('Error fetching currency group games:', error);
+      }
     };
 
-    if (open) {
-      fetchData();
-    }
-  }, [open, currencyGroupsLoaded, currencyGroups, gameIds, gameType, getCurrencyGroupGames, initialValues]);
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [open, currencyGroupsInfo, memoizedGetCurrencyGroupGames, initialValues]);
 
   const handleToggleAll = async (enabled: boolean) => {
     if (readonly) {
@@ -116,8 +131,8 @@ export default function BetSettingsDialog({
       rows.map(async (row) => {
         let betLevel = row.betLevel;
         if (enabled && !betLevel) {
-          const groupGames = await getCurrencyGroupGames(row.id);
-          betLevel = selectSuggestedBetLevel(gameType, groupGames, gameIds);
+          const groupGames = await memoizedGetCurrencyGroupGames(row.id);
+          betLevel = selectSuggestedBetLevel(gameType, groupGames, memoizedGameIds);
         }
 
         return {
@@ -137,8 +152,8 @@ export default function BetSettingsDialog({
     }
     let suggested = rows[index].betLevel;
     if (enabled && !suggested) {
-      const groupGames = await getCurrencyGroupGames(rows[index].id);
-      suggested = selectSuggestedBetLevel(gameType, groupGames, gameIds);
+      const groupGames = await memoizedGetCurrencyGroupGames(rows[index].id);
+      suggested = selectSuggestedBetLevel(gameType, groupGames, memoizedGameIds);
     }
     setRows((prev) => {
       const updated = [...prev];
