@@ -33,7 +33,9 @@ export default function PromotionPreviewDialog({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="w-[70vw] !max-w-[800px] max-h-[90vh] overflow-y-auto p-6 bg-white rounded-lg">
-        <DialogTitle className="text-xl font-semibold ">
+        <DialogTitle className="text-xl font-semibold pb-3">
+          Promotion Details
+        </DialogTitle>
 
         <PromotionViewForm
           data={data}
@@ -44,7 +46,9 @@ export default function PromotionPreviewDialog({
         />
         {readonly ? (
           <div className="mt-4 flex justify-end">
-            <Button onClick={onClose} className="btn-cancel min-w-[100px]">Close</Button>
+            <Button onClick={onClose} className="btn-cancel min-w-[100px]">
+              Close
+            </Button>
           </div>
         ) : (
           <div className="mt-4 flex justify-between">
