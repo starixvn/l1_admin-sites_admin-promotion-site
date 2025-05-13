@@ -32,6 +32,140 @@ interface Step2Props {
   toggleGame: (id: number) => void;
 }
 
+interface GameSelectionProps {
+  shouldShowGames: boolean;
+  isLoading: boolean;
+  error: string | null;
+  games: { GameId: number; DisplayName: string }[];
+  gameIds: number[];
+  setValue: UseFormSetValue<any>;
+  isRunning: boolean;
+  toggleGame: (id: number) => void;
+  errors: any;
+}
+
+function GameSelection({ shouldShowGames, isLoading, error, games, gameIds, setValue, isRunning, toggleGame, errors }: GameSelectionProps) {
+  if (!shouldShowGames) {
+    return <p className="text-sm text-gray-500 italic">No games available. Please select Game Type and Currency Groups.</p>;
+  }
+  if (isLoading) {
+    return <p className="text-blue-700">Loading games...</p>;
+  }
+  if (error) {
+    return <p className="text-red-500">Failed to load games</p>;
+  }
+  if (games.length === 0) {
+    return <p className="text-sm text-gray-500 italic">No games found for the selected configuration.</p>;
+  }
+  return (
+    <>
+      {/* Check all */}
+      <div className="flex items-center space-x-2 mb-4">
+        <Checkbox
+          id="game-check-all"
+          checked={gameIds.length === games.length}
+          onCheckedChange={(checked) => {
+            const allGameIds = games.map((g: { GameId: number }) => g.GameId);
+            setValue("gameIds", checked ? allGameIds : []);
+          }}
+          disabled={isRunning}
+        />
+        <label htmlFor="game-check-all" className="text-sm font-semibold text-gray-800">Check All</label>
+      </div>
+      <div className="border-b mb-4" />
+      {/* Game list */}
+      <div className="grid gap-3 max-h-[15rem] overflow-y-auto pr-2">
+        {games.map((game) => {
+          const isChecked = gameIds.includes(game.GameId);
+          return (
+            <label
+              key={game.GameId}
+              htmlFor={`game-${game.GameId}`}
+              className={cn(
+                "flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer",
+                isChecked
+                  ? "bg-green-50 border-green-200 text-green-800 font-small"
+                  : "bg-white border-green-100 hover:bg-green-50"
+              )}
+            >
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id={`game-${game.GameId}`}
+                  checked={isChecked}
+                  onCheckedChange={() => toggleGame(game.GameId)}
+                  disabled={isRunning}
+                />
+                <span className="text-sm">{game.DisplayName}</span>
+              </div>
+            </label>
+          );
+        })}
+      </div>
+      {errors.gameIds && (
+        <p className="error-message mt-2">{errors.gameIds.message}</p>
+      )}
+    </>
+  );
+}
+
+interface PlayerListModalProps {
+  showPlayerList: boolean;
+  setShowPlayerList: (show: boolean) => void;
+  offeredPlayerIds: string[];
+}
+
+function PlayerListModal({ showPlayerList, setShowPlayerList, offeredPlayerIds }: PlayerListModalProps) {
+  if (!showPlayerList) return null;
+  return (
+    <div
+      className="absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full h-full flex items-center justify-center bg-white/60"
+      onClick={() => setShowPlayerList(false)}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-[480px] p-8 relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-gray-800">Player List</h2>
+          <button
+            className="text-gray-400 hover:text-red-500 text-2xl font-bold transition"
+            onClick={() => setShowPlayerList(false)}
+            aria-label="Close"
+          >
+            ×
+          </button>
+        </div>
+        <div className="overflow-y-auto max-h-80 border">
+          <table className="w-full text-base">
+            <thead>
+              <tr className="bg-gray-100 border-b">
+                <th className="px-4 py-2 text-center font-medium text-gray-700 border-r">No.</th>
+                <th className="px-4 py-2 text-center font-medium text-gray-700">PlayerID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(offeredPlayerIds ?? []).map((id, idx) => (
+                <tr key={id + idx} className="border-b last:border-b-0">
+                  <td className="px-4 py-2 text-center border-r">{idx + 1}</td>
+                  <td className="px-4 py-2 text-center">{id}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="flex justify-end mt-6">
+          <button
+            className="px-6 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 font-medium shadow cursor-pointer"
+            onClick={() => setShowPlayerList(false)}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Step2({
   mode,
   status,
@@ -115,75 +249,17 @@ export default function Step2({
 
       <fieldset className="fieldset-wrapper-games">
         <legend className="legend-wrapper">🎮 Game Selection</legend>
-        {!shouldShowGames ? (
-          <p className="text-sm text-gray-500 italic">
-            No games available. Please select Game Type and Currency Groups.
-          </p>
-        ) : isLoading ? (
-          <p className="text-blue-700">Loading games...</p>
-        ) : error ? (
-          <p className="text-red-500">Failed to load games</p>
-        ) : games.length === 0 ? (
-          <p className="text-sm text-gray-500 italic">
-            No games found for the selected configuration.
-          </p>
-        ) : (
-          <>
-            {/* Check all */}
-            <div className="flex items-center space-x-2 mb-4">
-              <Checkbox
-                id="game-check-all"
-                checked={gameIds.length === games.length}
-                onCheckedChange={(checked) => {
-                  const allGameIds = games.map((g) => g.GameId);
-                  setValue("gameIds", checked ? allGameIds : []);
-                }}
-                disabled={isRunning}
-              />
-              <label
-                htmlFor="game-check-all"
-                className="text-sm font-semibold text-gray-800"
-              >
-                Check All
-              </label>
-            </div>
-
-            <div className="border-b mb-4" />
-
-            {/* Game list */}
-            <div className="grid gap-3 max-h-[15rem] overflow-y-auto pr-2">
-              {games.map((game) => {
-                const isChecked = gameIds.includes(game.GameId);
-                return (
-                  <label
-                    key={game.GameId}
-                    htmlFor={`game-${game.GameId}`}
-                    className={cn(
-                      "flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer",
-                      isChecked
-                        ? "bg-green-50 border-green-200 text-green-800 font-small"
-                        : "bg-white border-green-100 hover:bg-green-50"
-                    )}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <Checkbox
-                        id={`game-${game.GameId}`}
-                        checked={isChecked}
-                        onCheckedChange={() => toggleGame(game.GameId)}
-                        disabled={isRunning}
-                      />
-                      <span className="text-sm">{game.DisplayName}</span>
-                    </div>
-                  </label>
-                );
-              })}
-            </div>
-          </>
-        )}
-
-        {errors.gameIds && (
-          <p className="error-message mt-2">{errors.gameIds.message}</p>
-        )}
+        <GameSelection
+          shouldShowGames={shouldShowGames}
+          isLoading={isLoading}
+          error={error instanceof Error ? error.message : error || null}
+          games={games}
+          gameIds={gameIds}
+          setValue={setValue}
+          isRunning={isRunning}
+          toggleGame={toggleGame}
+          errors={errors}
+        />
       </fieldset>
 
       <div>
@@ -244,67 +320,11 @@ export default function Step2({
             >
               📥 Download Sample File
             </a>
-
-            {/* Player List Modal */}
-            {showPlayerList && (
-              <div
-                className="absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full h-full flex items-center justify-center bg-white/60"
-                onClick={() => setShowPlayerList(false)}
-              >
-                <div
-                  className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-[480px] p-8 relative"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-gray-800">
-                      Player List
-                    </h2>
-                    <button
-                      className="text-gray-400 hover:text-red-500 text-2xl font-bold transition"
-                      onClick={() => setShowPlayerList(false)}
-                      aria-label="Close"
-                    >
-                      ×
-                    </button>
-                  </div>
-                  <div className="overflow-y-auto max-h-80 border">
-                    <table className="w-full text-base">
-                      <thead>
-                        <tr className="bg-gray-100 border-b">
-                          <th className="px-4 py-2 text-center font-medium text-gray-700 border-r">
-                            No.
-                          </th>
-                          <th className="px-4 py-2 text-center font-medium text-gray-700">
-                            PlayerID
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(offeredPlayerIds ?? []).map((id, idx) => (
-                          <tr
-                            key={id + idx}
-                            className="border-b last:border-b-0"
-                          >
-                            <td className="px-4 py-2 text-center border-r">
-                              {idx + 1}
-                            </td>
-                            <td className="px-4 py-2 text-center">{id}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="flex justify-end mt-6">
-                    <button
-                      className="px-6 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-700 font-medium shadow cursor-pointer"
-                      onClick={() => setShowPlayerList(false)}
-                    >
-                      Close
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            <PlayerListModal
+              showPlayerList={showPlayerList}
+              setShowPlayerList={setShowPlayerList}
+              offeredPlayerIds={offeredPlayerIds}
+            />
           </>
         )}
       </div>
