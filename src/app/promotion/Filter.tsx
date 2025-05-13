@@ -200,7 +200,7 @@ export default function Filter({
               aria-haspopup="listbox"
             >
               <span className="text-gray-700">
-                {getSelectedOperatorDisplay() || "All"}
+                {getSelectedOperatorDisplay() || "Select Operator"}
               </span>
               <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
                 <path

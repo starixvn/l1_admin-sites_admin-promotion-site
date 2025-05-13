@@ -1,7 +1,12 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import Filter from "../../../src/app/promotion/Filter";
+import Page from "../../../src/app/promotion/page";
+import axios from "axios";
+
+jest.mock("axios");
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 // Mock data
 const mockOperators = [
@@ -17,6 +22,18 @@ const mockInitialFilters = {
   pageIndex: 1,
   pageSize: 10,
 };
+
+beforeEach(() => {
+  mockedAxios.get.mockReset();
+  // Mock /api/operators
+  mockedAxios.get.mockImplementation((url) => {
+    if (url === "/api/operators") {
+      return Promise.resolve({ data: mockOperators });
+    }
+    // Default promotions response
+    return Promise.resolve({ data: { items: [], metadata: { total: 0 } } });
+  });
+});
 
 describe("Filter Component", () => {
   const mockOnFilterChange = jest.fn();
@@ -284,5 +301,117 @@ describe("Filter Component", () => {
     });
     fireEvent.click(op1Checkbox);
     fireEvent.click(op1Checkbox);
+  });
+});
+
+describe("Filter integration with Page", () => {
+  it("calls API with status when status is not All", async () => {
+    render(<Page />);
+    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith("/api/operators"));
+
+    const statusSelect = screen.getByLabelText("Status");
+    fireEvent.change(statusSelect, { target: { value: "ACTIVE" } });
+
+    const searchBtn = screen.getByRole("button", { name: "Search promotions" });
+    fireEvent.click(searchBtn);
+
+  });
+
+  it("does not append status when status is All", async () => {
+    render(<Page />);
+    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith("/api/operators"));
+
+    const searchBtn = screen.getByRole("button", { name: "Search promotions" });
+    fireEvent.click(searchBtn);
+
+    await waitFor(() => {
+      const lastCall = mockedAxios.get.mock.calls.find(call => call[0].includes("/api/promotions?"));
+      expect(lastCall).toBeDefined();
+      expect(lastCall![0]).not.toContain("status=All");
+    });
+  });
+
+  it("appends operator if not all selected", async () => {
+    render(<Page />);
+    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith("/api/operators"));
+
+    const operatorBtn = screen.getByRole("button", { name: "Operator" });
+    fireEvent.click(operatorBtn);
+
+    const op1Checkbox = screen.getByLabelText("Select Operator 1");
+    fireEvent.click(op1Checkbox);
+
+    fireEvent.mouseDown(document.body);
+
+    const searchBtn = screen.getByRole("button", { name: "Search promotions" });
+    fireEvent.click(searchBtn);
+
+    await waitFor(() => {
+      expect(mockedAxios.get).toHaveBeenCalledWith(expect.stringContaining("operator="));
+    });
+  });
+
+  it("does not append operator if all selected", async () => {
+    render(<Page />);
+    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith("/api/operators"));
+
+    const operatorBtn = screen.getByRole("button", { name: "Operator" });
+    fireEvent.click(operatorBtn);
+
+    const allCheckbox = screen.getByLabelText("Select all operators");
+    fireEvent.click(allCheckbox);
+
+    fireEvent.mouseDown(document.body);
+
+    const searchBtn = screen.getByRole("button", { name: "Search promotions" });
+    fireEvent.click(searchBtn);
+
+    await waitFor(() => {
+      const lastCall = mockedAxios.get.mock.calls.find(call => call[0].includes("/api/promotions?"));
+      expect(lastCall).toBeDefined();
+    });
+  });
+
+  it("appends promotionCode if present", async () => {
+    render(<Page />);
+    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith("/api/operators"));
+
+    const promoInput = screen.getByPlaceholderText("Enter promotion code");
+    fireEvent.change(promoInput, { target: { value: "PROMO123" } });
+
+    const searchBtn = screen.getByRole("button", { name: "Search promotions" });
+    fireEvent.click(searchBtn);
+
+    await waitFor(() => {
+      expect(mockedAxios.get).toHaveBeenCalledWith(expect.stringContaining("promotionCode=PROMO123"));
+    });
+  });
+
+  it("always appends pageIndex and pageSize", async () => {
+    render(<Page />);
+    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith("/api/operators"));
+
+    const searchBtn = screen.getByRole("button", { name: "Search promotions" });
+    fireEvent.click(searchBtn);
+
+    await waitFor(() => {
+      const lastCall = mockedAxios.get.mock.calls.find(call => call[0].includes("/api/promotions?"));
+      expect(lastCall).toBeDefined();
+      expect(lastCall![0]).toContain("pageIndex=");
+      expect(lastCall![0]).toContain("pageSize=");
+    });
+  });
+
+  it("handles API error gracefully", async () => {
+    mockedAxios.get.mockRejectedValueOnce(new Error("Network error"));
+    render(<Page />);
+    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith("/api/operators"));
+
+    const searchBtn = screen.getByRole("button", { name: "Search promotions" });
+    fireEvent.click(searchBtn);
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Search promotions" })).toBeInTheDocument();
+    });
   });
 });

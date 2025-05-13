@@ -23,7 +23,7 @@ interface DataGridProps {
   onPageSizeChange: (size: number) => void;
 }
 
-function toGMTString(dateStr: string, gmtOffset: number): string {
+export function toGMTString(dateStr: string, gmtOffset: number): string {
   if (!dateStr) {
     return "";
   }
@@ -41,7 +41,7 @@ function toGMTString(dateStr: string, gmtOffset: number): string {
     .replace(",", "");
 }
 
-const getGameTypeName = (gameConfigType: number) => {
+export const getGameTypeName = (gameConfigType: number) => {
   switch (gameConfigType) {
     case GAME_TYPES.CLASSIC:
       return "Classic Slots";
@@ -51,6 +51,19 @@ const getGameTypeName = (gameConfigType: number) => {
       return "";
   }
 };
+
+export function getStatusStyle(status: string) {
+  switch (status) {
+    case "running":
+      return "bg-green-100 text-green-800";
+    case "upcoming":
+      return "bg-yellow-100 text-yellow-800";
+    case "completed":
+      return "bg-gray-100 text-gray-600";
+    default:
+      return "bg-gray-100 text-gray-500";
+  }
+}
 
 export default function DataGrid({
   promotions = [],
@@ -73,19 +86,6 @@ export default function DataGrid({
     const colorClass = daysLeft > 0 ? "text-green-500" : "text-red-500";
     const text = daysLeft > 0 ? `${daysLeft} days left` : "Expired";
     return <div className={`text-xs font-medium ${colorClass}`}>{text}</div>;
-  };
-
-  const getStatusStyle = (status: string) => {
-    switch (status) {
-      case "running":
-        return "bg-green-100 text-green-800";
-      case "upcoming":
-        return "bg-yellow-100 text-yellow-800";
-      case "completed":
-        return "bg-gray-100 text-gray-600";
-      default:
-        return "bg-gray-100 text-gray-500";
-    }
   };
 
   const handleDelete = async (id: string, code: string) => {

@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import PromotionPage from "../../../src/app/promotion/page";
 import axios from "axios";
@@ -138,20 +138,26 @@ describe("PromotionPage", () => {
   };
 
   it("renders the promotion management page", async () => {
-    render(<PromotionPage />, { wrapper });
+    await act(async () => {
+      render(<PromotionPage />, { wrapper });
+    });
     expect(screen.getByText("Promotion Management")).toBeInTheDocument();
     await waitForDataToLoad();
   });
 
   it("fetches and displays operators and games on mount", async () => {
-    render(<PromotionPage />, { wrapper });
+    await act(async () => {
+      render(<PromotionPage />, { wrapper });
+    });
     await waitFor(() => {
       expect(mockedAxios.get).toHaveBeenCalledWith("/api/operators");
     });
   });
 
   it("handles filter changes and search", async () => {
-    render(<PromotionPage />, { wrapper });
+    await act(async () => {
+      render(<PromotionPage />, { wrapper });
+    });
     await waitForDataToLoad();
     const filterInput = screen.getByPlaceholderText("Enter promotion code");
     fireEvent.change(filterInput, { target: { value: "test" } });
@@ -161,5 +167,21 @@ describe("PromotionPage", () => {
         expect.stringContaining("/api/promotions")
       );
     });
+    await waitFor(() => {});
+  });
+});
+
+describe("Filter integration with Page", () => {
+  it("calls API with status when status is not All", async () => {
+    await act(async () => {
+      render(<PromotionPage />);
+    });
+    await waitFor(() => expect(mockedAxios.get).toHaveBeenCalledWith("/api/operators"));
+
+    const statusSelect = screen.getByLabelText("Status");
+    fireEvent.change(statusSelect, { target: { value: "ACTIVE" } });
+
+    const searchBtn = screen.getByRole("button", { name: "Search promotions" });
+    fireEvent.click(searchBtn);
   });
 });

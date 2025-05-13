@@ -4,6 +4,7 @@ import "@testing-library/jest-dom";
 import DataGrid from "../../../src/app/promotion/DataGrid";
 import { GAME_TYPES } from "../../../src/constants/gameTypes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as DataGridUtils from '../../../src/app/promotion/DataGrid';
 
 jest.mock("react-toastify", () => ({
   toast: {
@@ -84,9 +85,8 @@ describe("DataGrid Component with Pagination", () => {
     );
 
     const rows = screen.getAllByRole("row");
-    expect(rows.length).toBe(11); // 1 header + 10 rows
+    expect(rows.length).toBe(11);
 
-    // Simulate going to page 2
     rerender(
       <DataGrid
         promotions={mockPromotions.slice(10, 20)}
@@ -103,5 +103,41 @@ describe("DataGrid Component with Pagination", () => {
     );
 
     expect(screen.getByText("Promotion 11")).toBeInTheDocument();
+  });
+});
+
+describe('toGMTString', () => {
+  it('returns empty string if no dateStr', () => {
+    expect(DataGridUtils.toGMTString('', 7)).toBe('');
+  });
+  it('returns formatted string for valid date', () => {
+    expect(DataGridUtils.toGMTString('2024-01-01T00:00:00Z', 7)).toContain('01/01/2024');
+  });
+});
+
+describe('getGameTypeName', () => {
+  it('returns Classic Slots for GAME_TYPES.CLASSIC', () => {
+    expect(DataGridUtils.getGameTypeName(GAME_TYPES.CLASSIC)).toBe('Classic Slots');
+  });
+  it('returns Cascading Slots for GAME_TYPES.CASCADING', () => {
+    expect(DataGridUtils.getGameTypeName(GAME_TYPES.CASCADING)).toBe('Cascading Slots');
+  });
+  it('returns empty string for unknown type', () => {
+    expect(DataGridUtils.getGameTypeName(999)).toBe('');
+  });
+});
+
+describe('getStatusStyle', () => {
+  it('returns green for running', () => {
+    expect(DataGridUtils.getStatusStyle('running')).toBe('bg-green-100 text-green-800');
+  });
+  it('returns yellow for upcoming', () => {
+    expect(DataGridUtils.getStatusStyle('upcoming')).toBe('bg-yellow-100 text-yellow-800');
+  });
+  it('returns gray for completed', () => {
+    expect(DataGridUtils.getStatusStyle('completed')).toBe('bg-gray-100 text-gray-600');
+  });
+  it('returns default for unknown', () => {
+    expect(DataGridUtils.getStatusStyle('other')).toBe('bg-gray-100 text-gray-500');
   });
 });
