@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import DataGrid from "../../../src/app/promotion/DataGrid";
 import { GAME_TYPES } from "../../../src/constants/gameTypes";
@@ -33,11 +33,6 @@ const wrapper = ({ children }: { children: React.ReactNode }) => {
   const testQueryClient = createTestQueryClient();
   return <QueryClientProvider client={testQueryClient}>{children}</QueryClientProvider>;
 };
-
-const mockGames = [
-  { GameId: 1, DisplayName: "Game 1", Type: 1 },
-  { GameId: 2, DisplayName: "Game 2", Type: 1 },
-];
 
 const mockPromotions = Array.from({ length: 15 }).map((_, i) => ({
   _id: `${i + 1}`,
@@ -77,7 +72,6 @@ describe("DataGrid Component with Pagination", () => {
         promotions={mockPromotions.slice(0, pageSize)}
         loading={false}
         error={null}
-        games={mockGames}
         onDelete={mockOnDelete}
         onRefresh={mockOnRefresh}
         currentPage={currentPage}
@@ -98,7 +92,6 @@ describe("DataGrid Component with Pagination", () => {
         promotions={mockPromotions.slice(10, 20)}
         loading={false}
         error={null}
-        games={mockGames}
         onDelete={mockOnDelete}
         onRefresh={mockOnRefresh}
         currentPage={2}

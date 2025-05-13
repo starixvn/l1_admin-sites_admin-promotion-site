@@ -5,9 +5,9 @@ import Filter from "../../../src/app/promotion/Filter";
 
 // Mock data
 const mockOperators = [
-  { name: "Operator 1", id: "op1" },
-  { name: "Operator 2", id: "op2" },
-  { name: "Operator 3", id: "op3" },
+  { Name: "Operator 1", PartnerId: "op1" },
+  { Name: "Operator 2", PartnerId: "op2" },
+  { Name: "Operator 3", PartnerId: "op3" },
 ];
 
 const mockInitialFilters = {
@@ -210,7 +210,7 @@ describe("Filter Component", () => {
       />
     );
 
-    const newOperators = [...mockOperators, { name: "Operator 4", id: "op4" }];
+    const newOperators = [...mockOperators, { Name: "Operator 4", PartnerId: "op4" }];
     rerender(
       <Filter
         onFilterChange={mockOnFilterChange}
