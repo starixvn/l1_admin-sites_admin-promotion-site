@@ -3,7 +3,6 @@
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -110,7 +109,7 @@ export default function BetSettingsDialog({
           setRows(mapped);
         }
       } catch (error) {
-        console.error('Error fetching currency group games:', error);
+        console.error("Error fetching currency group games:", error);
       }
     };
 
@@ -132,7 +131,11 @@ export default function BetSettingsDialog({
         let betLevel = row.betLevel;
         if (enabled && !betLevel) {
           const groupGames = await memoizedGetCurrencyGroupGames(row.id);
-          betLevel = selectSuggestedBetLevel(gameType, groupGames, memoizedGameIds);
+          betLevel = selectSuggestedBetLevel(
+            gameType,
+            groupGames,
+            memoizedGameIds
+          );
         }
 
         return {
@@ -153,7 +156,11 @@ export default function BetSettingsDialog({
     let suggested = rows[index].betLevel;
     if (enabled && !suggested) {
       const groupGames = await memoizedGetCurrencyGroupGames(rows[index].id);
-      suggested = selectSuggestedBetLevel(gameType, groupGames, memoizedGameIds);
+      suggested = selectSuggestedBetLevel(
+        gameType,
+        groupGames,
+        memoizedGameIds
+      );
     }
     setRows((prev) => {
       const updated = [...prev];
@@ -206,31 +213,27 @@ export default function BetSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full !max-w-3xl bg-white rounded-xl px-8 py-5 shadow-xl">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-gray-800">
-            Bet Settings -{" "}
-            {gameType === GAME_TYPES.CLASSIC
-              ? "Classic Slot"
-              : "Cascading Slot"}
-          </DialogTitle>
-        </DialogHeader>
+      <DialogContent className="w-full !max-w-2xl bg-white rounded-xl px-5 py-5 shadow-xl">
+        <DialogTitle className="text-2xl font-bold text-gray-800">
+          Currency Group Settings -{" "}
+          {gameType === GAME_TYPES.CLASSIC ? "Classic Slot" : "Cascading Slot"}
+        </DialogTitle>
 
-        <div className="space-y-6 mt-6">
+        <div className="space-y-6 mt-4">
           {!readonly && (
-            <p className="text-base text-gray-700">
+            <p className="text-sm text-gray-700">
               <strong className="text-red-500">**</strong> Turn ON the Promotion
               for the currency group which you want to offer the Free Spin Bonus
             </p>
           )}
-          <p className="text-base text-gray-700">
+          <p className="text-sm text-gray-700">
             The suggested Bet Level value is based on the default setting
             currently displayed in the game for each currency group.{" "}
           </p>
           <div className="overflow-x-auto border rounded-2xl bg-white shadow-sm">
-            <table className="w-full text-base border-collapse">
+            <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="bg-blue-100 text-blue-900 border-b text-md">
+                <tr className="bg-blue-100 text-blue-900 border-b text-sm">
                   <th className="px-4 py-3 text-center border-r">Operator</th>
                   <th className="px-4 py-3 text-center border-r">
                     Currency Group
@@ -272,7 +275,7 @@ export default function BetSettingsDialog({
                           <TooltipContent
                             side="top"
                             align="center"
-                            className="z-50 text-sm bg-white shadow-lg border"
+                            className="z-50 text-xs bg-white shadow-lg border"
                           >
                             {gameType === GAME_TYPES.CLASSIC
                               ? "Classic: Bet Level x 25 = Total Bet"
@@ -286,7 +289,7 @@ export default function BetSettingsDialog({
               </thead>
               <tbody>
                 {rows.map((row, index) => (
-                  <tr key={row.id} className="border-t text-base">
+                  <tr key={row.id} className="border-t text-sm">
                     {index === 0 && (
                       <td
                         className="px-4 py-3 text-gray-600 text-center border-r"

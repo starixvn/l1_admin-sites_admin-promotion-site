@@ -250,72 +250,87 @@ export default function Step2({
           <p className="text-sm text-red-600 mt-2">{errors.gameIds.message}</p>
         )}
       </fieldset>
+      <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-1 items-start">
+        <div>
+          <Label className="form-label">👥 Target Members</Label>
+          <RadioGroup
+            value={allPlayers ? "true" : "false"}
+            onValueChange={(val) => {
+              setValue("allPlayers", val === "true");
+              setValue("offeredPlayerIds", []);
+            }}
+            disabled={isRunning}
+          >
+            <div className="flex gap-4 items-center">
+              <RadioGroupItem
+                value="true"
+                id="all"
+                className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
+                disabled={isRunning}
+              />
+              <label htmlFor="all" className="text-sm">
+                All Players
+              </label>
+            </div>
+            <div className="flex gap-4 items-center">
+              <RadioGroupItem
+                value="false"
+                id="file"
+                className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
+                disabled={isRunning}
+              />
+              <label htmlFor="file" className="text-sm">
+                Players from File
+              </label>
+            </div>
+          </RadioGroup>
 
-      <div>
-        <Label className="form-label">👥 Target Members</Label>
-        <RadioGroup
-          value={allPlayers ? "true" : "false"}
-          onValueChange={(val) => {
-            setValue("allPlayers", val === "true");
-            setValue("offeredPlayerIds", []);
-          }}
-          disabled={isRunning}
-        >
-          <div className="flex gap-4 items-center">
-            <RadioGroupItem
-              value="true"
-              id="all"
-              className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
-              disabled={isRunning}
-            />
-            <label htmlFor="all" className="text-sm">
-              All Players
-            </label>
-          </div>
-          <div className="flex gap-4 items-center">
-            <RadioGroupItem
-              value="false"
-              id="file"
-              className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
-              disabled={isRunning}
-            />
-            <label htmlFor="file" className="text-sm">
-              Players from File
-            </label>
-          </div>
-        </RadioGroup>
-
-        {!allPlayers && (
-          <>
-            <PlayerFileUploader
-              operatorId={operatorId}
-              disabled={isRunning}
-              setShowPlayerList={setShowPlayerList}
-              offeredPlayerIds={offeredPlayerIds || []}
-              uploadedFile={uploadedFile}
-              onValidFile={(file, data) => {
-                const playerIds = data
-                  .map((row) => row.PlayerID?.toString())
-                  .filter(Boolean);
-                setUploadedFile(file);
-                setValue("uploadedFile", file);
-                setValue("offeredPlayerIds", playerIds);
-              }}
-            />
-            <a
-              href="/sample-files/player-list-template.csv"
-              download
-              className="inline-flex items-center gap-2 text-blue-700 hover:text-blue-900 text-sm font-medium"
-            >
-              📥 Download Sample File
-            </a>
-            <PlayerListModal
-              showPlayerList={showPlayerList}
-              setShowPlayerList={setShowPlayerList}
-              offeredPlayerIds={offeredPlayerIds}
-            />
-          </>
-        )}
+          {!allPlayers && (
+            <>
+              <PlayerFileUploader
+                operatorId={operatorId}
+                disabled={isRunning}
+                setShowPlayerList={setShowPlayerList}
+                offeredPlayerIds={offeredPlayerIds || []}
+                uploadedFile={uploadedFile}
+                onValidFile={(file, data) => {
+                  const playerIds = data
+                    .map((row) => row.PlayerID?.toString())
+                    .filter(Boolean);
+                  setUploadedFile(file);
+                  setValue("uploadedFile", file);
+                  setValue("offeredPlayerIds", playerIds);
+                }}
+              />
+              <a
+                href="/sample-files/player-list-template.csv"
+                download
+                className="inline-flex items-center gap-2 text-blue-700 hover:text-blue-900 text-sm font-medium"
+              >
+                📥 Download Sample File
+              </a>
+              <PlayerListModal
+                showPlayerList={showPlayerList}
+                setShowPlayerList={setShowPlayerList}
+                offeredPlayerIds={offeredPlayerIds}
+              />
+            </>
+          )}
+        </div>
+        <div className="text-xs text-muted-foreground space-y-1">
+          <p>
+            + FSB will be given to everybody who opens Promoted game during
+            promo period.
+          </p>
+          <p>
+            + Only those players from the upload file will receive FPB during
+            promo campaign.
+          </p>
+          <p>
+            + The file must be saved as a .csv file, and the size cannot be
+            bigger than 2MB.
+          </p>
+        </div>
       </div>
 
       <BetSettingsDialog
