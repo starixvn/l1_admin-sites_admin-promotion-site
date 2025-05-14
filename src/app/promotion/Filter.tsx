@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import PromotionDialog from "./create/PromotionDialog";
-import { PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
+import { PROMOTION_STATUS_OPTIONS_LIST } from "@/constants/promotionStatusMap";
 import { Operator } from "@/types/operator";
 
 interface FilterProps {
@@ -146,7 +146,7 @@ export default function Filter({
               text-gray-700 cursor-pointer"
               aria-label="Status"
             >
-              {PROMOTION_STATUS_OPTIONS.map((option) => (
+              {PROMOTION_STATUS_OPTIONS_LIST.map((option) => (
                 <option key={option} value={option}>
                   {option}
                 </option>

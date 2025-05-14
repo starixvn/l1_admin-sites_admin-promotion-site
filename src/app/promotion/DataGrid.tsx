@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import PromotionEditDialog from "./edit/PromotionEditDialog";
 import { Promotion } from "@/types/promotion";
 import { toast } from "react-toastify";
-import { getStatus } from "@/constants/promotionStatusMap";
+import { getStatus, PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import PromotionPreviewDialog from "./create/PromotionPreviewDialog";
@@ -56,11 +56,11 @@ export const getGameTypeName = (gameConfigType: number) => {
 
 export function getStatusStyle(status: string) {
   switch (status) {
-    case "running":
+    case PROMOTION_STATUS_OPTIONS.Running:
       return "bg-green-100 text-green-800";
-    case "upcoming":
+    case PROMOTION_STATUS_OPTIONS.Upcoming:
       return "bg-yellow-100 text-yellow-800";
-    case "completed":
+    case PROMOTION_STATUS_OPTIONS.Completed:
       return "bg-gray-100 text-gray-600";
     default:
       return "bg-gray-100 text-gray-500";
@@ -224,12 +224,12 @@ export default function DataGrid({
                     >
                       <Eye className="w-4 h-4 text-gray-600 hover:text-black" />
                     </button>
-                    {status === "upcoming" && (
+                    {status === PROMOTION_STATUS_OPTIONS.Upcoming && (
                       <button onClick={() => handleEdit(p)}>
                         <Pencil className="w-4 h-4 text-blue-600" />
                       </button>
                     )}
-                    {status === "upcoming" && (
+                    {status === PROMOTION_STATUS_OPTIONS.Upcoming && (
                       <button
                         aria-label="delete-promotion"
                         onClick={() => handleDelete(p._id, p.code)}
