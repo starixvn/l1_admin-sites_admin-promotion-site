@@ -1,12 +1,11 @@
 "use client";
 
 import { GAME_TYPES, GameType } from "@/constants/gameTypes";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PromotionEditDialog from "./edit/PromotionEditDialog";
 import { Promotion } from "@/types/promotion";
 import { toast } from "react-toastify";
 import { getStatus } from "@/constants/promotionStatusMap";
-import { differenceInCalendarDays } from "date-fns";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import PromotionPreviewDialog from "./create/PromotionPreviewDialog";
@@ -68,6 +67,36 @@ export function getStatusStyle(status: string) {
   }
 }
 
+const Countdown = ({ endDate }: { endDate: Date }) => {
+  const [now, setNow] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const diff = endDate.getTime() - now.getTime();
+
+  let text = "Expired";
+  let colorClass = "text-red-500";
+
+  if (diff > 0) {
+    const daysLeft = Math.floor(diff / (1000 * 60 * 60 * 24));
+    if (daysLeft > 0) {
+      text = `${daysLeft} days left`;
+      colorClass = "text-green-500";
+    } else {
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+      text = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")} left`;
+      colorClass = "text-yellow-500";
+    }
+  }
+
+  return <div className={`text-xs font-medium ${colorClass}`}>{text}</div>;
+};
+
 export default function DataGrid({
   promotions = [],
   loading,
@@ -99,12 +128,6 @@ export default function DataGrid({
         !!viewPromotion?.gameConfigType,
     }
   );
-  const getCountdown = (endDate: Date) => {
-    const daysLeft = differenceInCalendarDays(endDate, new Date());
-    const colorClass = daysLeft > 0 ? "text-green-500" : "text-red-500";
-    const text = daysLeft > 0 ? `${daysLeft} days left` : "Expired";
-    return <div className={`text-xs font-medium ${colorClass}`}>{text}</div>;
-  };
 
   const handleDelete = async (id: string, code: string) => {
     try {
@@ -189,7 +212,7 @@ export default function DataGrid({
                 <td className="px-4 py-4">
                   <div>{toGMTString(p.endDate, 7)}</div>
 
-                  {getCountdown(new Date(p.endDate))}
+                  <Countdown endDate={new Date(p.endDate)} />
                 </td>
                 {/* <td className="px-4 py-4 text-green-500">Linked</td> */}
                 <td className="px-4 py-4">
