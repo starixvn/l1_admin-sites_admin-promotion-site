@@ -52,14 +52,7 @@ export default function Page() {
         }
 
         if (filters.operator?.length > 0) {
-          const allOperatorIds = operators.map((op) => op.PartnerId);
-          const isAllSelected =
-            filters.operator.length === allOperatorIds.length &&
-            allOperatorIds.every((id) => filters.operator.includes(id));
-
-          if (!isAllSelected) {
-            queryParams.append("operator", filters.operator.toString());
-          }
+          queryParams.append("operator", filters.operator.toString());
         }
 
         if (filters.promotionCode) {
