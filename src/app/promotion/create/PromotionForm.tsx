@@ -24,7 +24,7 @@ export const promotionSchema = z
       .max(50)
       .regex(
         /^[a-zA-Z0-9_ ]+$/,
-        "Only letters, numbers, and underscores allowed"
+        "The Promotion name contains invalid characters"
       ),
     code: z
       .string()
@@ -32,7 +32,7 @@ export const promotionSchema = z
       .max(50)
       .regex(
         /^[a-zA-Z0-9_]+$/,
-        "Only letters, numbers, and underscores allowed"
+        "The Code name contains invalid characters"
       ),
     bonusItemCount: z.coerce
       .number()

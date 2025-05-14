@@ -88,11 +88,8 @@ export default function PlayerFileUploader({
 
   return (
     <div className="flex items-center gap-4 mt-2">
-      <label
-        htmlFor="uploadedFile"
-        className="inline-flex items-center px-4 py-2 bg-green-50 border border-green-300 text-green-800 rounded-lg cursor-pointer font-medium hover:bg-green-100 transition w-40 h-11 justify-center"
-      >
-        <span className="mr-2 text-xl">📁</span> Choose File
+      <label htmlFor="uploadedFile" className="btn-player-list">
+        <span className="mr-1 text-md">📁</span> Choose File
       </label>
       <input
         id="uploadedFile"
