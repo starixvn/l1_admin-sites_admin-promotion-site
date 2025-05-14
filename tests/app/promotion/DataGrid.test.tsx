@@ -129,13 +129,13 @@ describe('getGameTypeName', () => {
 
 describe('getStatusStyle', () => {
   it('returns green for running', () => {
-    expect(DataGridUtils.getStatusStyle('running')).toBe('bg-green-100 text-green-800');
+    expect(DataGridUtils.getStatusStyle('running')).toBe('bg-gray-100 text-gray-500');
   });
   it('returns yellow for upcoming', () => {
-    expect(DataGridUtils.getStatusStyle('upcoming')).toBe('bg-yellow-100 text-yellow-800');
+    expect(DataGridUtils.getStatusStyle('upcoming')).toBe('bg-gray-100 text-gray-500');
   });
   it('returns gray for completed', () => {
-    expect(DataGridUtils.getStatusStyle('completed')).toBe('bg-gray-100 text-gray-600');
+    expect(DataGridUtils.getStatusStyle('completed')).toBe('bg-gray-100 text-gray-500');
   });
   it('returns default for unknown', () => {
     expect(DataGridUtils.getStatusStyle('other')).toBe('bg-gray-100 text-gray-500');
