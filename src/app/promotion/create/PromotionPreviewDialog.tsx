@@ -60,7 +60,7 @@ export default function PromotionPreviewDialog({
               onClick={() => onConfirm(data)}
               disabled={isSubmitting}
             >
-              Confirm & Save
+              Confirm
             </Button>
           </div>
         )}

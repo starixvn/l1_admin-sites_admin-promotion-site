@@ -335,9 +335,9 @@ export default function PromotionForm({
                 }
               }}
               disabled={isPending}
-              className="btn-next flex items-center gap-2"
+              className="btn-primary flex items-center gap-2"
             >
-              Preview
+              Save
             </button>
           ) : null}
         </div>
