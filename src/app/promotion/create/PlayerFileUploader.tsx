@@ -1,5 +1,6 @@
 import { isSabaPlay } from "@/constants/operators";
 import Papa from "papaparse";
+import { useState } from "react";
 
 interface Props {
   operatorId: string;
@@ -21,14 +22,23 @@ export default function PlayerFileUploader({
   setShowPlayerList,
   disabled,
 }: Props) {
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const handleFileValidation = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
+    setErrorMessage(null);
+
     if (!selectedFile) {
       return;
     }
 
     if (!selectedFile.name.endsWith(".csv")) {
-      alert("Only CSV files are allowed.");
+      setErrorMessage("Upload failed. The file must be saved as a .csv file");
+      e.target.value = "";
+      return;
+    }
+
+    if (selectedFile.size > 2 * 1024 * 1024) {
+      setErrorMessage("Upload failed. The File size cannot be bigger than 2MB");
       e.target.value = "";
       return;
     }
@@ -50,7 +60,9 @@ export default function PlayerFileUploader({
           expectedHeaders.every((key) => foundHeaders.includes(key));
 
         if (!isValid) {
-          alert("CSV must contain exactly 2 columns: SiteID, PlayerID");
+          setErrorMessage(
+            "Upload failed. Please check your data format and try again"
+          );
           e.target.value = "";
           return;
         }
@@ -65,7 +77,9 @@ export default function PlayerFileUploader({
         onValidFile(selectedFile, processedData);
       },
       error: (err) => {
-        alert("Failed to read CSV file.");
+        setErrorMessage(
+          "Upload failed. Please check your data format and try again"
+        );
         console.error(err);
         e.target.value = "";
       },
@@ -106,6 +120,9 @@ export default function PlayerFileUploader({
         >
           📎 {uploadedFile.name}
         </a>
+      )}
+      {errorMessage && (
+        <p className="text-red-500 text-sm mt-1">{errorMessage}</p>
       )}
     </div>
   );

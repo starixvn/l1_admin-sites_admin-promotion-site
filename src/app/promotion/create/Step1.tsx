@@ -73,12 +73,16 @@ export default function Step1({
                 </TooltipTrigger>
                 <TooltipContent
                   side="right"
-                  className="z-50 max-w-xl break-words p-3 text-sm text-gray-700 leading-relaxed"
+                  sideOffset={5}
+                  className="tooltip-content-name"
                 >
-                  <p>
-                    Each promotion must have a name. Can include letters,
-                    numbers, or underscores. No special characters allowed.
-                  </p>
+                  <div>
+                    <p>Two different promotions can have the same name.</p>
+                    <p>Can include letters, numbers, or underscores.</p>
+                    <p>
+                      No special characters (e.g. @, #, $, %, etc.) allowed.
+                    </p>
+                  </div>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -129,12 +133,17 @@ export default function Step1({
                 </TooltipTrigger>
                 <TooltipContent
                   side="right"
-                  className="max-w-xl break-words p-3 text-sm text-gray-700 leading-relaxed"
+                  sideOffset={5}
+                  className="tooltip-content-name"
                 >
-                  <p>
-                    Automatically generated from Promotion Name. Must be unique.
-                    Only letters, numbers, or underscores allowed.
-                  </p>
+                  <div>
+                    <p>Must be unique across all promotions. </p>
+                    <p>Only letters, numbers, or underscores allowed.</p>
+                    <p>
+                      No spaces or special characters (e.g. @, #, $, %, etc.)
+                      allowed.
+                    </p>
+                  </div>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

@@ -47,7 +47,9 @@ export const promotionSchema = z
     }),
     operatorId: z.coerce.string().min(1, { message: "Operator is required" }),
     offeredSiteNames: z.array(z.string()).optional(),
-    gameIds: z.array(z.coerce.number()).min(1, "Select at least one game"),
+    gameIds: z
+      .array(z.coerce.number())
+      .min(1, "At least one game must be selected for the promotion."),
     currencyGroups: z
       .array(z.string().nonempty("Currency group cannot be empty"))
       .min(1, "At least one currency group is required"),
