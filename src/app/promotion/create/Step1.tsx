@@ -39,6 +39,9 @@ interface Step1Props {
   operators: Operator[];
 }
 
+const FORM_INPUT_CLASS = "form-input";
+const BORDER_RED_CLASS = "border-red-500";
+
 export default function Step1({
   mode,
   status,
@@ -88,7 +91,7 @@ export default function Step1({
           aria-label="Promotion Name"
           aria-required="true"
           maxLength={50}
-          className={cn("form-input", errors.name && "border-red-500")}
+          className={cn(FORM_INPUT_CLASS, errors.name && BORDER_RED_CLASS)}
           onInput={(e) => {
             const input = e.currentTarget;
             if (input.value.length > 50) {
@@ -146,7 +149,7 @@ export default function Step1({
           disabled={isEdit}
           maxLength={50}
           onChange={() => setCodeEdited(true)}
-          className={cn("form-input", errors.code && "border-red-500")}
+          className={cn(FORM_INPUT_CLASS, errors.code && BORDER_RED_CLASS)}
         />
 
         {errors.code && (
@@ -169,7 +172,7 @@ export default function Step1({
             disabled={isRunning}
           >
             <SelectTrigger 
-              className={cn("select-wrapper", errors.gameConfigType && "border-red-500")}
+              className={cn(FORM_INPUT_CLASS, errors.gameConfigType && BORDER_RED_CLASS)}
               id="game-type"
               aria-label="Game Type"
               aria-required="true"
@@ -206,7 +209,7 @@ export default function Step1({
               min: { value: 1, message: "Free spins must be greater than 0" },
               valueAsNumber: true 
             })}
-            className={cn("form-input", errors.bonusItemCount && "border-red-500")}
+            className={cn(FORM_INPUT_CLASS, errors.bonusItemCount && BORDER_RED_CLASS)}
             disabled={isRunning}
           />
           {errors.bonusItemCount && (
@@ -244,7 +247,7 @@ export default function Step1({
           disabled={isRunning}
         >
           <SelectTrigger 
-            className={cn("select-wrapper", errors.operatorId && "border-red-500")}
+            className={cn(FORM_INPUT_CLASS, errors.operatorId && BORDER_RED_CLASS)}
             id="operator"
             aria-label="Operator"
             aria-required="true"
