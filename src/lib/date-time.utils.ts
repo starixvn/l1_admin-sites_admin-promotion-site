@@ -22,3 +22,9 @@ export function mergeDateAndTime(
   newDate.setMinutes(Number(minute));
   return newDate;
 }
+
+export function getTodayAtMidnightGMT7(): Date {
+  const now = getNowInGMT7();
+  now.setHours(0, 0, 0, 0);
+  return now;
+}

@@ -10,7 +10,7 @@ import { useOperators } from "@/hooks/useOperators";
 import { useFilteredGames } from "@/hooks/useFilteredGames";
 import { Promotion } from "@/types/promotion";
 import { getStatus } from "@/constants/promotionStatusMap";
-import { getNowInGMT7 } from "@/lib/date-time.utils";
+import { getTodayAtMidnightGMT7 } from "@/lib/date-time.utils";
 import { checkPromotionCodeExists } from "@/lib/api/checkPromotionCodeExists";
 import { addDays } from "date-fns";
 import PromotionPreviewDialog from "./PromotionPreviewDialog";
@@ -123,8 +123,8 @@ export default function PromotionForm({
           name: "",
           code: "",
           bonusItemCount: 0,
-          startDate: addDays(getNowInGMT7(), 1),
-          endDate: addDays(getNowInGMT7(), 1),
+          startDate: addDays(getTodayAtMidnightGMT7(), 1),
+          endDate: addDays(getTodayAtMidnightGMT7(), 1),
           operatorId: "",
           offeredSiteNames: [],
           gameIds: [],

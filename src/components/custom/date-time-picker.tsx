@@ -15,7 +15,7 @@ import "react-day-picker/dist/style.css";
 import {
   generateHourOptions,
   generateMinuteOptions,
-  getNowInGMT7,
+  getTodayAtMidnightGMT7,
   mergeDateAndTime,
 } from "@/lib/date-time.utils";
 
@@ -35,7 +35,7 @@ export default function DateTimePicker({
   error,
 }: DateTimePickerProps) {
   const [open, setOpen] = useState(false);
-  const [date, setDate] = useState<Date>(value ?? getNowInGMT7());
+  const [date, setDate] = useState<Date>(value ?? getTodayAtMidnightGMT7());
   const [hour, setHour] = useState("00");
   const [minute, setMinute] = useState("00");
 
@@ -102,10 +102,7 @@ export default function DateTimePicker({
             mode="single"
             selected={date}
             onSelect={handleDateChange}
-            disabled={[
-              disabled,
-              { before: new Date() },
-            ]}
+            disabled={[disabled, { before: new Date() }]}
             className="custom-day-picker"
           />
 

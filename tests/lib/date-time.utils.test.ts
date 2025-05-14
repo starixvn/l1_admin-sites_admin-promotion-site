@@ -3,6 +3,7 @@ import {
   generateHourOptions,
   generateMinuteOptions,
   mergeDateAndTime,
+  getTodayAtMidnightGMT7,
 } from "@/lib/date-time.utils";
 
 describe("date-time.utils", () => {
@@ -45,6 +46,31 @@ describe("date-time.utils", () => {
       expect(result.getFullYear()).toBe(2023);
       expect(result.getMonth()).toBe(0); // January = 0
       expect(result.getDate()).toBe(1);
+    });
+  });
+  describe("getTodayAtMidnightGMT7", () => {
+    it("should return a date at 00:00:00.000 GMT+7", () => {
+      const date = getTodayAtMidnightGMT7();
+
+      expect(date.getHours()).toBe(0);
+      expect(date.getMinutes()).toBe(0);
+      expect(date.getSeconds()).toBe(0);
+      expect(date.getMilliseconds()).toBe(0);
+
+      // Optionally: confirm that it's today in GMT+7
+      const gmt7Year = date.getFullYear();
+      const gmt7Month = date.getMonth();
+      const gmt7Date = date.getDate();
+
+      const now = new Date();
+      const offset = 7 * 60 * 60 * 1000;
+      const nowInGmt7 = new Date(
+        now.getTime() + now.getTimezoneOffset() * 60000 + offset
+      );
+
+      expect(gmt7Year).toBe(nowInGmt7.getFullYear());
+      expect(gmt7Month).toBe(nowInGmt7.getMonth());
+      expect(gmt7Date).toBe(nowInGmt7.getDate());
     });
   });
 });
