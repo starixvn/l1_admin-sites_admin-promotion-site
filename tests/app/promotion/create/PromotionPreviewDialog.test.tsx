@@ -5,6 +5,21 @@ import type { Game } from "@/types/game";
 import type { CurrencyGroup } from "@/types/currency-group";
 import { GAME_TYPES } from "@/constants/gameTypes";
 
+// Mock the Dialog component
+jest.mock("@/components/ui/dialog", () => ({
+  Dialog: ({ children, open, onOpenChange }: any) => (
+    open ? <div role="dialog">{children}</div> : null
+  ),
+  DialogContent: ({ children, className, "aria-describedby": ariaDescribedby }: any) => (
+    <div className={className} aria-describedby={ariaDescribedby}>
+      {children}
+    </div>
+  ),
+  DialogTitle: ({ children, className }: any) => (
+    <h2 className={className}>{children}</h2>
+  ),
+}));
+
 // Mock the child component
 jest.mock("@/app/promotion/create/PromotionViewForm", () => {
   return function MockPromotionViewForm({ data, readonly }: any) {
@@ -90,7 +105,7 @@ describe("PromotionPreviewDialog", () => {
   it("calls onConfirm with data when confirm button is clicked", () => {
     render(<PromotionPreviewDialog {...defaultProps} />);
     
-    const confirmButton = screen.getByText("Confirm & Save");
+    const confirmButton = screen.getByText("Confirm");
     fireEvent.click(confirmButton);
     
     expect(defaultProps.onConfirm).toHaveBeenCalledWith(mockData);
@@ -99,7 +114,7 @@ describe("PromotionPreviewDialog", () => {
   it("disables confirm button when isSubmitting is true", () => {
     render(<PromotionPreviewDialog {...defaultProps} isSubmitting={true} />);
     
-    const confirmButton = screen.getByText("Confirm & Save");
+    const confirmButton = screen.getByText("Confirm");
     expect(confirmButton).toBeDisabled();
   });
 
@@ -107,7 +122,7 @@ describe("PromotionPreviewDialog", () => {
     render(<PromotionPreviewDialog {...defaultProps} readonly={true} />);
     
     expect(screen.queryByText("← Back")).not.toBeInTheDocument();
-    expect(screen.queryByText("Confirm & Save")).not.toBeInTheDocument();
+    expect(screen.queryByText("Confirm")).not.toBeInTheDocument();
   });
 
   it("passes correct props to PromotionViewForm", () => {

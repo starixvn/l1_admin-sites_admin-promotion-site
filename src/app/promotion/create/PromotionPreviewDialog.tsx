@@ -40,7 +40,9 @@ export default function PromotionPreviewDialog({
           Promotion Details
         </DialogTitle>
         <span id="promotion-preview-desc" className="sr-only">
-          Review all promotion details before confirming or going back.
+          {readonly 
+            ? "View promotion details" 
+            : "Review promotion details and confirm or go back to edit"}
         </span>
 
         <PromotionViewForm
