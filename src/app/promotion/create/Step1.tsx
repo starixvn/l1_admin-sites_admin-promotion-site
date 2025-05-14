@@ -59,7 +59,7 @@ export default function Step1({
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-1 mb-2">
-          <Label className="form-label flex items-center gap-1">
+          <Label className="form-label flex items-center gap-1" htmlFor="promotion-name">
             Promotion Name<span className="text-red-500">*</span>
           </Label>
           <div className="mb-3">
@@ -83,9 +83,12 @@ export default function Step1({
         </div>
 
         <Input
-          {...register("name")}
+          {...register("name", { required: "Promotion name is required" })}
+          id="promotion-name"
+          aria-label="Promotion Name"
+          aria-required="true"
           maxLength={50}
-          className="form-input"
+          className={cn("form-input", errors.name && "border-red-500")}
           onInput={(e) => {
             const input = e.currentTarget;
             if (input.value.length > 50) {
@@ -103,12 +106,16 @@ export default function Step1({
           }}
         />
 
-        {errors.name && <p className="error-message">{errors.name.message}</p>}
+        {errors.name && (
+          <p className="error-message" role="alert">
+            {errors.name.message}
+          </p>
+        )}
       </div>
 
       <div>
         <div className="flex items-center gap-2">
-          <Label className="form-label">
+          <Label className="form-label" htmlFor="promotion-code">
             Promotion Code<span className="text-red-500">*</span>
           </Label>
           <div className="mb-3">
@@ -132,18 +139,27 @@ export default function Step1({
         </div>
 
         <Input
-          {...register("code")}
+          {...register("code", { required: "Promotion code is required" })}
+          id="promotion-code"
+          aria-label="Promotion Code"
+          aria-required="true"
           disabled={isEdit}
           maxLength={50}
           onChange={() => setCodeEdited(true)}
-          className="form-input"
+          className={cn("form-input", errors.code && "border-red-500")}
         />
 
-        {errors.code && <p className="error-message">{errors.code.message}</p>}
+        {errors.code && (
+          <p className="error-message" role="alert">
+            {errors.code.message}
+          </p>
+        )}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label className="form-label">Game Type<span className="text-red-500">*</span></Label>
+          <Label className="form-label" htmlFor="game-type">
+            Game Type<span className="text-red-500">*</span>
+          </Label>
           <Select
             value={String(gameConfigType)}
             onValueChange={(val) => {
@@ -152,7 +168,12 @@ export default function Step1({
             }}
             disabled={isRunning}
           >
-            <SelectTrigger className="select-wrapper">
+            <SelectTrigger 
+              className={cn("select-wrapper", errors.gameConfigType && "border-red-500")}
+              id="game-type"
+              aria-label="Game Type"
+              aria-required="true"
+            >
               <SelectValue placeholder="Select game type" />
             </SelectTrigger>
             <SelectContent className="bg-white">
@@ -164,20 +185,34 @@ export default function Step1({
               </SelectItem>
             </SelectContent>
           </Select>
+          {errors.gameConfigType && (
+            <p className="error-message" role="alert">
+              {errors.gameConfigType.message}
+            </p>
+          )}
         </div>
 
         <div>
-          <Label className="form-label">
+          <Label className="form-label" htmlFor="free-spins">
             No. of Free Spins<span className="text-red-500">*</span>
           </Label>
           <Input
             type="number"
-            {...register("bonusItemCount", { valueAsNumber: true })}
-            className="form-input"
+            id="free-spins"
+            aria-label="No. of Free Spins"
+            aria-required="true"
+            {...register("bonusItemCount", { 
+              required: "Free spins is required",
+              min: { value: 1, message: "Free spins must be greater than 0" },
+              valueAsNumber: true 
+            })}
+            className={cn("form-input", errors.bonusItemCount && "border-red-500")}
             disabled={isRunning}
           />
           {errors.bonusItemCount && (
-            <p className="error-message">{errors.bonusItemCount.message}</p>
+            <p className="error-message" role="alert">
+              {errors.bonusItemCount.message}
+            </p>
           )}
         </div>
       </div>
@@ -200,13 +235,20 @@ export default function Step1({
       </div>
 
       <div>
-        <Label className="form-label">Operator<span className="text-red-500">*</span></Label>
+        <Label className="form-label" htmlFor="operator">
+          Operator<span className="text-red-500">*</span>
+        </Label>
         <Select
           value={useWatch({ control, name: "operatorId" })}
           onValueChange={(val) => setValue("operatorId", val)}
           disabled={isRunning}
         >
-          <SelectTrigger className="select-wrapper">
+          <SelectTrigger 
+            className={cn("select-wrapper", errors.operatorId && "border-red-500")}
+            id="operator"
+            aria-label="Operator"
+            aria-required="true"
+          >
             <SelectValue placeholder="Select Operator" />
           </SelectTrigger>
           <SelectContent className="bg-white">
@@ -225,7 +267,9 @@ export default function Step1({
           </SelectContent>
         </Select>
         {errors.operatorId && (
-          <p className="error-message">{errors.operatorId.message}</p>
+          <p className="error-message" role="alert">
+            {errors.operatorId.message}
+          </p>
         )}
       </div>
     </div>

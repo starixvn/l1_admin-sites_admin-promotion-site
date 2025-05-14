@@ -16,7 +16,7 @@ import { addDays } from "date-fns";
 import PromotionPreviewDialog from "./PromotionPreviewDialog";
 import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 
-const promotionSchema = z
+export const promotionSchema = z
   .object({
     name: z
       .string()

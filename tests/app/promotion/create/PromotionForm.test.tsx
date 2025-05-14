@@ -1,8 +1,9 @@
 import React from "react";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, act, fireEvent } from "@testing-library/react";
 import PromotionForm from "@/app/promotion/create/PromotionForm";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GAME_TYPES } from "@/constants/gameTypes";
+import * as api from "@/lib/api/checkPromotionCodeExists";
 
 // Mock hooks
 jest.mock("@/hooks/useOperators", () => ({
@@ -109,5 +110,62 @@ describe("PromotionForm", () => {
     expect(screen.getByText("Promotion name is required")).toBeInTheDocument();
     expect(screen.getByText("Promotion code is required")).toBeInTheDocument();
     expect(screen.getByText("Free spins must be greater than 0")).toBeInTheDocument();
+  });
+});
+
+describe("handleNextStep", () => {
+  let trigger: jest.Mock, setStep: jest.Mock, setError: jest.Mock, getValues: jest.Mock;
+
+  beforeEach(() => {
+    trigger = jest.fn();
+    setStep = jest.fn();
+    setError = jest.fn();
+    getValues = jest.fn();
+  });
+
+  function renderWithOverrides(overrides = {}) {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        <PromotionForm
+          mode="create"
+          {...overrides}
+        />
+      </QueryClientProvider>
+    );
+  }
+
+  it("should not proceed if form is invalid", async () => {
+    trigger.mockResolvedValue(false);
+    renderWithOverrides();
+    await act(async () => {
+      await screen.getByText("Next →").click();
+    });
+    expect(setStep).not.toHaveBeenCalled();
+  });
+
+  it("should proceed to step 2 if form is valid and code does not exist", async () => {
+    renderForm();
+
+    fireEvent.change(screen.getByLabelText(/Promotion Name/i), { target: { value: "Promo" } });
+    fireEvent.change(screen.getByLabelText(/Promotion Code/i), { target: { value: "PROMO1" } });
+    fireEvent.change(screen.getByLabelText(/Free spins/i), { target: { value: "10" } });
+
+    await act(async () => {
+      screen.getByText("Next →").click();
+    });
+  });
+
+  it("should show error if code already exists", async () => {
+    jest.spyOn(api, "checkPromotionCodeExists").mockResolvedValue(true);
+
+    renderForm();
+
+    fireEvent.change(screen.getByLabelText(/Promotion Name/i), { target: { value: "Promo" } });
+    fireEvent.change(screen.getByLabelText(/Promotion Code/i), { target: { value: "PROMO1" } });
+    fireEvent.change(screen.getByLabelText(/Free spins/i), { target: { value: "10" } });
+
+    await act(async () => {
+      screen.getByText("Next →").click();
+    });
   });
 });

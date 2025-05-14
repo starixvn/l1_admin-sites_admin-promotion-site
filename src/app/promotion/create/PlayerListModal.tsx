@@ -14,10 +14,12 @@ export function PlayerListModal({
   }
   return (
     <div
+      data-testid="modal-backdrop"
       className="absolute left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 w-full h-full flex items-center justify-center bg-white/60"
       onClick={() => setShowPlayerList(false)}
     >
       <div
+        data-testid="modal-content"
         className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-[480px] p-8 relative"
         onClick={(e) => e.stopPropagation()}
       >
@@ -27,6 +29,7 @@ export function PlayerListModal({
             className="text-gray-400 hover:text-red-500 text-2xl font-bold transition"
             onClick={() => setShowPlayerList(false)}
             aria-label="Close"
+            aria-description="Close modal"
           >
             ×
           </button>

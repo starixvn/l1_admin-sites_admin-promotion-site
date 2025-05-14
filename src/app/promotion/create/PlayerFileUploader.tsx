@@ -87,6 +87,7 @@ export default function PlayerFileUploader({
         disabled={disabled}
         onChange={handleFileValidation}
         className="hidden"
+        data-testid="file-upload-input"
       />
       {offeredPlayerIds.length > 0 && (
         <button

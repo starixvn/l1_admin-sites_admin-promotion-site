@@ -32,10 +32,16 @@ export default function PromotionPreviewDialog({
 }: PromotionPreviewDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-[70vw] !max-w-[800px] max-h-[90vh] overflow-y-auto p-6 bg-white rounded-lg">
+      <DialogContent
+        className="w-[70vw] !max-w-[800px] max-h-[90vh] overflow-y-auto p-6 bg-white rounded-lg"
+        aria-describedby="promotion-preview-desc"
+      >
         <DialogTitle className="text-xl font-semibold pb-3">
           Promotion Details
         </DialogTitle>
+        <span id="promotion-preview-desc" className="sr-only">
+          Review all promotion details before confirming or going back.
+        </span>
 
         <PromotionViewForm
           data={data}
