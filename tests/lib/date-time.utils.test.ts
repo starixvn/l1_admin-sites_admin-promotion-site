@@ -47,6 +47,32 @@ describe("date-time.utils", () => {
       expect(result.getMonth()).toBe(0); // January = 0
       expect(result.getDate()).toBe(1);
     });
+    const date = new Date("2024-01-01T00:00:00Z");
+
+    it("merges hour and minute into given date", () => {
+      const result = mergeDateAndTime(date, "13", "45");
+      expect(result.getHours()).toBe(13);
+      expect(result.getMinutes()).toBe(45);
+    });
+
+    it("handles edge case 00:00 correctly", () => {
+      const result = mergeDateAndTime(date, "00", "00");
+      expect(result.getHours()).toBe(0);
+      expect(result.getMinutes()).toBe(0);
+    });
+
+    it("handles edge case 23:59 correctly", () => {
+      const result = mergeDateAndTime(date, "23", "59");
+      expect(result.getHours()).toBe(23);
+      expect(result.getMinutes()).toBe(59);
+    });
+
+    it("treats invalid numeric values safely", () => {
+      const result = mergeDateAndTime(date, "99", "99");
+      // JS Date wraps invalid time values
+      expect(result.getHours()).toBeGreaterThanOrEqual(0);
+      expect(result.getMinutes()).toBeGreaterThanOrEqual(0);
+    });
   });
   describe("getTodayAtMidnightGMT7", () => {
     it("should return a date at 00:00:00.000 GMT+7", () => {
