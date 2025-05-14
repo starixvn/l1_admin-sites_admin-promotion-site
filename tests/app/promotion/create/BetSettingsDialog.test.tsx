@@ -160,4 +160,116 @@ describe("BetSettingsDialog", () => {
 
     expect(onClose).toHaveBeenCalled();
   });
+
+  it("handleToggleAll enables and disables all rows", async () => {
+    await renderDialog();
+
+    let toggles = screen.getAllByTestId("toggle-button");
+    toggles.forEach(div => {
+      expect(div).toHaveClass("bg-gray-300");
+    });
+
+    const enableAllDiv = screen.getAllByText("Enable All")[0].parentElement?.querySelector(".bg-gray-300, .bg-green-500");
+    await act(async () => {
+      if (enableAllDiv) enableAllDiv.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    toggles = screen.getAllByTestId("toggle-button");
+    toggles.forEach(div => {
+      expect(div).toHaveClass("bg-green-500");
+    });
+
+    const disableAllDiv = screen.getAllByText("Enable All")[0].parentElement?.querySelector(".bg-green-500");
+    await act(async () => {
+      if (disableAllDiv) disableAllDiv.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    toggles = screen.getAllByTestId("toggle-button");
+    toggles.forEach(div => {
+      expect(div).toHaveClass("bg-gray-300");
+    });
+  });
+
+  it("handleToggle enables and disables a single row", async () => {
+    await renderDialog();
+
+    let toggles = screen.getAllByTestId("toggle-button");
+    toggles.forEach(div => {
+      expect(div).toHaveClass("bg-gray-300");
+    });
+
+    await act(async () => {
+      toggles[0].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    toggles = screen.getAllByTestId("toggle-button");
+    expect(toggles[0]).toHaveClass("bg-green-500");
+    expect(toggles[1]).toHaveClass("bg-gray-300");
+
+    await act(async () => {
+      toggles[1].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    toggles = screen.getAllByTestId("toggle-button");
+    expect(toggles[0]).toHaveClass("bg-green-500");
+    expect(toggles[1]).toHaveClass("bg-green-500");
+
+    await act(async () => {
+      toggles[0].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    toggles = screen.getAllByTestId("toggle-button");
+    expect(toggles[0]).toHaveClass("bg-gray-300");
+    expect(toggles[1]).toHaveClass("bg-green-500");
+  });
+
+  it("handleChangeBet updates bet level for a row", async () => {
+    await renderDialog();
+
+    let toggles = screen.getAllByTestId("toggle-button");
+    await act(async () => {
+      toggles[0].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    let inputs = screen.getAllByRole("spinbutton");
+    expect(inputs[0]).toHaveValue(10);
+
+    await act(async () => {
+      (inputs[0] as HTMLInputElement).value = "20";
+      (inputs[0] as HTMLInputElement).dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    inputs = screen.getAllByRole("spinbutton");
+    expect(inputs[0]).toHaveValue(20);
+
+    await act(async () => {
+      toggles[1].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    inputs = screen.getAllByRole("spinbutton");
+    expect(inputs[1]).toHaveValue(10);
+
+    await act(async () => {
+      (inputs[0] as HTMLInputElement).value = "";
+      (inputs[0] as HTMLInputElement).dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    inputs = screen.getAllByRole("spinbutton");
+  });
+
+  it("handleSave shows error and does not call onSave if there are invalid rows", async () => {
+    jest.spyOn(require("@/lib/promotion/bet-settings.utils"), "validateBetRows").mockImplementation(() => new Set(["cg1"]));
+
+    await renderDialog();
+
+    let toggles = screen.getAllByTestId("toggle-button");
+    await act(async () => {
+      toggles[0].dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    const saveButton = screen.getByRole("button", { name: /Save/i });
+    await act(async () => {
+      saveButton.click();
+    });
+
+    expect(onSave).not.toHaveBeenCalled();
+    expect(screen.getByText(/Please make sure all enabled rows have/i)).toBeInTheDocument();
+  });
 });
