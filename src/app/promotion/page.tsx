@@ -190,7 +190,8 @@ export default function Page() {
       <ConfirmModal
         open={isDeleteModalOpen}
         title="Confirm Deletion"
-        message={`Are you sure you want to delete promotion with code <strong style="color: black; font-weight: 600;">${deletingPromotionCode}</strong>? This action cannot be undone.`}
+        message={`Are you sure you want to delete promotion with code <strong style="color: black; font-weight: 600;">${deletingPromotionCode}</strong>? 
+        This action is permanent and cannot be undone.`}
         confirmText="Delete"
         cancelText="Cancel"
         onCancel={() => {

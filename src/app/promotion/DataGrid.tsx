@@ -163,7 +163,7 @@ export default function DataGrid({
   }
   if (!Array.isArray(promotions) || promotions.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-400">No promotions found</div>
+      <div className="text-center py-8 text-gray-400">No results found</div>
     );
   }
 
