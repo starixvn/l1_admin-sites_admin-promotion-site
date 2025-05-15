@@ -33,12 +33,14 @@ export default function PromotionPreviewDialog({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="w-[70vw] !max-w-[800px] max-h-[90vh] p-0 bg-white rounded-lg flex flex-col"
+        className="w-[70vw] !max-w-[800px] max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-2xl p-0 flex flex-col"
         aria-describedby="promotion-preview-desc"
       >
-        <div className="p-2 border-b">
-          <DialogTitle className="text-xl font-semibold pb-3">
-            Promotion Details
+        <div className="sticky px-6 py-4 border-b bg-white rounded-t-2xl">
+          <DialogTitle className="text-2xl font-semibold text-gray-800">
+            {readonly
+              ? "🎯 Promotion Details"
+              : "📝 Review & Confirm Promotion"}
           </DialogTitle>
           <span id="promotion-preview-desc" className="sr-only">
             {readonly
@@ -55,15 +57,15 @@ export default function PromotionPreviewDialog({
             readonly={readonly}
           />
         </div>
-        <div className="p-4 border-t">
+        <div className="sticky bottom-0 z-10 px-6 py-4 border-t bg-white rounded-b-2xl">
           {readonly ? (
-            <div className="mt-4 flex justify-end">
+            <div className="flex justify-end">
               <Button onClick={onClose} className="btn-cancel min-w-[100px]">
                 Close
               </Button>
             </div>
           ) : (
-            <div className="mt-4 flex justify-between">
+            <div className="flex justify-between">
               <Button onClick={onClose} className="btn-cancel">
                 ← Back
               </Button>

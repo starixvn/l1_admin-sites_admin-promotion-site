@@ -244,7 +244,7 @@ export default function PromotionForm({
   };
 
   return (
-    <div className="flex flex-col h-[80vh]">
+    <div className="flex flex-col h-full max-h-[80vh] bg-white rounded-xl shadow-md">
       <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
         <form
           id="promotionForm"
@@ -253,7 +253,7 @@ export default function PromotionForm({
         >
           {/* Step Progress UI */}
           <div className="space-y-1">
-            <div className="flex justify-between items-center text-sm font-medium text-gray-600 px-1">
+            <div className="flex justify-between text-sm text-gray-500 font-medium">
               <span>Step {step} of 2</span>
               <span>
                 {step === 1 ? "Basic Details" : "Targeting & Settings"}

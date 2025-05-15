@@ -39,8 +39,10 @@ export default function PromotionViewForm({
     <div className="space-y-4 p-0 text-sm text-gray-800">
       {/* Section 1: General Info */}
       <section>
-        <h2 className="text-md font-semibold mb-4">📋 General Information</h2>
-        <div className="space-y-2 text-sm text-gray-800">
+        <h2 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-3">
+          📋 General Information
+        </h2>
+        <div className="space-y-3 text-sm text-gray-800">
           <ReadOnlyField label="Promotion Name" value={name} />
           <ReadOnlyField label="Promotion Code" value={code} />
           <ReadOnlyField
@@ -72,10 +74,10 @@ export default function PromotionViewForm({
       </section>
       {/* Section 2: Bet Settings */}
       <section>
-        <h2 className="text-md font-semibold mb-4">
+        <h2 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-3">
           🎰 Currency Group Settings <span className="text-red-500">*</span>
         </h2>
-        <table className="w-auto border text-sm">
+        <table className="w-full border border-gray-300 rounded-md text-sm shadow-sm">
           <thead>
             <tr className="bg-gray-100 text-left">
               <th className=" text-center border px-4 py-2">Currency Group</th>
@@ -115,17 +117,17 @@ export default function PromotionViewForm({
         </table>
       </section>
       <ReadOnlyField
-        label="Site Offering:"
+        label="Site Offering"
         value={offeredSiteNames?.join("; ") || ""}
         require={false}
       />
 
       {/* Section 4: Game List */}
       <section>
-        <h2 className="text-md font-semibold mb-4">
+        <h2 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-3">
           🎮 Selected Games <span className="text-red-500">*</span>
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-1 pl-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pl-10">
           {gameList
             ?.filter((g) => gameIds.includes(g.GameId))
             .map((g) => (
@@ -138,8 +140,10 @@ export default function PromotionViewForm({
 
       {/* Section 5: Target Members */}
       <section>
-        <h2 className="text-md font-semibold mb-4">👥 Members</h2>
-        <p className="text-sm before:content-['•_'] before:mr-1">
+        <h2 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-3">
+          👥 Members
+        </h2>
+        <p className="text-sm before:content-['•_'] before:mr-1 pl-10">
           {allPlayers ? (
             "All Players"
           ) : (
@@ -179,14 +183,14 @@ function ReadOnlyField({
   alignRight?: boolean;
 }) {
   return (
-    <div className="grid grid-cols-[160px_1fr] gap-2 text-sm">
-      <div className="flex items-center gap-1 ml-2">
-        <span className="font-semibold">{label}</span>
-        {require && <span className="text-red-500">*</span>}
-      </div>
-      <span className={`text-gray-900 ${alignRight ? "text-right" : ""}`}>
+    <div className="grid grid-cols-[220px_1fr] gap-2 text-sm items-start pl-10">
+      <label className="flex items-center font-medium text-gray-700">
+        {label}
+        {require && <span className="text-red-500 ml-1">*</span>}
+      </label>
+      <div className={`text-gray-900 ${alignRight ? "text-right" : ""}`}>
         {value}
-      </span>
+      </div>
     </div>
   );
 }
