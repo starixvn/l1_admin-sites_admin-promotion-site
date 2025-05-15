@@ -5,6 +5,7 @@ import DataGrid from "../../../src/app/promotion/DataGrid";
 import { GAME_TYPES } from "../../../src/constants/gameTypes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as DataGridUtils from '../../../src/app/promotion/DataGrid';
+import { toGMTString } from "../../../src/lib/date-time.utils";
 
 jest.mock("react-toastify", () => ({
   toast: {
@@ -108,10 +109,10 @@ describe("DataGrid Component with Pagination", () => {
 
 describe('toGMTString', () => {
   it('returns empty string if no dateStr', () => {
-    expect(DataGridUtils.toGMTString('', 7)).toBe('');
+    expect(toGMTString('', 7)).toBe('');
   });
   it('returns formatted string for valid date', () => {
-    expect(DataGridUtils.toGMTString('2024-01-01T00:00:00Z', 7)).toContain('01/01/2024');
+    expect(toGMTString('2024-01-01T00:00:00Z', 7)).toContain('01/01/2024');
   });
 });
 

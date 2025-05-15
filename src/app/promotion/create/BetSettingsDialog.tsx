@@ -73,7 +73,8 @@ export default function BetSettingsDialog({
       if (!open || !currencyGroupsInfo?.length) {
         return;
       }
-
+      setShowGlobalError(false);
+      setInvalidRows(new Set());
       const initialBetMap = new Map<string, number>();
       if (initialValues) {
         for (const b of initialValues) {
@@ -209,144 +210,152 @@ export default function BetSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full !max-w-2xl bg-white rounded-xl px-5 py-5 shadow-xl max-h-[90vh] overflow-y-auto">
-        <DialogTitle className="text-2xl font-bold text-gray-800">
-          Currency Group Settings -{" "}
-          {gameType === GAME_TYPES.CLASSIC ? "Classic Slot" : "Cascading Slot"}
-        </DialogTitle>
-
-        <div className="space-y-6 mt-4">
-          {!readonly && (
+      <DialogContent className="w-full !max-w-2xl bg-white rounded-xl px-3 py-0 shadow-xl max-h-[90vh] flex flex-col">
+        <div className="p-3 border-b">
+          <DialogTitle className="text-2xl font-bold text-gray-800">
+            Currency Group Settings -{" "}
+            {gameType === GAME_TYPES.CLASSIC
+              ? "Classic Slot"
+              : "Cascading Slot"}
+          </DialogTitle>
+        </div>
+        <div className="overflow-y-auto px-6 py-4 flex-1">
+          <div className="space-y-6 mt-4">
+            {!readonly && (
+              <p className="text-sm text-gray-700">
+                <strong className="text-red-500">**</strong> Turn ON the
+                Promotion for the currency group which you want to offer the
+                Free Spin Bonus
+              </p>
+            )}
             <p className="text-sm text-gray-700">
-              <strong className="text-red-500">**</strong> Turn ON the Promotion
-              for the currency group which you want to offer the Free Spin Bonus
+              The suggested Bet Level value is based on the default setting
+              currently displayed in the game for each currency group.{" "}
             </p>
-          )}
-          <p className="text-sm text-gray-700">
-            The suggested Bet Level value is based on the default setting
-            currently displayed in the game for each currency group.{" "}
-          </p>
-          <div className="overflow-x-auto border rounded-2xl bg-white shadow-sm">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-blue-100 text-blue-900 border-b text-sm">
-                  <th className="px-4 py-3 text-center border-r">Operator</th>
-                  <th className="px-4 py-3 text-center border-r">
-                    Currency Group
-                  </th>
-                  <th className="px-4 py-3 text-center border-r">
-                    <div className="flex flex-col items-center gap-1">
-                      <span>Status</span>
-                      <div
-                        className={`w-16 h-7 rounded-full flex items-center transition-colors duration-300 px-1 cursor-pointer ${
-                          enableAll
-                            ? "bg-green-500 justify-end"
-                            : "bg-gray-300 justify-start"
-                        }`}
-                        onClick={() => handleToggleAll(!enableAll)}
-                      >
-                        <div className="w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center text-sm">
-                          {enableAll ? "✔" : ""}
+            <div className="overflow-x-auto border rounded-2xl bg-white shadow-sm">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-blue-100 text-blue-900 border-b text-sm">
+                    <th className="px-4 py-3 text-center border-r">Operator</th>
+                    <th className="px-4 py-3 text-center border-r">
+                      Currency Group
+                    </th>
+                    <th className="px-4 py-3 text-center border-r">
+                      <div className="flex flex-col items-center gap-1">
+                        <span>Status</span>
+                        <div
+                          className={`w-16 h-7 rounded-full flex items-center transition-colors duration-300 px-1 cursor-pointer ${
+                            enableAll
+                              ? "bg-green-500 justify-end"
+                              : "bg-gray-300 justify-start"
+                          }`}
+                          onClick={() => handleToggleAll(!enableAll)}
+                        >
+                          <div className="w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center text-sm">
+                            {enableAll ? "✔" : ""}
+                          </div>
                         </div>
+                        <span className="text-xs text-gray-600 mt-1">
+                          Enable All
+                        </span>
                       </div>
-                      <span className="text-xs text-gray-600 mt-1">
-                        Enable All
-                      </span>
-                    </div>
-                  </th>
+                    </th>
 
-                  <th className="px-4 py-3 text-center border-r">
-                    {gameType === GAME_TYPES.CLASSIC
-                      ? "Bet Level"
-                      : "Coin Value"}
-                  </th>
-                  <th className="px-4 py-3 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                      Total Bet
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <Info className="w-5 h-5 text-blue-600" />
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="top"
-                            align="center"
-                            className="z-50 text-xs bg-white shadow-lg border"
-                          >
-                            {gameType === GAME_TYPES.CLASSIC
-                              ? "Classic: Bet Level x 25 = Total Bet"
-                              : "Cascading: Coin Value x Bet Level x Multiplier = Total Bet"}
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, index) => (
-                  <tr key={row.id} className="border-t text-sm">
-                    {index === 0 && (
-                      <td
-                        className="px-4 py-3 text-gray-600 text-center border-r"
-                        rowSpan={rows.length}
-                        style={{ verticalAlign: "middle" }}
-                      >
-                        <div className="h-full flex items-center justify-center font-semibold">
-                          {partnerId}
+                    <th className="px-4 py-3 text-center border-r">
+                      {gameType === GAME_TYPES.CLASSIC
+                        ? "Bet Level"
+                        : "Coin Value"}
+                    </th>
+                    <th className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        Total Bet
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Info className="w-5 h-5 text-blue-600" />
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="top"
+                              align="center"
+                              className="z-50 text-xs bg-white shadow-lg border"
+                            >
+                              {gameType === GAME_TYPES.CLASSIC
+                                ? "Classic: Bet Level x 25 = Total Bet"
+                                : "Cascading: Coin Value x Bet Level x Multiplier = Total Bet"}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, index) => (
+                    <tr key={row.id} className="border-t text-sm">
+                      {index === 0 && (
+                        <td
+                          className="px-4 py-3 text-gray-600 text-center border-r"
+                          rowSpan={rows.length}
+                          style={{ verticalAlign: "middle" }}
+                        >
+                          <div className="h-full flex items-center justify-center font-semibold">
+                            {partnerId}
+                          </div>
+                        </td>
+                      )}
+                      <td className="px-4 py-3 border-r">{row.name}</td>
+                      <td className="text-center border-r">
+                        <div
+                          data-testid="toggle-button"
+                          className={`w-12 h-7 rounded-full flex items-center transition-colors duration-300 px-1 cursor-pointer ${
+                            row.enabled
+                              ? "bg-green-500 justify-end mx-auto"
+                              : "bg-gray-300 justify-start mx-auto"
+                          } ${readonly ? "opacity-50 cursor-not-allowed" : ""}`}
+                          onClick={() => handleToggle(index, !row.enabled)}
+                        >
+                          <div className="w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center">
+                            {row.enabled && "✔"}
+                          </div>
                         </div>
                       </td>
-                    )}
-                    <td className="px-4 py-3 border-r">{row.name}</td>
-                    <td className="text-center border-r">
-                      <div
-                        data-testid="toggle-button"
-                        className={`w-12 h-7 rounded-full flex items-center transition-colors duration-300 px-1 cursor-pointer ${
-                          row.enabled
-                            ? "bg-green-500 justify-end mx-auto"
-                            : "bg-gray-300 justify-start mx-auto"
-                        } ${readonly ? "opacity-50 cursor-not-allowed" : ""}`}
-                        onClick={() => handleToggle(index, !row.enabled)}
-                      >
-                        <div className="w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center">
-                          {row.enabled && "✔"}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="text-center border-r">
-                      {row.enabled ? (
-                        <div className="flex justify-center">
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={row.betLevel}
-                            onChange={(e) =>
-                              handleChangeBet(index, e.target.value)
-                            }
-                            disabled={readonly}
-                            className={`w-28 h-10 text-center text-base px-0 rounded-lg border transition ${
-                              invalidRows.has(row.id)
-                                ? "border-red-500 focus:border-red-600 focus:ring-red-200"
-                                : "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
-                            }`}
-                          />
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="text-center font-semibold">
-                      {row.enabled
-                        ? getTotalBet(row.betLevel, gameType).toFixed(2)
-                        : "-"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <td className="text-center border-r">
+                        {row.enabled ? (
+                          <div className="flex justify-center">
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={row.betLevel}
+                              onChange={(e) =>
+                                handleChangeBet(index, e.target.value)
+                              }
+                              disabled={readonly}
+                              className={`w-28 h-10 text-center text-base px-0 rounded-lg border transition ${
+                                invalidRows.has(row.id)
+                                  ? "border-red-500 focus:border-red-600 focus:ring-red-200"
+                                  : "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
+                              }`}
+                            />
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="text-center font-semibold">
+                        {row.enabled
+                          ? getTotalBet(row.betLevel, gameType).toFixed(2)
+                          : "-"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className="flex justify-end gap-4 pt-6">
+        </div>
+        <div className="px-4 py-4 flex justify-end">
+          <div className="flex justify-end gap-4 pt-3">
             <Button type="button" onClick={onClose} className="btn-cancel">
               Close
             </Button>
@@ -361,8 +370,9 @@ export default function BetSettingsDialog({
             )}
           </div>
         </div>
+
         {showGlobalError && (
-          <div className="absolute bottom-7 left-6 text-red-600 text-sm font-medium">
+          <div className="absolute bottom-7 left-6 text-red-600 text-xs font-medium">
             ❗ Please make sure all enabled rows have{" "}
             {gameType === GAME_TYPES.CLASSIC ? "Bet Level" : "Coin Value"}{" "}
             greater than 0

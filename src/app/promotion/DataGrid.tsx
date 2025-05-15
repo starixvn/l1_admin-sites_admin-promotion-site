@@ -5,12 +5,16 @@ import { useState, useEffect } from "react";
 import PromotionEditDialog from "./edit/PromotionEditDialog";
 import { Promotion } from "@/types/promotion";
 import { toast } from "react-toastify";
-import { getStatus, PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
+import {
+  getStatus,
+  PROMOTION_STATUS_OPTIONS,
+} from "@/constants/promotionStatusMap";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import PromotionPreviewDialog from "./create/PromotionPreviewDialog";
 import { useFilteredGames } from "@/hooks/useFilteredGames";
 import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
+import { toGMTString } from "@/lib/date-time.utils";
 
 interface DataGridProps {
   promotions: Promotion[];
@@ -23,24 +27,6 @@ interface DataGridProps {
   totalItems: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-}
-
-export function toGMTString(dateStr: string, gmtOffset: number): string {
-  if (!dateStr) {
-    return "";
-  }
-  const date = new Date(dateStr);
-  const gmtDate = new Date(date.getTime() + gmtOffset * 60 * 60 * 1000);
-  return gmtDate
-    .toLocaleString("en-GB", {
-      hour12: false,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-    .replace(",", "");
 }
 
 export const getGameTypeName = (gameConfigType: number) => {
@@ -89,7 +75,10 @@ const Countdown = ({ endDate }: { endDate: Date }) => {
       const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
       const minutes = Math.floor((diff / (1000 * 60)) % 60);
       const seconds = Math.floor((diff / 1000) % 60);
-      text = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")} left`;
+      text = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+        2,
+        "0"
+      )}:${String(seconds).padStart(2, "0")} left`;
       colorClass = "text-yellow-500";
     }
   }

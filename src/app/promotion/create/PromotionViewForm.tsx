@@ -5,6 +5,7 @@ import type { CurrencyGroup } from "@/types/currency-group";
 import { getTotalBet } from "@/lib/promotion/bet-settings.utils";
 import { useState } from "react";
 import { PlayerListModal } from "./PlayerListModal";
+import { toGMTString } from "@/lib/date-time.utils";
 interface PromotionViewFormProps {
   data: PromotionFormValues;
   operatorName?: string;
@@ -57,11 +58,11 @@ export default function PromotionViewForm({
           />
           <ReadOnlyField
             label="Start Date (GMT+7)"
-            value={new Date(startDate).toLocaleString()}
+            value={toGMTString(startDate.toISOString(), 7)}
           />
           <ReadOnlyField
             label="End Date (GMT+7)"
-            value={new Date(endDate).toLocaleString()}
+            value={toGMTString(endDate.toISOString(), 7)}
           />
           <ReadOnlyField
             label="Operator Name"

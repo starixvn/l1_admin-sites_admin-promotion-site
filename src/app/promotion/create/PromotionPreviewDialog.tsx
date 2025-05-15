@@ -33,45 +33,50 @@ export default function PromotionPreviewDialog({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="w-[70vw] !max-w-[800px] max-h-[90vh] overflow-y-auto p-6 bg-white rounded-lg"
+        className="w-[70vw] !max-w-[800px] max-h-[90vh] p-0 bg-white rounded-lg flex flex-col"
         aria-describedby="promotion-preview-desc"
       >
-        <DialogTitle className="text-xl font-semibold pb-3">
-          Promotion Details
-        </DialogTitle>
-        <span id="promotion-preview-desc" className="sr-only">
-          {readonly 
-            ? "View promotion details" 
-            : "Review promotion details and confirm or go back to edit"}
-        </span>
-
-        <PromotionViewForm
-          data={data}
-          operatorName={operatorName}
-          gameList={gameList}
-          currencyGroupsInfo={currencyGroupsInfo}
-          readonly={readonly}
-        />
-        {readonly ? (
-          <div className="mt-4 flex justify-end">
-            <Button onClick={onClose} className="btn-cancel min-w-[100px]">
-              Close
-            </Button>
-          </div>
-        ) : (
-          <div className="mt-4 flex justify-between">
-            <Button onClick={onClose} className="btn-cancel">
-              ← Back
-            </Button>
-            <Button
-              className="btn-primary flex items-center gap-2"
-              onClick={() => onConfirm(data)}
-              disabled={isSubmitting}
-            >
-              Confirm
-            </Button>
-          </div>
-        )}
+        <div className="p-2 border-b">
+          <DialogTitle className="text-xl font-semibold pb-3">
+            Promotion Details
+          </DialogTitle>
+          <span id="promotion-preview-desc" className="sr-only">
+            {readonly
+              ? "View promotion details"
+              : "Review promotion details and confirm or go back to edit"}
+          </span>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6">
+          <PromotionViewForm
+            data={data}
+            operatorName={operatorName}
+            gameList={gameList}
+            currencyGroupsInfo={currencyGroupsInfo}
+            readonly={readonly}
+          />
+        </div>
+        <div className="p-4 border-t">
+          {readonly ? (
+            <div className="mt-4 flex justify-end">
+              <Button onClick={onClose} className="btn-cancel min-w-[100px]">
+                Close
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-4 flex justify-between">
+              <Button onClick={onClose} className="btn-cancel">
+                ← Back
+              </Button>
+              <Button
+                className="btn-primary flex items-center gap-2"
+                onClick={() => onConfirm(data)}
+                disabled={isSubmitting}
+              >
+                Confirm
+              </Button>
+            </div>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -28,3 +28,22 @@ export function getTodayAtMidnightGMT7(): Date {
   now.setHours(0, 0, 0, 0);
   return now;
 }
+
+export function toGMTString(dateStr: string, gmtOffset: number): string {
+  if (!dateStr) {
+    return "";
+  }
+  const date = new Date(dateStr);
+  const gmtDate = new Date(date.getTime() + gmtOffset * 60 * 60 * 1000);
+  return gmtDate
+    .toLocaleString("en-GB", {
+      timeZone: "UTC",
+      hour12: false,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    })
+    .replace(",", "");
+}
