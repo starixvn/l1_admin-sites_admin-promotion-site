@@ -25,7 +25,6 @@ export const useFilteredGames = (
       return res.json();
     },
     enabled: shouldFetch,
-    staleTime: 1000 * 60 * 5,
     ...options,
   });
 };

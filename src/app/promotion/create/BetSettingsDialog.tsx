@@ -210,7 +210,7 @@ export default function BetSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full !max-w-2xl bg-white rounded-xl px-3 py-0 shadow-xl max-h-[90vh] flex flex-col">
+      <DialogContent className="w-full !max-w-3xl bg-white rounded-xl px-3 py-0 shadow-xl max-h-[90vh] flex flex-col">
         <div className="p-3 border-b">
           <DialogTitle className="text-2xl font-bold text-gray-800">
             Currency Group Settings -{" "}

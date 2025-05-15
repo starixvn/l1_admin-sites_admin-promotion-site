@@ -220,7 +220,13 @@ export default function Step1({
             inputMode="numeric"
             pattern="\d*"
             onKeyDown={(e) => {
-              if (e.key === "." || e.key === "," || e.key === "e") {
+              if (
+                e.key === "." ||
+                e.key === "," ||
+                e.key === "e" ||
+                e.key === "+" ||
+                e.key === "-"
+              ) {
                 e.preventDefault();
               }
             }}
