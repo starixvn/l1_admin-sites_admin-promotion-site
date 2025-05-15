@@ -258,6 +258,8 @@ export default function Step2({
             onValueChange={(val) => {
               setValue("allPlayers", val === "true");
               setValue("offeredPlayerIds", []);
+              setValue("uploadedFile", undefined); // 💥 Clear file in form state
+              setUploadedFile(null);
             }}
             disabled={isRunning}
           >
