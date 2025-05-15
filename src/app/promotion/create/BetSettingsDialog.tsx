@@ -185,7 +185,17 @@ export default function BetSettingsDialog({
   };
 
   const handleSave = () => {
-    const newInvalidRows = validateBetRows(rows);
+    const enabledRows = rows.filter((r) => r.enabled);
+
+    // ❗ 1. Không có nhóm nào được bật
+    if (enabledRows.length === 0) {
+      setInvalidRows(new Set()); // clear possible old state
+      setShowGlobalError(true);
+      return;
+    }
+
+    // ❗ 2. Có nhóm bật nhưng betLevel không hợp lệ
+    const newInvalidRows = validateBetRows(enabledRows);
 
     if (newInvalidRows.size > 0) {
       setInvalidRows(newInvalidRows);
@@ -193,18 +203,18 @@ export default function BetSettingsDialog({
       return;
     }
 
+    // ✅ 3. Hợp lệ, tiến hành lưu
     setInvalidRows(new Set());
     setShowGlobalError(false);
 
     onSave({
-      currencyGroups: rows.filter((r) => r.enabled).map((r) => r.id),
-      betLevels: rows
-        .filter((r) => r.enabled)
-        .map((r) => ({
-          currencyGroup: r.id,
-          betLevel: r.betLevel,
-        })),
+      currencyGroups: enabledRows.map((r) => r.id),
+      betLevels: enabledRows.map((r) => ({
+        currencyGroup: r.id,
+        betLevel: r.betLevel,
+      })),
     });
+
     onClose();
   };
 
@@ -280,8 +290,8 @@ export default function BetSettingsDialog({
                               className="z-50 text-xs bg-white shadow-lg border"
                             >
                               {gameType === GAME_TYPES.CLASSIC
-                                ? "Classic: Bet Level x 25 = Total Bet"
-                                : "Cascading: Coin Value x Bet Level x Multiplier = Total Bet"}
+                                ? "Classic: Bet Level x25 = Total Bet"
+                                : "Cascading: Coin Value x Bet Level (1) x Multiplier (20) = Total Bet"}
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -373,9 +383,11 @@ export default function BetSettingsDialog({
 
         {showGlobalError && (
           <div className="absolute bottom-7 left-6 text-red-600 text-xs font-medium">
-            ❗ Please make sure all enabled rows have{" "}
-            {gameType === GAME_TYPES.CLASSIC ? "Bet Level" : "Coin Value"}{" "}
-            greater than 0
+            {rows.every((r) => !r.enabled)
+              ? "❗ At least one currency group must be enabled for the promotion."
+              : `❗ Please make sure all enabled rows have ${
+                  gameType === GAME_TYPES.CLASSIC ? "Bet Level" : "Coin Value"
+                } greater than 0`}
           </div>
         )}
       </DialogContent>

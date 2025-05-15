@@ -32,8 +32,11 @@ export const promotionSchema = z
       .max(50)
       .regex(/^[a-zA-Z0-9_]+$/, "The Code name contains invalid characters"),
     bonusItemCount: z.coerce
-      .number()
-      .int()
+      .number({
+        invalid_type_error: "Free spins must be greater than 0",
+        required_error: "Free spins is required",
+      })
+      .int("Free spins must be an integer")
       .min(1, "Free spins must be greater than 0"),
     startDate: z.coerce.date({
       required_error: "Start date is required",
