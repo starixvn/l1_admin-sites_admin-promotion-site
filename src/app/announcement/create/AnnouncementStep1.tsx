@@ -19,9 +19,9 @@ function getNestedErrorMsg(errorObj: any, key: string): string | undefined {
 
 export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
   const { register, setValue, watch, formState: { errors } } = useFormContext();
-  const titles = watch("titles");
-  const bannerContents = watch("bannerContents");
-  const terms = watch("terms");
+  const promotionTitle = watch("promotionTitle");
+  const bannerContent = watch("bannerContent");
+  const termsAndConditions = watch("termsAndConditions");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -65,9 +65,9 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
           </div>
         </div>
       </div>
-      {/* Announcement Title */}
+      {/* Promotion Title */}
       <div className="border border-gray-200 rounded-xl p-6 shadow-sm w-full max-w-3xl mx-auto">
-        <div className="font-semibold text-gray-800 mb-4 text-base">Announcement Title </div>
+        <div className="font-semibold text-gray-800 mb-4 text-base">Promotion Title </div>
         <div className="flex flex-col gap-3">
           {LANGS.map((lang) => (
             <div key={lang.code} className="flex flex-col gap-1 w-full relative">
@@ -77,16 +77,16 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   {lang.code === "en-US" && <span className="text-red-500 ml-1 absolute -top-1 right-8">*</span>}
                 </div>
                 <input
-                  className={`flex-1 border rounded-lg px-4 py-2 text-base ${lang.code === 'en-US' && getNestedErrorMsg(errors.titles, 'en-US') ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`flex-1 border rounded-lg px-4 py-2 text-base ${lang.code === 'en-US' && getNestedErrorMsg(errors.promotionTitle, 'en-US') ? 'border-red-500' : 'border-gray-300'}`}
                   maxLength={50}
-                  value={titles?.[lang.code] || ""}
-                  onChange={e => setValue(`titles.${lang.code}`, e.target.value)}
+                  value={promotionTitle?.[lang.code] || ""}
+                  onChange={e => setValue(`promotionTitle.${lang.code}`, e.target.value)}
                   placeholder={`Enter title in ${lang.label}`}
                 />
-                <span className="text-gray-400 text-xs w-16 text-right">{(titles?.[lang.code] || "").length}/50</span>
+                <span className="text-gray-400 text-xs w-16 text-right">{(promotionTitle?.[lang.code] || "").length}/50</span>
               </div>
-              {lang.code === 'en-US' && getNestedErrorMsg(errors.titles, 'en-US') && (
-                <div className="text-red-500 text-xs ml-28">{getNestedErrorMsg(errors.titles, 'en-US')}</div>
+              {lang.code === 'en-US' && getNestedErrorMsg(errors.promotionTitle, 'en-US') && (
+                <div className="text-red-500 text-xs ml-28">{getNestedErrorMsg(errors.promotionTitle, 'en-US')}</div>
               )}
             </div>
           ))}
@@ -104,16 +104,16 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   {lang.code === "en-US" && <span className="text-red-500 ml-1 absolute -top-1 right-8">*</span>}
                 </div>
                 <textarea
-                  className={`flex-1 border rounded-lg px-4 py-2 text-base min-h-[60px] ${lang.code === 'en-US' && getNestedErrorMsg(errors.bannerContents, 'en-US') ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`flex-1 border rounded-lg px-4 py-2 text-base min-h-[60px] ${lang.code === 'en-US' && getNestedErrorMsg(errors.bannerContent, 'en-US') ? 'border-red-500' : 'border-gray-300'}`}
                   maxLength={270}
-                  value={bannerContents?.[lang.code] || ""}
-                  onChange={e => setValue(`bannerContents.${lang.code}`, e.target.value)}
+                  value={bannerContent?.[lang.code] || ""}
+                  onChange={e => setValue(`bannerContent.${lang.code}`, e.target.value)}
                   placeholder={`Enter banner content in ${lang.label}`}
                 />
-                <span className="text-gray-400 text-xs w-20 text-right pt-2">{(bannerContents?.[lang.code] || "").length}/270</span>
+                <span className="text-gray-400 text-xs w-20 text-right pt-2">{(bannerContent?.[lang.code] || "").length}/270</span>
               </div>
-              {lang.code === 'en-US' && getNestedErrorMsg(errors.bannerContents, 'en-US') && (
-                <div className="text-red-500 text-xs ml-28">{getNestedErrorMsg(errors.bannerContents, 'en-US')}</div>
+              {lang.code === 'en-US' && getNestedErrorMsg(errors.bannerContent, 'en-US') && (
+                <div className="text-red-500 text-xs ml-28">{getNestedErrorMsg(errors.bannerContent, 'en-US')}</div>
               )}
             </div>
           ))}
@@ -131,16 +131,16 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   {lang.code === "en-US" && <span className="text-red-500 ml-1 absolute -top-1 right-8">*</span>}
                 </div>
                 <textarea
-                  className={`flex-1 border rounded-lg px-4 py-2 text-base min-h-[80px] ${lang.code === 'en-US' && getNestedErrorMsg(errors.terms, 'en-US') ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`flex-1 border rounded-lg px-4 py-2 text-base min-h-[80px] ${lang.code === 'en-US' && getNestedErrorMsg(errors.termsAndConditions, 'en-US') ? 'border-red-500' : 'border-gray-300'}`}
                   maxLength={6500}
-                  value={terms?.[lang.code] || ""}
-                  onChange={e => setValue(`terms.${lang.code}`, e.target.value)}
+                  value={termsAndConditions?.[lang.code] || ""}
+                  onChange={e => setValue(`termsAndConditions.${lang.code}`, e.target.value)}
                   placeholder={`Enter terms in ${lang.label}`}
                 />
-                <span className="text-gray-400 text-xs w-24 text-right pt-2">{(terms?.[lang.code] || "").length}/6500</span>
+                <span className="text-gray-400 text-xs w-24 text-right pt-2">{(termsAndConditions?.[lang.code] || "").length}/6500</span>
               </div>
-              {lang.code === 'en-US' && getNestedErrorMsg(errors.terms, 'en-US') && (
-                <div className="text-red-500 text-xs ml-28">{getNestedErrorMsg(errors.terms, 'en-US')}</div>
+              {lang.code === 'en-US' && getNestedErrorMsg(errors.termsAndConditions, 'en-US') && (
+                <div className="text-red-500 text-xs ml-28">{getNestedErrorMsg(errors.termsAndConditions, 'en-US')}</div>
               )}
             </div>
           ))}

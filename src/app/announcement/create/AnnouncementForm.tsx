@@ -11,21 +11,21 @@ export default function AnnouncementForm({ onClose }: { onClose: () => void }) {
     resolver: zodResolver(announcementSchema),
     mode: "onSubmit",
     defaultValues: {
-      titles: { "en-US": "" },
-      bannerContents: { "en-US": "" },
-      terms: { "en-US": "" },
+      promotionTitle: { "en-US": "" },
+      bannerContent: { "en-US": "" },
+      termsAndConditions: { "en-US": "" },
       uploadedFile: undefined,
-      banner: 1,
-      dateFrom: undefined,
-      dateTo: undefined,
-      mapping: [],
+      template: 1,
+      fromDate: undefined,
+      toDate: undefined,
+      promotionMappings: [],
     },
   });
 
   const { handleSubmit, trigger, getValues, formState: { errors } } = methods;
 
   const handleNext = async () => {
-    const valid = await trigger(["titles", "bannerContents", "terms", "uploadedFile"]);
+    const valid = await trigger(["promotionTitle", "bannerContent", "termsAndConditions", "uploadedFile"]);
     if (valid) setStep(2);
   };
   const handleBack = () => setStep(1);

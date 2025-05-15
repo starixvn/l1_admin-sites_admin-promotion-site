@@ -4,16 +4,19 @@ import { PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 
 export interface Announcement {
-  id: string;
-  title: string;
-  banner: string;
-  terms: string;
-  displayDate: {
-    from: string;
-    to: string;
-  };
-  mapping: string;
-  status: "Running" | "Upcoming" | "Completed";
+  _id: string;
+  promotionTitle: Record<string, string>;
+  bannerContent: Record<string, string>;
+  termsAndConditions: Record<string, string>;
+  fromDate: string;
+  toDate: string;
+  promotionMappings: {
+    operatorId: string;
+    promotionCode: string;
+  }[];
+  template: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export function getStatusStyle(status: string) {
@@ -39,6 +42,27 @@ interface DataGridProps {
   onDelete: (id: string, title: string) => void;
 }
 
+const BANNERS = [
+  { id: 1, url: "https://internetviettel.vn/wp-content/uploads/2017/05/1-2.jpg", label: "Template 1" },
+  { id: 2, url: "https://internetviettel.vn/wp-content/uploads/2017/05/1-2.jpg", label: "Template 2" },
+  { id: 3, url: "https://internetviettel.vn/wp-content/uploads/2017/05/1-2.jpg", label: "Template 3" },
+];
+
+function getAnnouncementStatus(fromDate: string, toDate: string): string {
+  const now = new Date();
+  const from = new Date(fromDate);
+  const to = new Date(toDate);
+  if (now < from) return PROMOTION_STATUS_OPTIONS.Upcoming;
+  if (now > to) return PROMOTION_STATUS_OPTIONS.Completed;
+  return PROMOTION_STATUS_OPTIONS.Running;
+}
+
+function formatDateTime(dateStr: string) {
+  const d = new Date(dateStr);
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export default function DataGrid({ announcements, currentPage, pageSize, totalItems, onPageChange, onPageSizeChange, onDelete }: DataGridProps) {
   const totalPages = Math.ceil(totalItems / pageSize);
   return (
@@ -56,45 +80,50 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {announcements.map((a, idx) => (
-            <tr key={a.id} className="hover:bg-green-50">
-              <td className="px-4 py-4 text-center">{(currentPage - 1) * pageSize + idx + 1}</td>
-              <td className="px-4 py-4 font-semibold text-gray-800 truncate">{a.title}</td>
-              <td className="px-4 py-4 text-center whitespace-nowrap">
-                <div>From {a.displayDate.from}</div>
-                <div>To {a.displayDate.to}</div>
-              </td>
-              <td className="px-4 py-4 text-center">
-                <img
-                  src={a.banner}
-                  alt="Banner Template"
-                  className="h-12 w-auto rounded shadow object-contain border mx-auto"
-                  style={{ maxWidth: 100 }}
-                />
-              </td>
-              <td className="px-4 py-4 text-center text-blue-500 cursor-pointer truncate">{a.mapping}</td>
-              <td className="px-4 py-4 text-center">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(a.status)}`}>{a.status}</span>
-              </td>
-              <td className="px-4 py-4 text-center">
-                <div className="flex justify-center gap-1">
-                  <button className="p-1 rounded-full transition-colors group" aria-label="view-announcement">
-                    <Eye className="w-4 h-4 text-gray-600 group-hover:text-black group-hover:bg-gray-200 rounded-full transition-colors" />
-                  </button>
-                  {a.status === PROMOTION_STATUS_OPTIONS.Upcoming && (
-                    <>
-                      <button className="p-1 rounded-full transition-colors group" aria-label="edit-announcement">
-                        <Pencil className="w-4 h-4 text-blue-600 group-hover:bg-gray-200 rounded-full transition-colors" />
-                      </button>
-                      <button className="p-1 rounded-full transition-colors group" aria-label="delete-announcement" onClick={() => onDelete(a.id, a.title)}>
-                        <Trash2 className="w-4 h-4 text-red-500 group-hover:bg-gray-200 rounded-full transition-colors" />
-                      </button>
-                    </>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))}
+          {announcements.map((a, idx) => {
+            const status = getAnnouncementStatus(a.fromDate, a.toDate);
+            return (
+              <tr key={a._id} className="hover:bg-green-50">
+                <td className="px-4 py-4 text-center">{(currentPage - 1) * pageSize + idx + 1}</td>
+                <td className="px-4 py-4 font-semibold text-gray-800 truncate">{a.promotionTitle?.['en-US']}</td>
+                <td className="px-4 py-4 text-center whitespace-nowrap">
+                  <div>From {formatDateTime(a.fromDate)}</div>
+                  <div>To {formatDateTime(a.toDate)}</div>
+                </td>
+                <td className="px-4 py-4 text-center">
+                  <img
+                    src={BANNERS[a.template-1]?.url}
+                    alt="Banner Template"
+                    className="h-12 w-auto rounded shadow object-contain border mx-auto"
+                    style={{ maxWidth: 100 }}
+                  />
+                </td>
+                <td className="px-4 py-4 text-center text-blue-500 cursor-pointer truncate">
+                  Detail
+                </td>
+                <td className="px-4 py-4 text-center">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(status)}`}>{status}</span>
+                </td>
+                <td className="px-4 py-4 text-center">
+                  <div className="flex justify-center gap-1">
+                    <button className="p-1 rounded-full transition-colors group" aria-label="view-announcement">
+                      <Eye className="w-4 h-4 text-gray-600 group-hover:text-black group-hover:bg-gray-200 rounded-full transition-colors" />
+                    </button>
+                    {status === PROMOTION_STATUS_OPTIONS.Upcoming && (
+                      <>
+                        <button className="p-1 rounded-full transition-colors group" aria-label="edit-announcement">
+                          <Pencil className="w-4 h-4 text-blue-600 group-hover:bg-gray-200 rounded-full transition-colors" />
+                        </button>
+                        <button className="p-1 rounded-full transition-colors group" aria-label="delete-announcement" onClick={() => onDelete(a._id, a.promotionTitle?.['en-US'] || '')}>
+                          <Trash2 className="w-4 h-4 text-red-500 group-hover:bg-gray-200 rounded-full transition-colors" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
       {/* Pagination UI */}
@@ -185,13 +214,11 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
             <span>Rows per page:</span>
             <select
               value={pageSize}
-              onChange={(e) => onPageSizeChange(Number(e.target.value))}
+              onChange={e => onPageSizeChange(Number(e.target.value))}
               className="border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500"
             >
-              {PAGE_SIZE_OPTIONS.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
+              {PAGE_SIZE_OPTIONS.map(size => (
+                <option key={size} value={size}>{size}</option>
               ))}
             </select>
           </label>

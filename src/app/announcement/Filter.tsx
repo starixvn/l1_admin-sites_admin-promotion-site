@@ -1,9 +1,8 @@
 import { PROMOTION_STATUS_OPTIONS_LIST } from "@/constants/promotionStatusMap";
 import React from "react";
 
-const STATUS_OPTIONS = ["All", "Running", "Upcoming", "Completed"];
-
-export default function Filter({ status, onStatusChange, onAddNew }: { status: string; onStatusChange: (status: string) => void; onAddNew: () => void }) {
+export default function Filter({ status, pageSize, onStatusChange, onAddNew }: 
+  { status: string; pageSize: number; onStatusChange: (status: string, pageSize: number) => void; onAddNew: () => void }) {
   return (
     <form className="bg-white rounded-xl p-6 shadow-sm flex items-end gap-4">
       <div className="flex flex-col min-w-[140px]">
@@ -15,7 +14,7 @@ export default function Filter({ status, onStatusChange, onAddNew }: { status: s
             id="status-select"
             name="status"
             value={status}
-            onChange={(e) => onStatusChange(e.target.value)}
+            onChange={(e) => onStatusChange(e.target.value, pageSize)}
             className="w-full h-[38px] pl-3 pr-8 border border-gray-300 rounded-lg bg-white
               appearance-none focus:outline-none focus:border-black
               text-gray-700 cursor-pointer"

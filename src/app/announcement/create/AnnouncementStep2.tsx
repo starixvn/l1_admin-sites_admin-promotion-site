@@ -20,25 +20,25 @@ const PROMO_CODES = [
 
 export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBack: () => void; onPreview: () => void; onSave: () => void }) {
   const { setValue, watch, formState: { errors } } = useFormContext();
-  const banner = watch("banner");
-  const dateFrom = watch("dateFrom");
-  const dateTo = watch("dateTo");
-  const mapping = watch("mapping");
+  const template = watch("template");
+  const fromDate = watch("fromDate");
+  const toDate = watch("toDate");
+  const promotionMappings = watch("promotionMappings");
 
-  const isDuplicateOperator = (op: string, idx: number) => mapping.some((m: any, i: number) => m.operator === op && i !== idx);
+  const isDuplicateOperator = (op: string, idx: number) => promotionMappings.some((m: any, i: number) => m.operator === op && i !== idx);
   const isDateRangeDiff = (from: string, to: string) => {
-    if (!mapping.length) return false;
-    const first = mapping[0].time;
+    if (!promotionMappings.length) return false;
+    const first = promotionMappings[0].time;
     return from !== first.from || to !== first.to;
   };
   const handleAdd = () => {
-    setValue("mapping", [...mapping, { operator: "", code: "", time: { from: mapping[0]?.time.from || "", to: mapping[0]?.time.to || "" } }]);
+    setValue("promotionMappings", [...promotionMappings, { operator: "", code: "", time: { from: promotionMappings[0]?.time.from || "", to: promotionMappings[0]?.time.to || "" } }]);
   };
   const handleRemove = (idx: number) => {
-    setValue("mapping", mapping.filter((_: any, i: number) => i !== idx));
+    setValue("promotionMappings", promotionMappings.filter((_: any, i: number) => i !== idx));
   };
   const handleChange = (idx: number, field: string, value: string) => {
-    setValue("mapping", mapping.map((m: any, i: number) => i === idx ? { ...m, [field]: value } : m));
+    setValue("promotionMappings", promotionMappings.map((m: any, i: number) => i === idx ? { ...m, [field]: value } : m));
   };
 
   return (
@@ -48,13 +48,13 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBac
         <div className="font-semibold text-gray-800 mb-1 text-sm">Banner Template <span className="text-red-500">*</span></div>
         <div className="flex justify-center gap-4">
           {BANNERS.map(b => (
-            <div key={b.id} className={`cursor-pointer border-2 rounded-lg p-1 ${banner === b.id ? 'border-emerald-500' : 'border-transparent'}`} onClick={() => setValue("banner", b.id)}>
+            <div key={b.id} className={`cursor-pointer border-2 rounded-lg p-1 ${template === b.id ? 'border-emerald-500' : 'border-transparent'}`} onClick={() => setValue("template", b.id)}>
               <img src={b.url} alt={b.label} className="w-32 h-20 rounded object-cover" />
               <div className="text-center mt-1 text-sm font-medium">{b.label}</div>
             </div>
           ))}
         </div>
-        {errors.banner && <div className="text-red-500 text-xs mt-1">{errors.banner.message as string}</div>}
+        {errors.template && <div className="text-red-500 text-xs mt-1">{errors.template.message as string}</div>}
       </div>
       {/* Display Date */}
       <div className="w-full max-w-3xl mx-auto bg-white border border-gray-200 p-3 rounded-lg shadow-sm flex flex-col gap-1.5 mb-3">
@@ -62,26 +62,26 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBac
         <div className="flex items-center gap-2 w-full">
           <div className="flex-1">
             <DateTimePicker
-              value={dateFrom}
-              onChange={val => setValue("dateFrom", val)}
+              value={fromDate}
+              onChange={val => setValue("fromDate", val)}
             />
           </div>
           <span className="text-gray-500">to</span>
           <div className="flex-1">
             <DateTimePicker
-              value={dateTo}
-              onChange={val => setValue("dateTo", val)}
+              value={toDate}
+              onChange={val => setValue("toDate", val)}
             />
           </div>
         </div>
-        {errors.dateFrom && <div className="text-red-500 text-xs mt-1">{errors.dateFrom.message as string}</div>}
-        {errors.dateTo && <div className="text-red-500 text-xs mt-1">{errors.dateTo.message as string}</div>}
+        {errors.fromDate && <div className="text-red-500 text-xs mt-1">{errors.fromDate.message as string}</div>}
+        {errors.toDate && <div className="text-red-500 text-xs mt-1">{errors.toDate.message as string}</div>}
       </div>
       {/* Promotion Mapping */}
       <div className="w-full max-w-3xl mx-auto bg-white border border-gray-200 p-3 rounded-lg shadow-sm flex flex-col gap-1.5 mb-3">
         <div className="font-semibold text-gray-800 mb-1 text-sm">Promotion Mapping <span className="text-red-500">*</span></div>
         <div className="flex flex-col gap-1.5 w-full">
-          {mapping.map((m: any, idx: number) => {
+          {promotionMappings.map((m: any, idx: number) => {
             const dateDiff = isDateRangeDiff(m.time.from, m.time.to) && idx > 0;
             return (
               <div key={idx} className="flex items-center gap-2 w-full flex-wrap">
@@ -92,7 +92,7 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBac
                   disabled={isDuplicateOperator(m.operator, idx) && m.operator !== ""}
                 >
                   <option value="">Select Operator</option>
-                  {OPERATORS.filter((op: any) => !mapping.some((mm: any, i: number) => mm.operator === op.value && i !== idx)).map((op: any) => (
+                  {OPERATORS.filter((op: any) => !promotionMappings.some((mm: any, i: number) => mm.operator === op.value && i !== idx)).map((op: any) => (
                     <option key={op.value} value={op.value}>{op.label}</option>
                   ))}
                 </select>
@@ -114,7 +114,7 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBac
             );
           })}
         </div>
-        {errors.mapping && <div className="text-red-500 text-xs mt-1">{errors.mapping.message as string}</div>}
+        {errors.promotionMappings && <div className="text-red-500 text-xs mt-1">{errors.promotionMappings.message as string}</div>}
         <button type="button" onClick={handleAdd} className="flex items-center gap-1 mt-2 text-emerald-600 font-bold text-sm hover:underline">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
