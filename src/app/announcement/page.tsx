@@ -3,6 +3,7 @@ import { useState } from "react";
 import Filter from "./Filter";
 import DataGrid, { Announcement } from "./DataGrid";
 import ConfirmModal from "@/components/ConfirmDialog";
+import AnnouncementDialog from "./create/AnnouncementDialog";
 
 const mockAnnouncements: Announcement[] = [
   {
@@ -41,6 +42,7 @@ export default function Page() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleteTitle, setDeleteTitle] = useState<string | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
 
   const handleFilterChange = (newStatus: string) => setStatus(newStatus);
   const filtered = status === "All" ? mockAnnouncements : mockAnnouncements.filter(a => a.status === status);
@@ -63,7 +65,7 @@ export default function Page() {
     <div className="space-y-4 w-full">
       <h1 className="text-2xl font-semibold text-gray-800 mb-6">Promotion Announcement</h1>
       <div className="w-full bg-white rounded-xl shadow-sm">
-        <Filter status={status} onStatusChange={handleFilterChange} />
+        <Filter status={status} onStatusChange={handleFilterChange} onAddNew={() => setOpenDialog(true)} />
       </div>
       <div className="w-full bg-white rounded-xl shadow-sm">
         <DataGrid
@@ -85,6 +87,7 @@ export default function Page() {
         onCancel={() => setShowConfirm(false)}
         onConfirm={handleDeleteConfirm}
       />
+      <AnnouncementDialog open={openDialog} onClose={() => setOpenDialog(false)} />
     </div>
   );
 }
