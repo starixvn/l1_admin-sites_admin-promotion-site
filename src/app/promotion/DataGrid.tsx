@@ -1,7 +1,7 @@
 "use client";
 
 import { GAME_TYPES, GameType } from "@/constants/gameTypes";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import PromotionEditDialog from "./edit/PromotionEditDialog";
 import { Promotion } from "@/types/promotion";
 import { toast } from "react-toastify";
@@ -15,6 +15,8 @@ import PromotionPreviewDialog from "./create/PromotionPreviewDialog";
 import { useFilteredGames } from "@/hooks/useFilteredGames";
 import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 import { toGMTString } from "@/lib/date-time.utils";
+import { useOperators } from "@/hooks/useOperators";
+import { Operator } from "@/types/operator";
 
 interface DataGridProps {
   promotions: Promotion[];
@@ -117,7 +119,10 @@ export default function DataGrid({
         !!viewPromotion?.gameConfigType,
     }
   );
-
+  const { data: operators = [] } = useOperators();
+  const operatorMap = useMemo(() => {
+    return new Map(operators.map((o: Operator) => [o.PartnerId, o.Name]));
+  }, [operators]);
   const handleDelete = async (id: string, code: string) => {
     try {
       await onDelete(id, code);
@@ -191,7 +196,9 @@ export default function DataGrid({
                     {p.code}
                   </div>
                 </td>
-                <td className="px-4 py-4">{p.operatorId}</td>
+                <td className="px-4 py-4">
+                  {operatorMap.get(p.operatorId) || p.operatorId}
+                </td>
                 <td className="px-4 py-4">
                   <div className="text-gray-500 text-center">
                     {p.bonusItemCount}
@@ -368,7 +375,10 @@ export default function DataGrid({
             uploadedFile: undefined,
             betLevels: viewPromotion.betLevels,
           }}
-          operatorName={viewPromotion.operatorId}
+          operatorName={
+            operatorMap.get(viewPromotion.operatorId) ||
+            viewPromotion.operatorId
+          }
           gameList={gameList}
           currencyGroupsInfo={currencyGroupsInfo}
           isSubmitting={false}

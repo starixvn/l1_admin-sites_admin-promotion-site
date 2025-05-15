@@ -57,7 +57,7 @@ export default function Step1({
   const isRunning = isEdit && status === "running";
   const name = useWatch({ control, name: "name" });
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
-
+  const invalidKeys = [".", ",", "e", "+", "-", "E"];
   return (
     <div className="space-y-6">
       <div>
@@ -219,17 +219,7 @@ export default function Step1({
             step={1}
             inputMode="numeric"
             pattern="\d*"
-            onKeyDown={(e) => {
-              if (
-                e.key === "." ||
-                e.key === "," ||
-                e.key === "e" ||
-                e.key === "+" ||
-                e.key === "-"
-              ) {
-                e.preventDefault();
-              }
-            }}
+            onKeyDown={(e) => invalidKeys.includes(e.key) && e.preventDefault()}
             id="free-spins"
             aria-label="No. of Free Spins"
             aria-required="true"
