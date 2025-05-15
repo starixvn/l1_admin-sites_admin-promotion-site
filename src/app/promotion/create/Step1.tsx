@@ -62,7 +62,10 @@ export default function Step1({
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-1 mb-2">
-          <Label className="form-label flex items-center gap-1" htmlFor="promotion-name">
+          <Label
+            className="form-label flex items-center gap-1"
+            htmlFor="promotion-name"
+          >
             Promotion Name<span className="text-red-500">*</span>
           </Label>
           <div className="mb-3">
@@ -180,8 +183,11 @@ export default function Step1({
             }}
             disabled={isRunning}
           >
-            <SelectTrigger 
-              className={cn(FORM_INPUT_CLASS, errors.gameConfigType && BORDER_RED_CLASS)}
+            <SelectTrigger
+              className={cn(
+                FORM_INPUT_CLASS,
+                errors.gameConfigType && BORDER_RED_CLASS
+              )}
               id="game-type"
               aria-label="Game Type"
               aria-required="true"
@@ -210,15 +216,26 @@ export default function Step1({
           </Label>
           <Input
             type="number"
+            step={1}
+            inputMode="numeric"
+            pattern="\d*"
+            onKeyDown={(e) => {
+              if (e.key === "." || e.key === "," || e.key === "e") {
+                e.preventDefault();
+              }
+            }}
             id="free-spins"
             aria-label="No. of Free Spins"
             aria-required="true"
-            {...register("bonusItemCount", { 
+            {...register("bonusItemCount", {
               required: "Free spins is required",
               min: { value: 1, message: "Free spins must be greater than 0" },
-              valueAsNumber: true 
+              valueAsNumber: true,
             })}
-            className={cn(FORM_INPUT_CLASS, errors.bonusItemCount && BORDER_RED_CLASS)}
+            className={cn(
+              FORM_INPUT_CLASS,
+              errors.bonusItemCount && BORDER_RED_CLASS
+            )}
             disabled={isRunning}
           />
           {errors.bonusItemCount && (
@@ -255,8 +272,11 @@ export default function Step1({
           onValueChange={(val) => setValue("operatorId", val)}
           disabled={isRunning}
         >
-          <SelectTrigger 
-            className={cn(FORM_INPUT_CLASS, errors.operatorId && BORDER_RED_CLASS)}
+          <SelectTrigger
+            className={cn(
+              FORM_INPUT_CLASS,
+              errors.operatorId && BORDER_RED_CLASS
+            )}
             id="operator"
             aria-label="Operator"
             aria-required="true"

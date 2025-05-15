@@ -30,12 +30,10 @@ export const promotionSchema = z
       .string()
       .min(1, "Promotion code is required")
       .max(50)
-      .regex(
-        /^[a-zA-Z0-9_]+$/,
-        "The Code name contains invalid characters"
-      ),
+      .regex(/^[a-zA-Z0-9_]+$/, "The Code name contains invalid characters"),
     bonusItemCount: z.coerce
       .number()
+      .int()
       .min(1, "Free spins must be greater than 0"),
     startDate: z.coerce.date({
       required_error: "Start date is required",
@@ -69,7 +67,7 @@ export const promotionSchema = z
       .optional(),
   })
   .refine((data) => data.endDate > data.startDate, {
-    message: "Start Date must be earlier than or equal to the End Date",
+    message: "Start Date must be earlier than the End Date",
     path: ["startDate"],
   });
 
