@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState, useCallback, useMemo } from "react";
@@ -213,7 +209,7 @@ export default function BetSettingsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full !max-w-2xl bg-white rounded-xl px-5 py-5 shadow-xl">
+      <DialogContent className="w-full !max-w-2xl bg-white rounded-xl px-5 py-5 shadow-xl max-h-[90vh] overflow-y-auto">
         <DialogTitle className="text-2xl font-bold text-gray-800">
           Currency Group Settings -{" "}
           {gameType === GAME_TYPES.CLASSIC ? "Classic Slot" : "Cascading Slot"}
