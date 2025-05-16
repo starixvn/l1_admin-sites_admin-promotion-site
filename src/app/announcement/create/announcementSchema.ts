@@ -16,12 +16,8 @@ export const announcementSchema = z.object({
   toDate: z.date({ required_error: "End date is required" }),
   promotionMappings: z.array(
     z.object({
-      operator: z.string().min(1, "Operator is required"),
-      code: z.string().min(1, "Promotion code is required"),
-      time: z.object({
-        from: z.string(),
-        to: z.string(),
-      }),
+      operatorId: z.string().min(1, "Operator is required"),
+      promotionCode: z.string().min(1, "Promotion code is required"),
     })
   ).min(1, "At least one Operator must be added"),
 }).refine((data) => !data.fromDate || !data.toDate || data.fromDate <= data.toDate, {

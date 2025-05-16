@@ -42,12 +42,6 @@ interface DataGridProps {
   onDelete: (id: string, title: string) => void;
 }
 
-const BANNERS = [
-  { id: 1, url: "https://internetviettel.vn/wp-content/uploads/2017/05/1-2.jpg", label: "Template 1" },
-  { id: 2, url: "https://internetviettel.vn/wp-content/uploads/2017/05/1-2.jpg", label: "Template 2" },
-  { id: 3, url: "https://internetviettel.vn/wp-content/uploads/2017/05/1-2.jpg", label: "Template 3" },
-];
-
 function getAnnouncementStatus(fromDate: string, toDate: string): string {
   const now = new Date();
   const from = new Date(fromDate);
@@ -92,7 +86,7 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
                 </td>
                 <td className="px-4 py-4 text-center">
                   <img
-                    src={BANNERS[a.template-1]?.url}
+                    src={`${process.env.NEXT_PUBLIC_API_CONFIGURATION_URL}/template-${a.template}/banner-1.png`}
                     alt="Banner Template"
                     className="h-12 w-auto rounded shadow object-contain border mx-auto"
                     style={{ maxWidth: 100 }}

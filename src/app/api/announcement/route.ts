@@ -3,6 +3,25 @@ import axios, { AxiosError } from "axios";
 import configs from "../../../../configs";
 import { PROMOTION_STATUS_MAP } from "@/constants/promotionStatusMap";
 
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+
+    const response = await axios.post(
+      `${configs.apiPromotionUrl}/promotion-announcements`,
+      body
+    );
+
+    return NextResponse.json(response.data, { status: 201 });
+  } catch (error) {
+    console.error("Error create promotion announcement:", error);
+    return NextResponse.json(
+      { error: "Failed to create promotion announcement" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;

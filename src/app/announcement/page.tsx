@@ -79,6 +79,15 @@ export default function Page() {
     }
   };
 
+  const reloadAnnouncements = () => {
+    fetchAnnouncements({ status, pageIndex: 1, pageSize })
+      .then((data) => {
+        setAnnouncements(data.items || data.data || []);
+        setTotalItems(data.metadata?.total || data.total || 0);
+        setCurrentPage(data.metadata?.pageIndex || 1);
+      });
+  };
+
   return (
     <div className="space-y-4 w-full">
       <h1 className="text-2xl font-semibold text-gray-800 mb-6">Promotion Announcement</h1>
@@ -111,7 +120,7 @@ export default function Page() {
         onCancel={() => setShowConfirm(false)}
         onConfirm={handleDeleteConfirm}
       />
-      <AnnouncementDialog open={openDialog} onClose={() => setOpenDialog(false)} />
+      <AnnouncementDialog open={openDialog} onClose={() => setOpenDialog(false)} onCreated={reloadAnnouncements} />
       <ToastContainer />
     </div>
   );

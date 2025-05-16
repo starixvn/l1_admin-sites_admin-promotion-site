@@ -4,8 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { announcementSchema, AnnouncementFormValues } from "./announcementSchema";
 import AnnouncementStep1 from "./AnnouncementStep1";
 import AnnouncementStep2 from "./AnnouncementStep2";
+import { addDays } from "date-fns";
+import { toast } from "react-toastify";
 
-export default function AnnouncementForm({ onClose }: { onClose: () => void }) {
+export default function AnnouncementForm({ onClose, onCreated }: { onClose: () => void, onCreated?: () => void }) {
   const [step, setStep] = useState(1);
   const methods = useForm<AnnouncementFormValues>({
     resolver: zodResolver(announcementSchema),
@@ -16,8 +18,8 @@ export default function AnnouncementForm({ onClose }: { onClose: () => void }) {
       termsAndConditions: { "en-US": "" },
       uploadedFile: undefined,
       template: 1,
-      fromDate: undefined,
-      toDate: undefined,
+      fromDate: addDays(new Date(), 7),
+      toDate: addDays(new Date(), 7),
       promotionMappings: [],
     },
   });
@@ -36,9 +38,20 @@ export default function AnnouncementForm({ onClose }: { onClose: () => void }) {
       alert("Preview: " + JSON.stringify(getValues(), null, 2));
     }
   };
-  const handleSave = handleSubmit((data) => {
-    // TODO: submit API
-    onClose();
+  const handleSave = handleSubmit(async (data) => {
+    try {
+      const { uploadedFile, ...body } = data;
+      await fetch('/api/announcement', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      toast.success("Announcement created successfully");
+      onCreated?.();
+      onClose();
+    } catch (err) {
+      alert('Failed to create announcement');
+    }
   });
 
   return (

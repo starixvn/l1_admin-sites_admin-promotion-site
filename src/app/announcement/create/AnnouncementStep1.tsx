@@ -1,4 +1,5 @@
 import { useFormContext, FieldError, FieldErrorsImpl, Merge } from "react-hook-form";
+import Papa from "papaparse";
 
 const LANGS = [
   { code: "en-US", label: "en-US" },
@@ -23,20 +24,41 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
   const bannerContent = watch("bannerContent");
   const termsAndConditions = watch("termsAndConditions");
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.name.endsWith('.csv')) {
+    if (!file.name.endsWith(".csv")) {
       setValue("uploadedFile", undefined);
       e.target.value = '';
+      alert("Only .csv files are allowed!");
       return;
     }
     if (file.size > 2 * 1024 * 1024) {
       setValue("uploadedFile", undefined);
       e.target.value = '';
+      alert("File size must be less than 2MB!");
       return;
     }
-    setValue("uploadedFile", file);
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const { data } = results as Papa.ParseResult<any>;
+        data.forEach((row: any) => {
+          const lang = row["Language"]?.trim();
+          if (!lang) return;
+          if (row["Promotion Title"]) setValue(`promotionTitle.${lang}`, row["Promotion Title"]);
+          if (row["Banner Content"]) setValue(`bannerContent.${lang}`, row["Banner Content"]);
+          if (row["Terms & Conditions"]) setValue(`termsAndConditions.${lang}`, row["Terms & Conditions"]);
+        });
+        setValue("uploadedFile", file);
+      },
+      error: (err) => {
+        alert("Upload failed. Please check your data format and try again");
+        e.target.value = "";
+        setValue("uploadedFile", undefined);
+      },
+    });
   };
 
   return (
@@ -49,12 +71,12 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
             type="file"
             accept=".csv"
             className="border border-gray-300 rounded-lg px-4 py-2 text-base w-full max-w-md"
-            onChange={handleFileChange}
+            onChange={handleCsvUpload}
           />
           <div className="flex items-center gap-2">
             <img src="/file.svg" alt="Download" className="w-7 h-7" />
             <a
-              href="/sample-files/banner-template-sample.png"
+              href="/sample-files/promotion-announcement-template.csv"
               download
               className="leading-tight"
               style={{ textDecoration: 'none' }}
@@ -152,4 +174,4 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
       </div>
     </div>
   );
-} 
+}

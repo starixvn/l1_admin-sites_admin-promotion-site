@@ -1,22 +1,23 @@
 import { useFormContext } from "react-hook-form";
 import DateTimePicker from "@/components/custom/date-time-picker";
+import { useEffect, useState } from "react";
+import { Promotion } from "@/types/promotion";
+import { Operator } from "@/types/operator";
 
-const BANNERS = [
-  { id: 1, url: "https://internetviettel.vn/wp-content/uploads/2017/05/1-2.jpg", label: "Template 1" },
-  { id: 2, url: "https://internetviettel.vn/wp-content/uploads/2017/05/1-2.jpg", label: "Template 2" },
-  { id: 3, url: "https://internetviettel.vn/wp-content/uploads/2017/05/1-2.jpg", label: "Template 3" },
-];
+const countTemplate = 3;
 
-const OPERATORS = [
-  { value: "ONEwork_VG", label: "ONEwork_VG" },
-  { value: "1W_Cash", label: "1W_Cash" },
-  { value: "2W_Test", label: "2W_Test" },
-];
-const PROMO_CODES = [
-  { value: "Summer_FSB", label: "Summer_FSB" },
-  { value: "FSB_for_all_slots", label: "FSB_for_all_slots" },
-  { value: "Promo_Test", label: "Promo_Test" },
-];
+function formatDateTime(dateStr: string) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return date.toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).replace(",", "");
+}
 
 export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBack: () => void; onPreview: () => void; onSave: () => void }) {
   const { setValue, watch, formState: { errors } } = useFormContext();
@@ -25,20 +26,118 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBac
   const toDate = watch("toDate");
   const promotionMappings = watch("promotionMappings");
 
-  const isDuplicateOperator = (op: string, idx: number) => promotionMappings.some((m: any, i: number) => m.operator === op && i !== idx);
+  const [operators, setOperators] = useState<Operator[]>([]);
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [allOperators, setAllOperators] = useState<Operator[]>([]);
+  const [allPromotions, setAllPromotions] = useState<Promotion[]>([]);
+
+  // Fetch all operators once
+  useEffect(() => {
+    fetch("/api/operators")
+      .then(res => res.json())
+      .then(data => {
+        setAllOperators(data);
+        // Initial filter of operators with promotions
+        const operatorsWithPromotions = data.filter((op: Operator) => 
+          allPromotions.some(p => p.operatorId === op.PartnerId)
+        );
+        setOperators(operatorsWithPromotions);
+      })
+      .catch(error => {
+        console.error("Error fetching operators:", error);
+      });
+  }, []); // Empty dependency array
+
+  // Fetch all promotions once
+  useEffect(() => {
+    fetch("/api/promotions?status=not_started&pageIndex=1&pageSize=100")
+      .then(res => res.json())
+      .then(data => {
+        const items = data.items || data.data || [];
+        setAllPromotions(items);
+        // Initial filter of promotions with operators
+        const validPromotions = items.filter((p: Promotion) => 
+          allOperators.some(op => op.PartnerId === p.operatorId)
+        );
+        setPromotions(validPromotions);
+      });
+  }, []); // Empty dependency array
+
+  // Update filtered lists when either allOperators or allPromotions change
+  useEffect(() => {
+    if (allOperators.length > 0 && allPromotions.length > 0) {
+      // Update operators list
+      const operatorsWithPromotions = allOperators.filter((op: Operator) => 
+        allPromotions.some(p => p.operatorId === op.PartnerId)
+      );
+      setOperators(operatorsWithPromotions);
+
+      // Update promotions list
+      const validPromotions = allPromotions.filter((p: Promotion) => 
+        allOperators.some(op => op.PartnerId === p.operatorId)
+      );
+      setPromotions(validPromotions);
+    }
+  }, [allOperators, allPromotions]);
+
+  const getFilteredPromotions = (operatorId: string) => {
+    if (!operatorId) {
+      return promotions;
+    }
+    return promotions.filter(p => p.operatorId === operatorId);
+  };
+
+  const getFilteredOperators = (code: string) => {
+    if (!code) {
+      return operators;
+    }
+    const promotion = promotions.find(p => p.code === code);
+    if (!promotion) return [];
+    return operators.filter(op => op.PartnerId === promotion.operatorId);
+  };
+
+  const isDuplicateOperator = (op: string, idx: number) => 
+    promotionMappings.some((m: any, i: number) => m.operatorId === op && i !== idx);
   const isDateRangeDiff = (from: string, to: string) => {
-    if (!promotionMappings.length) return false;
-    const first = promotionMappings[0].time;
-    return from !== first.from || to !== first.to;
+    if (!promotionMappings.length || from === "" || to === "") return false;
+    const firstPromotionCode = promotionMappings[0].promotionCode;
+    const firstPromotion = promotions.find(p => p.code === firstPromotionCode);
+    if (!firstPromotion) return false;
+    return from !== firstPromotion.startDate || to !== firstPromotion.endDate;
   };
   const handleAdd = () => {
-    setValue("promotionMappings", [...promotionMappings, { operator: "", code: "", time: { from: promotionMappings[0]?.time.from || "", to: promotionMappings[0]?.time.to || "" } }]);
+    if (promotionMappings.length >= operators.length) {
+      return;
+    }
+    setValue("promotionMappings", [...promotionMappings, { 
+      operatorId: "", 
+      promotionCode: "", 
+    }]);
   };
   const handleRemove = (idx: number) => {
     setValue("promotionMappings", promotionMappings.filter((_: any, i: number) => i !== idx));
   };
   const handleChange = (idx: number, field: string, value: string) => {
-    setValue("promotionMappings", promotionMappings.map((m: any, i: number) => i === idx ? { ...m, [field]: value } : m));
+    const updatedMappings = promotionMappings.map((m: any, i: number) => {
+      if (i === idx) {
+        if (field === "operator") {
+          return {
+            ...m,
+            operatorId: value,
+            time: m.time
+          };
+        } else if (field === "code") {
+          return {
+            ...m,
+            promotionCode: value,
+            time: m.time
+          };
+        }
+        return { ...m, [field]: value };
+      }
+      return m;
+    });
+    setValue("promotionMappings", updatedMappings);
   };
 
   return (
@@ -47,10 +146,10 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBac
       <div className="w-full max-w-3xl mx-auto bg-white border border-gray-200 p-3 rounded-lg shadow-sm flex flex-col gap-1.5 mb-3">
         <div className="font-semibold text-gray-800 mb-1 text-sm">Banner Template <span className="text-red-500">*</span></div>
         <div className="flex justify-center gap-4">
-          {BANNERS.map(b => (
-            <div key={b.id} className={`cursor-pointer border-2 rounded-lg p-1 ${template === b.id ? 'border-emerald-500' : 'border-transparent'}`} onClick={() => setValue("template", b.id)}>
-              <img src={b.url} alt={b.label} className="w-32 h-20 rounded object-cover" />
-              <div className="text-center mt-1 text-sm font-medium">{b.label}</div>
+          {Array.from({ length: countTemplate }, (_, i) => (
+            <div key={i + 1} className={`cursor-pointer border-2 rounded-lg p-1 ${template === i + 1 ? 'border-emerald-500' : 'border-transparent'}`} onClick={() => setValue("template", i + 1)}>
+              <img src={`${process.env.NEXT_PUBLIC_API_CONFIGURATION_URL}/template-${i + 1}/banner-1.png`} alt={`Template ${i + 1}`} className="w-32 h-20 rounded object-cover" />
+              <div className="text-center mt-1 text-sm font-medium">{`Template ${i + 1}`}</div>
             </div>
           ))}
         </div>
@@ -82,44 +181,64 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBac
         <div className="font-semibold text-gray-800 mb-1 text-sm">Promotion Mapping <span className="text-red-500">*</span></div>
         <div className="flex flex-col gap-1.5 w-full">
           {promotionMappings.map((m: any, idx: number) => {
-            const dateDiff = isDateRangeDiff(m.time.from, m.time.to) && idx > 0;
+            const selectedPromotion = promotions.find(p => p.code === m.promotionCode);
+            const from = selectedPromotion?.startDate || "";
+            const to = selectedPromotion?.endDate || "";
+            const dateDiff = isDateRangeDiff(from, to) && idx > 0;
             return (
               <div key={idx} className="flex items-center gap-2 w-full flex-wrap">
-                <select
-                  value={m.operator}
-                  onChange={e => handleChange(idx, "operator", e.target.value)}
-                  className="border px-2 py-1 rounded min-w-[120px] text-sm"
-                  disabled={isDuplicateOperator(m.operator, idx) && m.operator !== ""}
-                >
-                  <option value="">Select Operator</option>
-                  {OPERATORS.filter((op: any) => !promotionMappings.some((mm: any, i: number) => mm.operator === op.value && i !== idx)).map((op: any) => (
-                    <option key={op.value} value={op.value}>{op.label}</option>
-                  ))}
-                </select>
-                <select
-                  value={m.code}
-                  onChange={e => handleChange(idx, "code", e.target.value)}
-                  className="border px-2 py-1 rounded min-w-[120px] text-sm"
-                >
-                  <option value="">Promotion Code</option>
-                  {PROMO_CODES.map(pc => (
-                    <option key={pc.value} value={pc.value}>{pc.label}</option>
-                  ))}
-                </select>
-                <button onClick={() => handleRemove(idx)} className="text-red-500 font-bold text-lg px-1" type="button">×</button>
-                <span className={`ml-2 text-xs font-semibold ${dateDiff ? 'text-red-600' : 'text-gray-700'}`}>
-                  (From {m.time.from} to {m.time.to})
-                </span>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <select
+                    value={m.operatorId || ""}
+                    onChange={e => handleChange(idx, "operator", e.target.value)}
+                    className="border px-2 py-1 rounded min-w-[120px] text-sm"
+                    disabled={isDuplicateOperator(m.operatorId, idx) && m.operatorId !== ""}
+                  >
+                    <option value="">Select Operator</option>
+                    {getFilteredOperators(m.promotionCode)
+                      .filter(op => !promotionMappings.some((mm: any, i: number) => mm.operatorId === op.PartnerId && i !== idx))
+                      .map(op => (
+                        <option key={op.PartnerId} value={op.PartnerId}>{op.Name}</option>
+                      ))}
+                  </select>
+                  <select
+                    value={m.promotionCode || ""}
+                    onChange={e => handleChange(idx, "code", e.target.value)}
+                    className="border px-2 py-1 rounded min-w-[120px] text-sm"
+                  >
+                    <option value="">Promotion Code</option>
+                    {getFilteredPromotions(m.operatorId).map(p => (
+                      <option key={p.code} value={p.code}>{p.code}</option>
+                    ))}
+                  </select>
+                  <button onClick={() => handleRemove(idx)} className="text-red-500 font-bold text-lg px-1" type="button">×</button>
+                  {m.promotionCode && (
+                    <span className={`ml-2 text-xs font-semibold ${dateDiff ? 'text-red-600' : 'text-gray-900'}`}>
+                      (<b>From {formatDateTime(from)} to {formatDateTime(to)}</b>)
+                    </span>
+                  )}
+                </div>
               </div>
             );
           })}
         </div>
         {errors.promotionMappings && <div className="text-red-500 text-xs mt-1">{errors.promotionMappings.message as string}</div>}
-        <button type="button" onClick={handleAdd} className="flex items-center gap-1 mt-2 text-emerald-600 font-bold text-sm hover:underline">
+        <button 
+          type="button" 
+          onClick={handleAdd} 
+          disabled={promotionMappings.length >= operators.length}
+          className={`flex items-center gap-1 mt-2 text-sm font-bold ${
+            promotionMappings.length >= operators.length 
+              ? 'text-gray-400 cursor-not-allowed' 
+              : 'text-emerald-600 hover:underline'
+          }`}
+        >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          Add new Operator
+          {promotionMappings.length >= operators.length 
+            ? 'Maximum operators reached' 
+            : 'Add new Operator'}
         </button>
       </div>
       {/* Actions */}
