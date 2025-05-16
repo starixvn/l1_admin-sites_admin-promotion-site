@@ -42,6 +42,7 @@ interface DataGridProps {
   onDelete: (id: string, title: string) => void;
   onEdit?: (announcement: Announcement) => void;
   onView?: (announcement: Announcement) => void;
+  onPromotionMappingDetail?: (mappings: any[]) => void;
 }
 
 function getAnnouncementStatus(fromDate: string, toDate: string): string {
@@ -59,7 +60,7 @@ function formatDateTime(dateStr: string) {
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export default function DataGrid({ announcements, currentPage, pageSize, totalItems, onPageChange, onPageSizeChange, onDelete, onEdit, onView }: DataGridProps) {
+export default function DataGrid({ announcements, currentPage, pageSize, totalItems, onPageChange, onPageSizeChange, onDelete, onEdit, onView, onPromotionMappingDetail }: DataGridProps) {
   const totalPages = Math.ceil(totalItems / pageSize);
   return (
     <div className="bg-white rounded-xl shadow overflow-x-auto">
@@ -94,7 +95,7 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
                     style={{ maxWidth: 100 }}
                   />
                 </td>
-                <td className="px-4 py-4 text-center text-blue-500 cursor-pointer truncate">
+                <td className="px-4 py-4 text-center text-blue-500 cursor-pointer truncate" onClick={() => onPromotionMappingDetail && onPromotionMappingDetail(a.promotionMappings)}>
                   Detail
                 </td>
                 <td className="px-4 py-4 text-center">

@@ -7,6 +7,7 @@ import AnnouncementDialog from "./create/AnnouncementDialog";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PromotionMappingDialog from "./create/PromotionMappingDialog";
 
 async function fetchAnnouncements({ status, pageIndex, pageSize }: { status: string, pageIndex: number, pageSize: number }) {
   const params = new URLSearchParams();
@@ -31,6 +32,10 @@ export default function Page() {
   const [error, setError] = useState<string | null>(null);
   const [editAnnouncement, setEditAnnouncement] = useState<any | null>(null);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
+  const [openMappingDialog, setOpenMappingDialog] = useState(false);
+  const [mappingData, setMappingData] = useState<any[]>([]);
+  const [operators, setOperators] = useState<any[]>([]);
+  const [promotions, setPromotions] = useState<any[]>([]);
 
   useEffect(() => {
     setError(null);
@@ -42,6 +47,15 @@ export default function Page() {
       })
       .catch((err) => setError(err.message))
   }, [status, currentPage, pageSize]);
+
+  useEffect(() => {
+    if (openMappingDialog) {
+      fetch("/api/operators").then(res => res.json()).then(setOperators);
+      fetch("/api/promotions?status=not_started&pageIndex=1&pageSize=100")
+        .then(res => res.json())
+        .then(data => setPromotions(data.items || data.data || []));
+    }
+  }, [openMappingDialog]);
 
   const handleFilterChange = (newStatus: string) => {
     setStatus(newStatus);
@@ -90,6 +104,11 @@ export default function Page() {
       });
   };
 
+  const handlePromotionMappingDetail = (mappings: any[]) => {
+    setMappingData(mappings);
+    setOpenMappingDialog(true);
+  };
+
   return (
     <div className="space-y-4 w-full">
       <h1 className="text-2xl font-semibold text-gray-800 mb-6">Promotion Announcement</h1>
@@ -112,6 +131,7 @@ export default function Page() {
           onDelete={handleDeleteClick}
           onEdit={(announcement) => { setEditAnnouncement(announcement); setDialogMode('edit'); setOpenDialog(true); }}
           onView={(announcement) => { setEditAnnouncement(announcement); setDialogMode('view'); setOpenDialog(true); }}
+          onPromotionMappingDetail={handlePromotionMappingDetail}
         />
         {error && <div className="text-center py-4 text-red-500">{error}</div>}
       </div>
@@ -125,6 +145,13 @@ export default function Page() {
         onConfirm={handleDeleteConfirm}
       />
       <AnnouncementDialog open={openDialog} onClose={() => setOpenDialog(false)} onCreated={reloadAnnouncements} announcement={editAnnouncement} mode={editAnnouncement ? dialogMode : 'create'} />
+      <PromotionMappingDialog
+        open={openMappingDialog}
+        onClose={() => setOpenMappingDialog(false)}
+        mappings={mappingData}
+        operators={operators}
+        promotions={promotions}
+      />
       <ToastContainer />
     </div>
   );
