@@ -7,10 +7,13 @@ import { GAME_TYPES } from "@/constants/gameTypes";
 
 // Mock the Dialog component
 jest.mock("@/components/ui/dialog", () => ({
-  Dialog: ({ children, open, onOpenChange }: any) => (
-    open ? <div role="dialog">{children}</div> : null
-  ),
-  DialogContent: ({ children, className, "aria-describedby": ariaDescribedby }: any) => (
+  Dialog: ({ children, open }: any) =>
+    open ? <div role="dialog">{children}</div> : null,
+  DialogContent: ({
+    children,
+    className,
+    "aria-describedby": ariaDescribedby,
+  }: any) => (
     <div className={className} aria-describedby={ariaDescribedby}>
       {children}
     </div>
@@ -20,7 +23,7 @@ jest.mock("@/components/ui/dialog", () => ({
   ),
 }));
 
-// Mock the child component
+// Mock PromotionViewForm
 jest.mock("@/app/promotion/create/PromotionViewForm", () => {
   return function MockPromotionViewForm({ data, readonly }: any) {
     return (
@@ -39,7 +42,7 @@ describe("PromotionPreviewDialog", () => {
     code: "TEST123",
     bonusItemCount: 10,
     startDate: new Date(),
-    endDate: new Date(Date.now() + 86400000), // tomorrow
+    endDate: new Date(Date.now() + 86400000),
     operatorId: "op1",
     gameConfigType: GAME_TYPES.CLASSIC,
     gameIds: [1, 2],
@@ -82,61 +85,57 @@ describe("PromotionPreviewDialog", () => {
 
   it("renders dialog when open is true", () => {
     render(<PromotionPreviewDialog {...defaultProps} />);
-    
-    expect(screen.getByText("Promotion Details")).toBeInTheDocument();
+
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(screen.getByTestId("mock-promotion-view-form")).toBeInTheDocument();
   });
 
   it("does not render dialog when open is false", () => {
     render(<PromotionPreviewDialog {...defaultProps} open={false} />);
-    
-    expect(screen.queryByText("Promotion Details")).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("calls onClose when close button is clicked", () => {
+  it("calls onClose when back button is clicked", () => {
     render(<PromotionPreviewDialog {...defaultProps} />);
-    
-    const closeButton = screen.getByText("← Back");
-    fireEvent.click(closeButton);
-    
+
+    const backButton = screen.getByText("← Back");
+    fireEvent.click(backButton);
+
     expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
   });
 
   it("calls onConfirm with data when confirm button is clicked", () => {
     render(<PromotionPreviewDialog {...defaultProps} />);
-    
+
     const confirmButton = screen.getByText("Confirm");
     fireEvent.click(confirmButton);
-    
+
     expect(defaultProps.onConfirm).toHaveBeenCalledWith(mockData);
   });
 
   it("disables confirm button when isSubmitting is true", () => {
     render(<PromotionPreviewDialog {...defaultProps} isSubmitting={true} />);
-    
     const confirmButton = screen.getByText("Confirm");
     expect(confirmButton).toBeDisabled();
   });
 
   it("shows only close button in readonly mode", () => {
     render(<PromotionPreviewDialog {...defaultProps} readonly={true} />);
-    
     expect(screen.queryByText("← Back")).not.toBeInTheDocument();
     expect(screen.queryByText("Confirm")).not.toBeInTheDocument();
+    expect(screen.getByText("Close")).toBeInTheDocument();
   });
 
-  it("passes correct props to PromotionViewForm", () => {
-    render(<PromotionPreviewDialog {...defaultProps} />);
-    
+  it("passes correct props to PromotionViewForm in edit mode", () => {
+    render(<PromotionPreviewDialog {...defaultProps} readonly={false} />);
     const viewForm = screen.getByTestId("mock-promotion-view-form");
-    expect(viewForm).toHaveTextContent(`Readonly: false`);
+    expect(viewForm).toHaveTextContent("Readonly: false");
     expect(viewForm).toHaveTextContent(`Data: ${JSON.stringify(mockData)}`);
   });
 
-  it("passes readonly prop correctly to PromotionViewForm", () => {
+  it("passes correct props to PromotionViewForm in readonly mode", () => {
     render(<PromotionPreviewDialog {...defaultProps} readonly={true} />);
-    
     const viewForm = screen.getByTestId("mock-promotion-view-form");
-    expect(viewForm).toHaveTextContent(`Readonly: true`);
+    expect(viewForm).toHaveTextContent("Readonly: true");
   });
 });

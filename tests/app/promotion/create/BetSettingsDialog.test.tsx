@@ -152,8 +152,29 @@ describe("BetSettingsDialog", () => {
     expect(tbody?.children.length).toBe(0);
   });
 
-  it("handles save action correctly", async () => {
-    await renderDialog();
+  it("does NOT call onSave if no currency group is enabled", async () => {
+    await renderDialog(); // assumes this sets up dialog with open = true and default props
+
+    const saveButton = screen.getByRole("button", { name: /Save/i });
+    await act(async () => {
+      saveButton.click();
+    });
+
+    expect(onSave).not.toHaveBeenCalled();
+
+    // Optionally: check for the error message
+    expect(
+      screen.getByText(/at least one currency group must be enabled/i)
+    ).toBeInTheDocument();
+  });
+
+  it("calls onSave with valid data when enabled rows have valid betLevel", async () => {
+    const initialValues = [
+      { currencyGroup: "cg1", betLevel: 10 },
+      { currencyGroup: "cg2", betLevel: 20 },
+    ];
+
+    await renderDialog({ initialValues });
 
     const saveButton = screen.getByRole("button", { name: /Save/i });
     await act(async () => {
@@ -161,8 +182,11 @@ describe("BetSettingsDialog", () => {
     });
 
     expect(onSave).toHaveBeenCalledWith({
-      currencyGroups: [],
-      betLevels: [],
+      currencyGroups: ["cg1", "cg2"],
+      betLevels: [
+        { currencyGroup: "cg1", betLevel: 10 },
+        { currencyGroup: "cg2", betLevel: 20 },
+      ],
     });
   });
 

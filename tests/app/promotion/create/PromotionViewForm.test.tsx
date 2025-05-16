@@ -101,7 +101,7 @@ describe("PromotionViewForm", () => {
     expect(screen.getByText("🎰 Currency Group Settings")).toBeInTheDocument();
 
     // Site Offering section
-    expect(screen.getByText("Site Offering:")).toBeInTheDocument();
+    expect(screen.getByText("Site Offering")).toBeInTheDocument();
 
     // Game List section
     expect(screen.getByText("🎮 Selected Games")).toBeInTheDocument();
