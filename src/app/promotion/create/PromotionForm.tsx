@@ -56,7 +56,19 @@ export const promotionSchema = z
       .min(1, "At least one currency group is required"),
     allPlayers: z.boolean(),
     offeredPlayerIds: z.array(z.string()).optional(),
-    uploadedFile: z.any().optional(),
+    uploadedFile: z.any().refine(
+      (file, ctx) => {
+        const allPlayers = ctx?.parent?.allPlayers;
+
+        if (!allPlayers && !file) {
+          return false;
+        }
+        return true;
+      },
+      {
+        message: "Please upload a file before saving.",
+      }
+    ),
     gameConfigType: z.nativeEnum(GAME_TYPES),
     betLevels: z
       .array(
@@ -167,6 +179,37 @@ export default function PromotionForm({
       setSiteInput(initialValues.offeredSiteNames.join(";"));
     }
   }, [initialValues]);
+
+  useEffect(() => {
+    if (!operatorId) return;
+
+    const isChanged = operatorId !== initialValues?.operatorId;
+
+    if (mode === "create") {
+      // luôn reset trong create
+      setValue("currencyGroups", []);
+      setValue("betLevels", []);
+      setValue("gameIds", []);
+      setSiteInput("");
+    }
+
+    if (mode === "edit") {
+      if (isChanged) {
+        // chuyển sang operator khác → reset
+        setValue("currencyGroups", []);
+        setValue("betLevels", []);
+        setValue("gameIds", []);
+        setSiteInput("");
+      } else {
+        // quay về operator ban đầu → restore
+        setValue("currencyGroups", initialValues?.currencyGroups || []);
+        setValue("betLevels", initialValues?.betLevels || []);
+        setValue("gameIds", initialValues?.gameIds || []);
+        setValue("offeredPlayerIds", initialValues?.offeredPlayerIds || []);
+        setSiteInput(initialValues?.offeredSiteNames?.join(";") || "");
+      }
+    }
+  }, [operatorId, initialValues, mode, setValue]);
 
   const [lastCheckedCode, setLastCheckedCode] = useState("");
 

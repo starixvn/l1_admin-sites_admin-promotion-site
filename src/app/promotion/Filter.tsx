@@ -39,7 +39,10 @@ export default function Filter({
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setShowOperatorDropdown(false);
       }
     }
@@ -49,7 +52,9 @@ export default function Filter({
 
   useEffect(() => {
     if (inputRef.current) {
-      setIsOverflowing(inputRef.current.scrollWidth > inputRef.current.clientWidth);
+      setIsOverflowing(
+        inputRef.current.scrollWidth > inputRef.current.clientWidth
+      );
     }
   }, [filters.operator]);
 
@@ -59,14 +64,17 @@ export default function Filter({
   };
 
   const handleOperatorSelect = (operatorId: string) => {
-    setFilters(prev => {
+    setFilters((prev) => {
       const newOperators = [...prev.operator];
       const index = newOperators.indexOf(operatorId);
 
       if (operatorId === "All") {
         return {
           ...prev,
-          operator: newOperators.length === operatorOptions.length ? [] : operatorOptions.map(op => op.PartnerId),
+          operator:
+            newOperators.length === operatorOptions.length
+              ? []
+              : operatorOptions.map((op) => op.PartnerId),
         };
       }
 
@@ -96,8 +104,9 @@ export default function Filter({
       .join(", ");
   };
 
-  const filteredOperators = operatorOptions.filter((op) =>
-    op.Name && op.Name.toLowerCase().includes(operatorSearch.toLowerCase())
+  const filteredOperators = operatorOptions.filter(
+    (op) =>
+      op.Name && op.Name.toLowerCase().includes(operatorSearch.toLowerCase())
   );
 
   const handleInputChange = (
@@ -132,7 +141,10 @@ export default function Filter({
       <div className="flex items-end gap-4">
         {/* Status Filter */}
         <div className="flex flex-col min-w-[140px]">
-          <label htmlFor="status-select" className="text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="status-select"
+            className="text-sm font-medium text-gray-700 mb-2"
+          >
             Status
           </label>
           <div className="relative">
@@ -165,7 +177,10 @@ export default function Filter({
 
         {/* Operator Filter */}
         <div className="flex flex-col flex-1">
-          <label htmlFor="operator-select" className="text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="operator-select"
+            className="text-sm font-medium text-gray-700 mb-2"
+          >
             Operator
           </label>
           <div className="relative" ref={dropdownRef}>
@@ -190,7 +205,7 @@ export default function Filter({
                 />
               </svg>
             </button>
-            
+
             {showOperatorDropdown && (
               <div
                 role="listbox"
@@ -209,32 +224,42 @@ export default function Filter({
                     />
                   </div>
 
-                  <div 
-                    role="option" 
+                  <div
+                    role="option"
                     className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
-                    aria-selected={filters.operator.length === operatorOptions.length}
+                    aria-selected={
+                      filters.operator.length === operatorOptions.length
+                    }
+                    onClick={() => handleOperatorSelect("All")}
                   >
                     <input
                       type="checkbox"
-                      checked={filters.operator.length === operatorOptions.length}
+                      checked={
+                        filters.operator.length === operatorOptions.length
+                      }
                       onChange={() => handleOperatorSelect("All")}
+                      onClick={(e) => e.stopPropagation()}
                       className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out cursor-pointer"
                       aria-label="Select all operators"
                     />
                     <span className="ml-2">All</span>
                   </div>
-                  
+
                   {filteredOperators.map((option) => (
                     <div
                       key={option.PartnerId}
                       role="option"
                       className="flex items-center px-4 py-2 cursor-pointer hover:bg-gray-100"
-                      aria-selected={filters.operator.includes(option.PartnerId)}
+                      aria-selected={filters.operator.includes(
+                        option.PartnerId
+                      )}
+                      onClick={() => handleOperatorSelect(option.PartnerId)}
                     >
                       <input
                         type="checkbox"
                         checked={filters.operator.includes(option.PartnerId)}
                         onChange={() => handleOperatorSelect(option.PartnerId)}
+                        onClick={(e) => e.stopPropagation()}
                         className="form-checkbox h-4 w-4 text-blue-600 transition duration-150 ease-in-out cursor-pointer"
                         aria-label={`Select ${option.Name}`}
                       />
@@ -249,7 +274,10 @@ export default function Filter({
 
         {/* Promotion Code Input */}
         <div className="flex flex-col flex-1">
-          <label htmlFor="promotion-code" className="text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="promotion-code"
+            className="text-sm font-medium text-gray-700 mb-2"
+          >
             Promotion Code
           </label>
           <input

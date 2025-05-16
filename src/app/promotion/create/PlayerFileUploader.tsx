@@ -115,7 +115,7 @@ export default function PlayerFileUploader({
           download={uploadedFile.name}
           className="text-blue-700 text-sm mt-2"
         >
-          📎 {uploadedFile.name}
+          {uploadedFile.name}
         </a>
       )}
       {errorMessage && (

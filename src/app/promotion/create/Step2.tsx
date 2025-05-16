@@ -271,7 +271,11 @@ export default function Step2({
                 setUploadedFile(null);
               } else {
                 if (mode === "edit") {
-                  // ✅ Quay lại "Players from File" trong Edit mode → khôi phục danh sách gốc
+                  const dummy = new File([], "", {
+                    type: "text/csv",
+                  });
+                  setValue("uploadedFile", dummy);
+                  setUploadedFile(dummy);
                   setValue("offeredPlayerIds", initialOfferedPlayerIds || []);
                 } else {
                   // ✅ Add New → reset sạch
@@ -324,6 +328,7 @@ export default function Step2({
                   setValue("offeredPlayerIds", playerIds);
                 }}
               />
+
               <a
                 href="/sample-files/player-list-template.csv"
                 download
@@ -336,6 +341,11 @@ export default function Step2({
                 setShowPlayerList={setShowPlayerList}
                 offeredPlayerIds={offeredPlayerIds}
               />
+              {typeof errors.uploadedFile?.message === "string" && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.uploadedFile.message}
+                </p>
+              )}
             </>
           )}
         </div>
