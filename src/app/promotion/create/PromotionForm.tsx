@@ -169,10 +169,11 @@ export default function PromotionForm({
     data: games = [],
     isLoading,
     error,
-  } = useFilteredGames(
-    shouldFetchGames ? currencyGroups : [],
-    shouldFetchGames ? gameConfigType : undefined
-  );
+  } = useFilteredGames({
+    currencyGroups: shouldFetchGames ? currencyGroups : [],
+    gameType: shouldFetchGames ? gameConfigType : undefined,
+    gameIds: shouldFetchGames ? gameIds : [],
+  });
   const operatorId = useWatch({ control, name: "operatorId" });
   const { data: currencyGroupsInfo = [], isLoading: isLoadingCurrencyGroups } =
     useCurrencyGroups(operatorId);

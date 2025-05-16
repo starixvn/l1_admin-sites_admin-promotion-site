@@ -9,10 +9,11 @@ export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
   const gameType = searchParams.get("type");
   const currencyGroups = searchParams.get("currencyGroups");
+  const gameIds = searchParams.get("gameIds");
 
   try {
     const token = await getAccessToken();
-
+    console.log(gameType, currencyGroups, gameIds);
     if (gameType && currencyGroups) {
       const response = await axios.get(
         `${configs.apiBaseUrl}/general_game_settings/games`,
@@ -23,6 +24,7 @@ export async function GET(req: NextRequest) {
           params: {
             gameType: gameType,
             currencyGroups: currencyGroups,
+            gameIds: gameIds,
           },
         }
       );

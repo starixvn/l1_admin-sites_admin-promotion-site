@@ -110,15 +110,11 @@ export default function DataGrid({
     }
   );
 
-  const { data: gameList = [] } = useFilteredGames(
-    viewPromotion?.currencyGroups || [],
-    viewPromotion?.gameConfigType as GameType,
-    {
-      enabled:
-        !!viewPromotion?.currencyGroups?.length &&
-        !!viewPromotion?.gameConfigType,
-    }
-  );
+  const { data: gameList = [] } = useFilteredGames({
+    currencyGroups: viewPromotion?.currencyGroups || [],
+    gameType: viewPromotion?.gameConfigType as GameType,
+    gameIds: viewPromotion?.gameIds || [],
+  });
   const { data: operators = [] } = useOperators();
   const operatorMap = useMemo(() => createOperatorMap(operators), [operators]);
   const handleDelete = async (id: string, code: string) => {
