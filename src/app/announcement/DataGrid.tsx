@@ -40,6 +40,7 @@ interface DataGridProps {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   onDelete: (id: string, title: string) => void;
+  onEdit?: (announcement: Announcement) => void;
 }
 
 function getAnnouncementStatus(fromDate: string, toDate: string): string {
@@ -57,7 +58,7 @@ function formatDateTime(dateStr: string) {
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export default function DataGrid({ announcements, currentPage, pageSize, totalItems, onPageChange, onPageSizeChange, onDelete }: DataGridProps) {
+export default function DataGrid({ announcements, currentPage, pageSize, totalItems, onPageChange, onPageSizeChange, onDelete, onEdit }: DataGridProps) {
   const totalPages = Math.ceil(totalItems / pageSize);
   return (
     <div className="bg-white rounded-xl shadow overflow-x-auto">
@@ -105,7 +106,7 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
                     </button>
                     {status === PROMOTION_STATUS_OPTIONS.Upcoming && (
                       <>
-                        <button className="p-1 rounded-full transition-colors group" aria-label="edit-announcement">
+                        <button className="p-1 rounded-full transition-colors group" aria-label="edit-announcement" onClick={() => onEdit && onEdit(a)}>
                           <Pencil className="w-4 h-4 text-blue-600 group-hover:bg-gray-200 rounded-full transition-colors" />
                         </button>
                         <button className="p-1 rounded-full transition-colors group" aria-label="delete-announcement" onClick={() => onDelete(a._id, a.promotionTitle?.['en-US'] || '')}>

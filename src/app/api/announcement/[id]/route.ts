@@ -32,3 +32,32 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   }
 }
 
+
+export async function PUT(
+  request: NextRequest,
+  context: RouteContext
+) {
+  try {
+    const { id } = await context.params;
+    const data = await request.json();
+    const response = await axios.put(
+      `${configs.apiPromotionUrl}/promotion-announcements/${id}`,
+      data
+    );
+    return NextResponse.json(response.data, { status: 200 });
+  } catch (error) {
+    console.error("Error updating promotion:", error);
+    if (error instanceof AxiosError) {
+      return NextResponse.json(
+        {
+          error: error.response?.data?.message || "Failed to update promotion",
+        },
+        { status: error.response?.status || 500 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Failed to update promotion" },
+      { status: 500 }
+    );
+  }
+}

@@ -18,11 +18,12 @@ function getNestedErrorMsg(errorObj: any, key: string): string | undefined {
   return undefined;
 }
 
-export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
+export default function AnnouncementStep1({ onNext, status, mode }: { onNext: () => void, status?: string, mode?: 'create' | 'edit' }) {
   const { register, setValue, watch, formState: { errors } } = useFormContext();
   const promotionTitle = watch("promotionTitle");
   const bannerContent = watch("bannerContent");
   const termsAndConditions = watch("termsAndConditions");
+
 
   const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -170,7 +171,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
       </div>
       {/* Next Button */}
       <div className="w-full max-w-3xl mx-auto flex justify-end">
-        <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-2 rounded-lg font-semibold shadow transition" onClick={onNext} type="button">Next →</button>
+        <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-2 rounded-lg font-semibold shadow transition" onClick={onNext} type="button" >Next →</button>
       </div>
     </div>
   );

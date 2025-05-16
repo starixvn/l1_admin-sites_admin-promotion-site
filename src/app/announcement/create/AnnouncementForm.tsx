@@ -6,25 +6,51 @@ import AnnouncementStep1 from "./AnnouncementStep1";
 import AnnouncementStep2 from "./AnnouncementStep2";
 import { addDays } from "date-fns";
 import { toast } from "react-toastify";
+import { PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
 
-export default function AnnouncementForm({ onClose, onCreated }: { onClose: () => void, onCreated?: () => void }) {
+function getAnnouncementStatus(fromDate: Date, toDate: Date): string {
+  const now = new Date();
+  const from = new Date(fromDate);
+  const to = new Date(toDate);
+  if (now < from) return PROMOTION_STATUS_OPTIONS.Upcoming;
+  if (now > to) return PROMOTION_STATUS_OPTIONS.Completed;
+  return PROMOTION_STATUS_OPTIONS.Running;
+}
+
+export default function AnnouncementForm({ onClose, onCreated, initialValues, mode = 'create' }: {
+  onClose: () => void,
+  onCreated?: () => void,
+  initialValues?: any,
+  mode?: 'create' | 'edit'
+}) {
   const [step, setStep] = useState(1);
   const methods = useForm<AnnouncementFormValues>({
     resolver: zodResolver(announcementSchema),
     mode: "onSubmit",
-    defaultValues: {
-      promotionTitle: { "en-US": "" },
-      bannerContent: { "en-US": "" },
-      termsAndConditions: { "en-US": "" },
-      uploadedFile: undefined,
-      template: 1,
-      fromDate: addDays(new Date(), 7),
-      toDate: addDays(new Date(), 7),
-      promotionMappings: [],
-    },
+    defaultValues: initialValues
+      ? {
+          ...initialValues,
+          fromDate: new Date(initialValues.fromDate),
+          toDate: new Date(initialValues.toDate)
+        }
+      : {
+        promotionTitle: { "en-US": "" },
+        bannerContent: { "en-US": "" },
+        termsAndConditions: { "en-US": "" },
+        uploadedFile: undefined,
+        template: 1,
+        fromDate: addDays(new Date(), 7),
+        toDate: addDays(new Date(), 7),
+        promotionMappings: [],
+      },
   });
 
   const { handleSubmit, trigger, getValues, formState: { errors } } = methods;
+
+  const watch = methods.watch;
+  const fromDate = watch("fromDate");
+  const toDate = watch("toDate");
+  const status = getAnnouncementStatus(fromDate, toDate);
 
   const handleNext = async () => {
     const valid = await trigger(["promotionTitle", "bannerContent", "termsAndConditions", "uploadedFile"]);
@@ -41,16 +67,25 @@ export default function AnnouncementForm({ onClose, onCreated }: { onClose: () =
   const handleSave = handleSubmit(async (data) => {
     try {
       const { uploadedFile, ...body } = data;
-      await fetch('/api/announcement', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-      toast.success("Announcement created successfully");
+      if (mode === 'edit' && initialValues?._id) {
+        await fetch(`/api/announcement/${initialValues._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        toast.success("Announcement updated successfully");
+      } else {
+        await fetch('/api/announcement', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        toast.success("Announcement created successfully");
+      }
       onCreated?.();
       onClose();
     } catch (err) {
-      alert('Failed to create announcement');
+      alert('Failed to save announcement');
     }
   });
 
@@ -67,8 +102,8 @@ export default function AnnouncementForm({ onClose, onCreated }: { onClose: () =
             <div className={`h-full bg-gray-800 transition-all duration-300`} style={{ width: step === 1 ? "50%" : "100%" }} />
           </div>
         </div>
-        {step === 1 && <AnnouncementStep1 onNext={handleNext} />}
-        {step === 2 && <AnnouncementStep2 onBack={handleBack} onPreview={handlePreview} onSave={handleSave} />}
+        {step === 1 && <AnnouncementStep1 onNext={handleNext} status={status} mode={mode} />}
+        {step === 2 && <AnnouncementStep2 onBack={handleBack} onPreview={handlePreview} onSave={handleSave} status={status} mode={mode} />}
       </div>
     </FormProvider>
   );

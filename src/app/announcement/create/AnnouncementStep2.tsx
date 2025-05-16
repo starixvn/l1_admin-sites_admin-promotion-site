@@ -19,7 +19,7 @@ function formatDateTime(dateStr: string) {
   }).replace(",", "");
 }
 
-export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBack: () => void; onPreview: () => void; onSave: () => void }) {
+export default function AnnouncementStep2({ onBack, onPreview, onSave, status, mode }: { onBack: () => void; onPreview: () => void; onSave: () => void; status?: string; mode?: 'create' | 'edit' }) {
   const { setValue, watch, formState: { errors } } = useFormContext();
   const template = watch("template");
   const fromDate = watch("fromDate");
@@ -30,6 +30,8 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBac
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [allOperators, setAllOperators] = useState<Operator[]>([]);
   const [allPromotions, setAllPromotions] = useState<Promotion[]>([]);
+
+  const isEditable = mode === 'edit' && status !== 'Upcoming';
 
   // Fetch all operators once
   useEffect(() => {
@@ -162,6 +164,7 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBac
           <div className="flex-1">
             <DateTimePicker
               value={fromDate}
+              disabled={!isEditable} 
               onChange={val => setValue("fromDate", val)}
             />
           </div>
@@ -169,6 +172,7 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBac
           <div className="flex-1">
             <DateTimePicker
               value={toDate}
+              disabled={!isEditable}
               onChange={val => setValue("toDate", val)}
             />
           </div>
@@ -191,8 +195,8 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBac
                   <select
                     value={m.operatorId || ""}
                     onChange={e => handleChange(idx, "operator", e.target.value)}
-                    className="border px-2 py-1 rounded min-w-[120px] text-sm"
-                    disabled={isDuplicateOperator(m.operatorId, idx) && m.operatorId !== ""}
+                    className={`border px-2 py-1 rounded min-w-[120px] text-sm ${!isEditable ? 'opacity-60 bg-gray-100' : ''}`}
+                    disabled={!isEditable || (isDuplicateOperator(m.operatorId, idx) && m.operatorId !== "")}
                   >
                     <option value="">Select Operator</option>
                     {getFilteredOperators(m.promotionCode)
@@ -204,14 +208,15 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBac
                   <select
                     value={m.promotionCode || ""}
                     onChange={e => handleChange(idx, "code", e.target.value)}
-                    className="border px-2 py-1 rounded min-w-[120px] text-sm"
+                    className={`border px-2 py-1 rounded min-w-[120px] text-sm ${!isEditable ? 'opacity-60 bg-gray-100' : ''}`}
+                    disabled={!isEditable}
                   >
                     <option value="">Promotion Code</option>
                     {getFilteredPromotions(m.operatorId).map(p => (
                       <option key={p.code} value={p.code}>{p.code}</option>
                     ))}
                   </select>
-                  <button onClick={() => handleRemove(idx)} className="text-red-500 font-bold text-lg px-1" type="button">×</button>
+                  {isEditable && <button onClick={() => handleRemove(idx)} className="text-red-500 font-bold text-lg px-1" type="button" disabled={!isEditable}>×</button>}
                   {m.promotionCode && (
                     <span className={`ml-2 text-xs font-semibold ${dateDiff ? 'text-red-600' : 'text-gray-900'}`}>
                       (<b>From {formatDateTime(from)} to {formatDateTime(to)}</b>)
@@ -226,9 +231,9 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave }: { onBac
         <button 
           type="button" 
           onClick={handleAdd} 
-          disabled={promotionMappings.length >= operators.length}
+          disabled={!isEditable || promotionMappings.length >= operators.length}
           className={`flex items-center gap-1 mt-2 text-sm font-bold ${
-            promotionMappings.length >= operators.length 
+            !isEditable || promotionMappings.length >= operators.length 
               ? 'text-gray-400 cursor-not-allowed' 
               : 'text-emerald-600 hover:underline'
           }`}
