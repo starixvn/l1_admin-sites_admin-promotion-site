@@ -56,19 +56,7 @@ export const promotionSchema = z
       .min(1, "At least one currency group is required"),
     allPlayers: z.boolean(),
     offeredPlayerIds: z.array(z.string()).optional(),
-    uploadedFile: z.any().refine(
-      (file, ctx) => {
-        const allPlayers = ctx?.parent?.allPlayers;
-
-        if (!allPlayers && !file) {
-          return false;
-        }
-        return true;
-      },
-      {
-        message: "Please upload a file before saving.",
-      }
-    ),
+    uploadedFile: z.any().optional(),
     gameConfigType: z.nativeEnum(GAME_TYPES),
     betLevels: z
       .array(
@@ -84,7 +72,22 @@ export const promotionSchema = z
   .refine((data) => data.endDate > data.startDate, {
     message: "Start Date must be earlier than the End Date",
     path: ["startDate"],
-  });
+  })
+  .refine(
+    (data) => {
+      // ✅ Validate tại đây
+      const isValid =
+        data.allPlayers ||
+        (data.uploadedFile instanceof File && data.uploadedFile.size > 0) ||
+        (data.offeredPlayerIds && data.offeredPlayerIds.length > 0);
+
+      return isValid;
+    },
+    {
+      path: ["uploadedFile"],
+      message: "Please upload a file before saving.",
+    }
+  );
 
 export type PromotionFormValues = z.infer<typeof promotionSchema>;
 
