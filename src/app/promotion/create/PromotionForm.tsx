@@ -293,6 +293,7 @@ export default function PromotionForm({
               setSiteInput={setSiteInput}
               games={games}
               currencyGroupsInfo={currencyGroupsInfo}
+              initialOfferedPlayerIds={initialValues?.offeredPlayerIds || []}
               isLoadingCurrencyGroups={isLoadingCurrencyGroups}
               isLoading={isLoading}
               error={error || null}

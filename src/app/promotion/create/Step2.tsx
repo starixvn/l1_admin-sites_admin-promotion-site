@@ -30,6 +30,7 @@ interface Step2Props {
   setSiteInput: (val: string) => void;
   games: Game[];
   currencyGroupsInfo: CurrencyGroup[];
+  initialOfferedPlayerIds?: string[];
   isLoadingCurrencyGroups: boolean;
   isLoading: boolean;
   error: Error | null;
@@ -148,6 +149,7 @@ export default function Step2({
   setSiteInput,
   games,
   currencyGroupsInfo,
+  initialOfferedPlayerIds,
   isLoadingCurrencyGroups,
   isLoading,
   error,
@@ -256,10 +258,25 @@ export default function Step2({
           <RadioGroup
             value={allPlayers ? "true" : "false"}
             onValueChange={(val) => {
-              setValue("allPlayers", val === "true");
-              setValue("offeredPlayerIds", []);
-              setValue("uploadedFile", undefined); // 💥 Clear file in form state
-              setUploadedFile(null);
+              const isAll = val === "true";
+              setValue("allPlayers", isAll);
+
+              if (isAll) {
+                // ✅ Chuyển sang All Players → xóa dữ liệu player
+                setValue("offeredPlayerIds", []);
+                setValue("uploadedFile", undefined);
+                setUploadedFile(null);
+              } else {
+                if (mode === "edit") {
+                  // ✅ Quay lại "Players from File" trong Edit mode → khôi phục danh sách gốc
+                  setValue("offeredPlayerIds", initialOfferedPlayerIds || []);
+                } else {
+                  // ✅ Add New → reset sạch
+                  setValue("offeredPlayerIds", []);
+                  setValue("uploadedFile", undefined);
+                  setUploadedFile(null);
+                }
+              }
             }}
             disabled={isRunning}
           >
@@ -325,7 +342,7 @@ export default function Step2({
             promo period.
           </p>
           <p>
-            + Only those players from the upload file will receive FPS during
+            + Only those players from the upload file will receive FSB during
             promo campaign.
           </p>
           <p>
