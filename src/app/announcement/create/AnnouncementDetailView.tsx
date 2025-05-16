@@ -105,32 +105,39 @@ export default function AnnouncementDetailView({ announcement, onClose }: { anno
       {/* Section: Promotion Mapping */}
       <div className="mb-8">
         <div className="font-semibold text-base mb-2 text-gray-800 border-l-4 border-purple-500 pl-2">Promotion Mapping</div>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col">
           {announcement.promotionMappings?.length > 0 ? announcement.promotionMappings.map((m: any, idx: number) => {
             const operator = operators.find((op: any) => op.PartnerId === m.operatorId);
             const promotion = promotions.find((p: any) => p.code === m.promotionCode);
             return (
               <div
                 key={idx}
-                className="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-2xl shadow-sm px-4 py-2 min-h-[48px]"
+                className="grid grid-cols-12 gap-3 bg-white border border-gray-200 rounded-2xl shadow-sm px-4 py-3 mb-3 items-center min-h-[48px]"
+                style={{ minWidth: 0 }}
               >
                 {/* Operator badge */}
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 mr-1">
-                  <svg className="w-3 h-3 mr-1 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="10" /></svg>
-                  {operator ? operator.Name : m.operatorId}
-                </span>
-                {/* Promotion code badge */}
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-700 border border-green-200 mr-1">
-                  <svg className="w-3 h-3 mr-1 text-green-400" fill="currentColor" viewBox="0 0 20 20"><rect width="20" height="20" rx="4" /></svg>
-                  {promotion ? promotion.code : m.promotionCode}
-                </span>
-                {/* Date range */}
-                {promotion && (
-                  <span className="text-xs text-gray-600 ml-2 font-mono whitespace-nowrap">
-                    <svg className="w-3 h-3 inline-block mr-1 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                    {formatDateTime(promotion.startDate)} - {formatDateTime(promotion.endDate)}
+                <div className="col-span-2 flex items-center justify-center">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 min-w-[100px] max-w-full justify-center">
+                    <span className="w-2 h-2 bg-blue-400 rounded-full mr-1 inline-block"></span>
+                    <span className="truncate">{operator ? operator.Name : m.operatorId}</span>
                   </span>
-                )}
+                </div>
+                {/* Promotion code badge */}
+                <div className="col-span-5 flex items-center justify-center">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-800 border border-green-200 min-w-[160px] max-w-full justify-center">
+                    <span className="w-2 h-2 bg-green-400 rounded-full mr-1 inline-block"></span>
+                    <span className="truncate">{promotion ? promotion.code : m.promotionCode}</span>
+                  </span>
+                </div>
+                {/* Date range */}
+                <div className="col-span-5 flex items-center justify-center">
+                  {promotion && (
+                    <span className="inline-flex items-center text-xs text-gray-700 font-mono whitespace-nowrap bg-gray-50 border border-gray-200 rounded px-3 py-1 min-w-[200px] max-w-full justify-center">
+                      <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                      <span className="w-full text-center">{formatDateTime(promotion.startDate)} - {formatDateTime(promotion.endDate)}</span>
+                    </span>
+                  )}
+                </div>
               </div>
             );
           }) : <span className="text-gray-400">No mapping</span>}

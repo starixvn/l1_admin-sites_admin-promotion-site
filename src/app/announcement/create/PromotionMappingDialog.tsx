@@ -24,35 +24,45 @@ export default function PromotionMappingDialog({ open, onClose, mappings, operat
 }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="min-w-[700px] max-w-2xl w-full p-0 bg-white rounded-2xl shadow-xl border border-gray-100">
+      <DialogContent className="min-w-[800px] max-w-2xl w-full p-0 bg-white rounded-2xl shadow-xl border border-gray-100">
         <div className="px-8 pt-8 pb-4 border-b flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900">Promotion Mapping</h2>
         </div>
-        <div className="px-8 py-8 bg-gray-50">
-          <div className="flex flex-col gap-6">
+        <div className="px-8">
+          <div className="flex flex-col">
             {mappings.length === 0 && <div className="text-gray-400">No mapping</div>}
             {mappings.map((m, idx) => {
               const operator = operators.find(o => o.PartnerId === m.operatorId);
               const promotion = promotions.find(p => p.code === m.promotionCode);
               return (
-                <div key={idx} className="flex items-center gap-3 bg-white border border-gray-200 rounded-2xl shadow-sm px-4 py-3 mb-1 flex-wrap">
+                <div
+                  key={idx}
+                  className="grid grid-cols-12 gap-3 bg-white border border-gray-200 rounded-2xl shadow-sm px-4 py-3 mb-3 items-center min-h-[48px]"
+                  style={{ minWidth: 0 }}
+                >
                   {/* Operator badge */}
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 mr-1">
-                    <span className="w-2 h-2 bg-blue-400 rounded-full mr-1 inline-block"></span>
-                    {operator ? operator.Name : m.operatorId}
-                  </span>
-                  {/* Promotion code badge */}
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-800 border border-green-200 mr-1">
-                    <span className="w-2 h-2 bg-green-400 rounded-full mr-1 inline-block"></span>
-                    {promotion ? promotion.code : m.promotionCode}
-                  </span>
-                  {/* Date range */}
-                  {promotion && (
-                    <span className="inline-flex items-center text-xs text-gray-700 ml-2 font-mono whitespace-nowrap">
-                      <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                      {formatDateTime(promotion.startDate)} - {formatDateTime(promotion.endDate)}
+                  <div className="col-span-2 flex items-center justify-center">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 min-w-[100px] max-w-full justify-center">
+                      <span className="w-2 h-2 bg-blue-400 rounded-full mr-1 inline-block"></span>
+                      <span className="truncate">{operator ? operator.Name : m.operatorId}</span>
                     </span>
-                  )}
+                  </div>
+                  {/* Promotion code badge */}
+                  <div className="col-span-5 flex items-center justify-center">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-800 border border-green-200 min-w-[160px] max-w-full justify-center">
+                      <span className="w-2 h-2 bg-green-400 rounded-full mr-1 inline-block"></span>
+                      <span className="truncate">{promotion ? promotion.code : m.promotionCode}</span>
+                    </span>
+                  </div>
+                  {/* Date range */}
+                  <div className="col-span-5 flex items-center justify-center">
+                    {promotion && (
+                      <span className="inline-flex items-center text-xs text-gray-700 font-mono whitespace-nowrap bg-gray-50 border border-gray-200 rounded px-3 py-1 min-w-[200px] max-w-full justify-center">
+                        <svg className="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                        <span className="w-full text-center">{formatDateTime(promotion.startDate)} - {formatDateTime(promotion.endDate)}</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
             })}

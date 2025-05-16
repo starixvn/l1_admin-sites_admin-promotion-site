@@ -82,10 +82,14 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
             return (
               <tr key={a._id} className="hover:bg-green-50">
                 <td className="px-4 py-4 text-center">{(currentPage - 1) * pageSize + idx + 1}</td>
-                <td className="px-4 py-4 font-semibold text-gray-800 truncate">{a.promotionTitle?.['en-US']}</td>
+                <td className="px-4 py-4 text-gray-800 truncate">{a.promotionTitle?.['en-US']}</td>
                 <td className="px-4 py-4 text-center whitespace-nowrap">
-                  <div>From {formatDateTime(a.fromDate)}</div>
-                  <div>To {formatDateTime(a.toDate)}</div>
+                  <div className="inline-flex items-center bg-white border border-gray-200 rounded-xl px-3 py-1 gap-1 shadow-sm transition hover:border-blue-300">
+                    <svg className="w-4 h-4 text-blue-300 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="5"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                    <span className="font-mono text-xs text-gray-900 font-semibold text-center">{formatDateTime(a.fromDate)}</span>
+                    <span className="mx-1 text-gray-300 font-bold">-</span>
+                    <span className="font-mono text-xs text-gray-900 font-semibold text-center">{formatDateTime(a.toDate)}</span>
+                  </div>
                 </td>
                 <td className="px-4 py-4 text-center">
                   <img
