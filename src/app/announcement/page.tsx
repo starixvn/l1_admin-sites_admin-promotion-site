@@ -30,6 +30,7 @@ export default function Page() {
   const [totalItems, setTotalItems] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [editAnnouncement, setEditAnnouncement] = useState<any | null>(null);
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
 
   useEffect(() => {
     setError(null);
@@ -109,7 +110,8 @@ export default function Page() {
           onPageChange={setCurrentPage}
           onPageSizeChange={handlePageSizeChange}
           onDelete={handleDeleteClick}
-          onEdit={(announcement) => { setEditAnnouncement(announcement); setOpenDialog(true); }}
+          onEdit={(announcement) => { setEditAnnouncement(announcement); setDialogMode('edit'); setOpenDialog(true); }}
+          onView={(announcement) => { setEditAnnouncement(announcement); setDialogMode('view'); setOpenDialog(true); }}
         />
         {error && <div className="text-center py-4 text-red-500">{error}</div>}
       </div>
@@ -122,7 +124,7 @@ export default function Page() {
         onCancel={() => setShowConfirm(false)}
         onConfirm={handleDeleteConfirm}
       />
-      <AnnouncementDialog open={openDialog} onClose={() => setOpenDialog(false)} onCreated={reloadAnnouncements} announcement={editAnnouncement} mode={editAnnouncement ? 'edit' : 'create'} />
+      <AnnouncementDialog open={openDialog} onClose={() => setOpenDialog(false)} onCreated={reloadAnnouncements} announcement={editAnnouncement} mode={editAnnouncement ? dialogMode : 'create'} />
       <ToastContainer />
     </div>
   );

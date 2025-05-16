@@ -62,7 +62,6 @@ describe("PromotionDialog", () => {
 
   it("calls onClose with false when close button in Dialog is clicked", () => {
     render(<PromotionDialog open={true} onClose={onClose} />);
-    // Nút Close của Dialog mock
     const closeButton = screen.getByText("Close");
     fireEvent.click(closeButton);
     expect(onClose).toHaveBeenCalledWith(false);
@@ -70,9 +69,7 @@ describe("PromotionDialog", () => {
 
   it("calls onClose with false when top-right close button is clicked", () => {
     render(<PromotionDialog open={true} onClose={onClose} />);
-    // Nút đóng ở góc trên (aria-label='Close')
     const closeButtons = screen.getAllByLabelText("Close");
-    // Lấy nút đầu tiên (của PromotionDialog)
     fireEvent.click(closeButtons[0]);
     expect(onClose).toHaveBeenCalledWith(false);
   });

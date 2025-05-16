@@ -20,7 +20,7 @@ function formatDateTime(dateStr: string) {
 }
 
 export default function AnnouncementStep2({ onBack, onPreview, onSave, status, mode }: { onBack: () => void; onPreview: () => void; onSave: () => void; status?: string; mode?: 'create' | 'edit' }) {
-  const { setValue, watch, formState: { errors } } = useFormContext();
+  const { setValue, watch, formState: { errors }, trigger } = useFormContext();
   const template = watch("template");
   const fromDate = watch("fromDate");
   const toDate = watch("toDate");
@@ -31,7 +31,7 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
   const [allOperators, setAllOperators] = useState<Operator[]>([]);
   const [allPromotions, setAllPromotions] = useState<Promotion[]>([]);
 
-  const isEditable = mode === 'edit' && status !== 'Upcoming';
+  const isEditable = mode === 'create' || (mode === 'edit' && status !== 'Upcoming');
 
   // Fetch all operators once
   useEffect(() => {
@@ -108,9 +108,6 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
     return from !== firstPromotion.startDate || to !== firstPromotion.endDate;
   };
   const handleAdd = () => {
-    if (promotionMappings.length >= operators.length) {
-      return;
-    }
     setValue("promotionMappings", [...promotionMappings, { 
       operatorId: "", 
       promotionCode: "", 
@@ -119,7 +116,7 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
   const handleRemove = (idx: number) => {
     setValue("promotionMappings", promotionMappings.filter((_: any, i: number) => i !== idx));
   };
-  const handleChange = (idx: number, field: string, value: string) => {
+  const handleChange = async (idx: number, field: string, value: string) => {
     const updatedMappings = promotionMappings.map((m: any, i: number) => {
       if (i === idx) {
         if (field === "operator") {
@@ -140,6 +137,7 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
       return m;
     });
     setValue("promotionMappings", updatedMappings);
+    await trigger("promotionMappings");
   };
 
   return (
@@ -189,39 +187,56 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
             const from = selectedPromotion?.startDate || "";
             const to = selectedPromotion?.endDate || "";
             const dateDiff = isDateRangeDiff(from, to) && idx > 0;
+
+            const rowError = Array.isArray(errors.promotionMappings) && (errors.promotionMappings as any[])[idx];
+            const operatorError = rowError?.operatorId?.message;
+            const promotionError = rowError?.promotionCode?.message;
+
             return (
-              <div key={idx} className="flex items-center gap-2 w-full flex-wrap">
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <select
-                    value={m.operatorId || ""}
-                    onChange={e => handleChange(idx, "operator", e.target.value)}
-                    className={`border px-2 py-1 rounded min-w-[120px] text-sm ${!isEditable ? 'opacity-60 bg-gray-100' : ''}`}
-                    disabled={!isEditable || (isDuplicateOperator(m.operatorId, idx) && m.operatorId !== "")}
-                  >
-                    <option value="">Select Operator</option>
-                    {getFilteredOperators(m.promotionCode)
-                      .filter(op => !promotionMappings.some((mm: any, i: number) => mm.operatorId === op.PartnerId && i !== idx))
-                      .map(op => (
-                        <option key={op.PartnerId} value={op.PartnerId}>{op.Name}</option>
-                      ))}
-                  </select>
-                  <select
-                    value={m.promotionCode || ""}
-                    onChange={e => handleChange(idx, "code", e.target.value)}
-                    className={`border px-2 py-1 rounded min-w-[120px] text-sm ${!isEditable ? 'opacity-60 bg-gray-100' : ''}`}
-                    disabled={!isEditable}
-                  >
-                    <option value="">Promotion Code</option>
-                    {getFilteredPromotions(m.operatorId).map(p => (
-                      <option key={p.code} value={p.code}>{p.code}</option>
-                    ))}
-                  </select>
-                  {isEditable && <button onClick={() => handleRemove(idx)} className="text-red-500 font-bold text-lg px-1" type="button" disabled={!isEditable}>×</button>}
-                  {m.promotionCode && (
-                    <span className={`ml-2 text-xs font-semibold ${dateDiff ? 'text-red-600' : 'text-gray-900'}`}>
-                      (<b>From {formatDateTime(from)} to {formatDateTime(to)}</b>)
-                    </span>
-                  )}
+              <div key={idx} className="flex flex-col w-full">
+                {(operatorError || promotionError) && (
+                  <div className="flex gap-8 mb-1">
+                    <div className="min-w-[120px] text-red-500 text-xs">{operatorError || ""}</div>
+                    <div className="min-w-[120px] text-red-500 text-xs">{promotionError || ""}</div>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 w-full flex-wrap">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div className="flex flex-col min-w-[120px]">
+                      <select
+                        value={m.operatorId || ""}
+                        onChange={e => handleChange(idx, "operator", e.target.value)}
+                        className={`border border-gray-300 rounded-xl px-2 py-1 text-sm min-w-[100px] h-9 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 hover:border-blue-400 transition-all bg-white ${!isEditable ? 'pointer-events-none opacity-60 bg-gray-100' : ''}`}
+                        disabled={!isEditable || (isDuplicateOperator(m.operatorId, idx) && m.operatorId !== "")}
+                      >
+                        <option value="">Select Operator</option>
+                        {getFilteredOperators(m.promotionCode)
+                          .filter(op => !promotionMappings.some((mm: any, i: number) => mm.operatorId === op.PartnerId && i !== idx))
+                          .map(op => (
+                            <option key={op.PartnerId} value={op.PartnerId}>{op.Name}</option>
+                          ))}
+                      </select>
+                    </div>
+                    <div className="flex flex-col min-w-[120px]">
+                      <select
+                        value={m.promotionCode || ""}
+                        onChange={e => handleChange(idx, "code", e.target.value)}
+                        className={`border border-gray-300 rounded-xl px-2 py-1 text-sm min-w-[100px] h-9 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 hover:border-blue-400 transition-all bg-white ${!isEditable ? 'pointer-events-none opacity-60 bg-gray-100' : ''}`}
+                        disabled={!isEditable}
+                      >
+                        <option value="">Promotion Code</option>
+                        {getFilteredPromotions(m.operatorId).map(p => (
+                          <option key={p.code} value={p.code}>{p.code}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {isEditable && <button onClick={() => handleRemove(idx)} className="text-red-500 font-bold text-lg px-1" type="button" disabled={!isEditable}>×</button>}
+                    {m.promotionCode && (
+                      <span className={`ml-2 text-xs font-semibold ${dateDiff ? 'text-red-600' : 'text-gray-900'}`}>
+                        (<b>From {formatDateTime(from)} to {formatDateTime(to)}</b>)
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -231,9 +246,9 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
         <button 
           type="button" 
           onClick={handleAdd} 
-          disabled={!isEditable || promotionMappings.length >= operators.length}
+          disabled={!isEditable}
           className={`flex items-center gap-1 mt-2 text-sm font-bold ${
-            !isEditable || promotionMappings.length >= operators.length 
+            !isEditable  
               ? 'text-gray-400 cursor-not-allowed' 
               : 'text-emerald-600 hover:underline'
           }`}
@@ -241,9 +256,7 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-          {promotionMappings.length >= operators.length 
-            ? 'Maximum operators reached' 
-            : 'Add new Operator'}
+            Add new Operator
         </button>
       </div>
       {/* Actions */}

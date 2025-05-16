@@ -41,6 +41,7 @@ interface DataGridProps {
   onPageSizeChange: (size: number) => void;
   onDelete: (id: string, title: string) => void;
   onEdit?: (announcement: Announcement) => void;
+  onView?: (announcement: Announcement) => void;
 }
 
 function getAnnouncementStatus(fromDate: string, toDate: string): string {
@@ -58,7 +59,7 @@ function formatDateTime(dateStr: string) {
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export default function DataGrid({ announcements, currentPage, pageSize, totalItems, onPageChange, onPageSizeChange, onDelete, onEdit }: DataGridProps) {
+export default function DataGrid({ announcements, currentPage, pageSize, totalItems, onPageChange, onPageSizeChange, onDelete, onEdit, onView }: DataGridProps) {
   const totalPages = Math.ceil(totalItems / pageSize);
   return (
     <div className="bg-white rounded-xl shadow overflow-x-auto">
@@ -101,7 +102,7 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
                 </td>
                 <td className="px-4 py-4 text-center">
                   <div className="flex justify-center gap-1">
-                    <button className="p-1 rounded-full transition-colors group" aria-label="view-announcement">
+                    <button className="p-1 rounded-full transition-colors group" aria-label="view-announcement" onClick={() => onView && onView(a)}>
                       <Eye className="w-4 h-4 text-gray-600 group-hover:text-black group-hover:bg-gray-200 rounded-full transition-colors" />
                     </button>
                     {status === PROMOTION_STATUS_OPTIONS.Upcoming && (

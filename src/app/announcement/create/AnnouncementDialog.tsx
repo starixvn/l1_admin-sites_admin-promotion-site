@@ -1,13 +1,13 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useState } from "react";
 import AnnouncementForm from "./AnnouncementForm";
+import AnnouncementDetailView from "./AnnouncementDetailView";
 
 export default function AnnouncementDialog({ open, onClose, onCreated, announcement, mode = 'create' }: {
   open: boolean;
   onClose: () => void;
   onCreated?: () => void;
   announcement?: any;
-  mode?: 'create' | 'edit';
+  mode?: 'create' | 'edit' | 'view';
 }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -16,12 +16,16 @@ export default function AnnouncementDialog({ open, onClose, onCreated, announcem
         <div className="flex items-center justify-between px-8 pt-8 pb-4 border-b">
           <DialogTitle asChild>
             <h2 className="text-2xl font-bold text-gray-900">
-              {mode === 'edit' ? 'Edit Announcement' : 'Add New Announcement'}
+              {mode === 'edit' ? 'Edit Announcement' : mode === 'view' ? 'Announcement Details' : 'Add New Announcement'}
             </h2>
           </DialogTitle>
         </div>
-        {/* Stepper & Form */}
-        <AnnouncementForm onClose={onClose} onCreated={onCreated} initialValues={announcement} mode={mode} />
+        {/* Stepper & Form or Detail */}
+        {mode === 'view' ? (
+          <AnnouncementDetailView announcement={announcement} onClose={onClose} />
+        ) : (
+          <AnnouncementForm onClose={onClose} onCreated={onCreated} initialValues={announcement} mode={mode} />
+        )}
       </DialogContent>
     </Dialog>
   );

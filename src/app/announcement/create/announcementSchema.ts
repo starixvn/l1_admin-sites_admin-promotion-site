@@ -3,13 +3,13 @@ import { z } from "zod";
 export const announcementSchema = z.object({
   promotionTitle: z.object({
     "en-US": z.string().min(1, "English title is required").max(50),
-  }),
+  }).catchall(z.string().max(50)),
   bannerContent: z.object({
     "en-US": z.string().min(1, "English banner content is required").max(270),
-  }),
+  }).catchall(z.string().max(270)),
   termsAndConditions: z.object({
     "en-US": z.string().min(1, "English terms & conditions are required").max(6500),
-  }),
+  }).catchall(z.string().max(6500)),
   uploadedFile: z.any().optional(),
   template: z.number().min(1, "Banner is required"),
   fromDate: z.date({ required_error: "Start date is required" }),
