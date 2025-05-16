@@ -19,7 +19,9 @@ import {
   selectSuggestedBetLevel,
   validateBetRows,
   getTotalBet,
+  createOperatorMap,
 } from "@/lib/promotion/bet-settings.utils";
+import { Operator } from "@/types/operator";
 
 type Props = {
   open: boolean;
@@ -32,6 +34,7 @@ type Props = {
     betLevels: { currencyGroup: string; betLevel: number }[];
   }) => void;
   games?: Game[];
+  operators?: Operator[];
   readonly?: boolean;
   initialValues?: {
     currencyGroup: string;
@@ -54,6 +57,7 @@ export default function BetSettingsDialog({
   currencyGroupsInfo,
   onSave,
   games,
+  operators,
   readonly = false,
   initialValues,
 }: Props) {
@@ -65,7 +69,10 @@ export default function BetSettingsDialog({
   const [enableAll, setEnableAll] = useState(false);
 
   const memoizedGetCurrencyGroupGames = useCallback(getCurrencyGroupGames, []);
-
+  const operatorMap = useMemo(
+    () => createOperatorMap(operators || []),
+    [operators]
+  );
   useEffect(() => {
     let isMounted = true;
 
@@ -177,6 +184,7 @@ export default function BetSettingsDialog({
       return;
     }
     const num = parseFloat(value);
+
     setRows((prev) => {
       const updated = [...prev];
       updated[index].betLevel = isNaN(num) ? 0 : num;
@@ -309,7 +317,7 @@ export default function BetSettingsDialog({
                           style={{ verticalAlign: "middle" }}
                         >
                           <div className="h-full flex items-center justify-center font-semibold">
-                            {partnerId}
+                            {operatorMap.get(partnerId) || partnerId}
                           </div>
                         </td>
                       )}
@@ -340,6 +348,20 @@ export default function BetSettingsDialog({
                               onChange={(e) =>
                                 handleChangeBet(index, e.target.value)
                               }
+                              onKeyDown={(e) => {
+                                if (e.key === "-" || e.key === "e") {
+                                  e.preventDefault();
+                                }
+                              }}
+                              onPaste={(e) => {
+                                const paste = e.clipboardData.getData("text");
+                                if (
+                                  paste.includes("-") ||
+                                  parseFloat(paste) < 0
+                                ) {
+                                  e.preventDefault();
+                                }
+                              }}
                               disabled={readonly}
                               className={`w-28 h-10 text-center text-base px-0 rounded-lg border transition ${
                                 invalidRows.has(row.id)

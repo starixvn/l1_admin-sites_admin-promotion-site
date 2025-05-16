@@ -2,6 +2,7 @@ import { GAME_TYPES } from "@/constants/gameTypes";
 import {
   selectSuggestedBetLevel,
   validateBetRows,
+  createOperatorMap
 } from "@/lib/promotion/bet-settings.utils";
 
 describe("selectSuggestedBetLevel", () => {
@@ -110,5 +111,20 @@ describe("validateBetRows", () => {
 
   it("handles empty row array", () => {
     expect(validateBetRows([])).toEqual(new Set());
+  });
+});
+
+describe("createOperatorMap", () => {
+  it("should return a map of PartnerId to Name", () => {
+    const mockOperators = [
+      { PartnerId: "op1", Name: "Operator One" },
+      { PartnerId: "op2", Name: "Operator Two" },
+    ];
+
+    const map = createOperatorMap(mockOperators);
+
+    expect(map.get("op1")).toBe("Operator One");
+    expect(map.get("op2")).toBe("Operator Two");
+    expect(map.size).toBe(2);
   });
 });

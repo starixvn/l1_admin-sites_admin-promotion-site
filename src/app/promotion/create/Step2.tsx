@@ -17,6 +17,7 @@ import PlayerFileUploader from "./PlayerFileUploader";
 import { useEffect, useState } from "react";
 import { CurrencyGroup } from "@/types/currency-group";
 import { PlayerListModal } from "./PlayerListModal";
+import { Operator } from "@/types/operator";
 
 interface Step2Props {
   mode: string;
@@ -30,6 +31,7 @@ interface Step2Props {
   setSiteInput: (val: string) => void;
   games: Game[];
   currencyGroupsInfo: CurrencyGroup[];
+  operators: Operator[];
   initialOfferedPlayerIds?: string[];
   isLoadingCurrencyGroups: boolean;
   isLoading: boolean;
@@ -149,6 +151,7 @@ export default function Step2({
   setSiteInput,
   games,
   currencyGroupsInfo,
+  operators,
   initialOfferedPlayerIds,
   isLoadingCurrencyGroups,
   isLoading,
@@ -365,6 +368,7 @@ export default function Step2({
         }}
         games={games}
         initialValues={betLevels}
+        operators={operators}
       />
     </div>
   );

@@ -16,7 +16,7 @@ import { useFilteredGames } from "@/hooks/useFilteredGames";
 import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 import { toGMTString } from "@/lib/date-time.utils";
 import { useOperators } from "@/hooks/useOperators";
-import { Operator } from "@/types/operator";
+import { createOperatorMap } from "@/lib/promotion/bet-settings.utils";
 
 interface DataGridProps {
   promotions: Promotion[];
@@ -120,9 +120,7 @@ export default function DataGrid({
     }
   );
   const { data: operators = [] } = useOperators();
-  const operatorMap = useMemo(() => {
-    return new Map(operators.map((o: Operator) => [o.PartnerId, o.Name]));
-  }, [operators]);
+  const operatorMap = useMemo(() => createOperatorMap(operators), [operators]);
   const handleDelete = async (id: string, code: string) => {
     try {
       await onDelete(id, code);

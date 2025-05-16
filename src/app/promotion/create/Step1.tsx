@@ -228,6 +228,14 @@ export default function Step1({
               min: { value: 1, message: "Free spins must be greater than 0" },
               valueAsNumber: true,
             })}
+            onBlur={(e) => {
+              const raw = e.target.value.trim();
+              const parsed = parseInt(raw, 10);
+              if (isNaN(parsed) || parsed < 0) {
+                e.target.value = "0";
+                setValue("bonusItemCount", 0, { shouldValidate: true });
+              }
+            }}
             className={cn(
               FORM_INPUT_CLASS,
               errors.bonusItemCount && BORDER_RED_CLASS

@@ -1,5 +1,6 @@
 import { CurrencyGroupGame } from "@/types/currency-group-game";
 import { GAME_TYPES } from "@/constants/gameTypes";
+import { Operator } from "@/types/operator";
 
 export const selectSuggestedBetLevel = (
   type: number,
@@ -42,3 +43,7 @@ export function getSecureRandomIndex(max: number): number {
 export const getTotalBet = (betLevel: number, gameType: number) => {
   return gameType === GAME_TYPES.CASCADING ? 1 * betLevel * 20 : betLevel * 25;
 };
+
+export function createOperatorMap(operators: Operator[]): Map<string, string> {
+  return new Map(operators.map((o) => [o.PartnerId, o.Name]));
+}
