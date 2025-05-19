@@ -24,6 +24,129 @@ function formatDateTime(dateStr: string) {
   }).replace(",", "");
 }
 
+function isDateRangeDiff(from: string, to: string, promotionMappings: PromotionMapping[], promotions: Promotion[]): boolean {
+  if (!promotionMappings.length || from === "" || to === "") {
+    return false;
+  }
+  const firstPromotionCode = promotionMappings[0].promotionCode;
+  const firstPromotion = promotions.find(p => p.code === firstPromotionCode);
+  if (!firstPromotion) {
+    return false;
+  }
+  return from !== firstPromotion.startDate || to !== firstPromotion.endDate;
+}
+
+// Add these helper functions before the main component
+const getRowErrors = (errors: any, idx: number) => {
+  const rowError = Array.isArray(errors.promotionMappings) && (errors.promotionMappings as { operatorId?: { message?: string }; promotionCode?: { message?: string } }[])[idx];
+  if (!rowError || typeof rowError !== 'object') return { operatorError: undefined, promotionError: undefined };
+  return {
+    operatorError: rowError.operatorId?.message,
+    promotionError: rowError.promotionCode?.message
+  };
+};
+
+const getDateInfo = (promotion: Promotion | undefined, idx: number, promotionMappings: PromotionMapping[], promotions: Promotion[]) => {
+  const from = promotion?.startDate || "";
+  const to = promotion?.endDate || "";
+  const dateDiff = isDateRangeDiff(from, to, promotionMappings, promotions) && idx > 0;
+  return { from, to, dateDiff };
+};
+
+// Add this new component
+const MappingRow = ({ 
+  mapping, 
+  idx, 
+  errors, 
+  isEditable, 
+  promotions, 
+  promotionMappings,
+  onOperatorChange,
+  onPromotionChange,
+  onRemove,
+  getFilteredOperators,
+  getFilteredPromotions,
+  isDuplicateOperator,
+  formatDateTime 
+}: {
+  mapping: PromotionMapping;
+  idx: number;
+  errors: any;
+  isEditable: boolean;
+  promotions: Promotion[];
+  promotionMappings: PromotionMapping[];
+  onOperatorChange: (idx: number, value: string) => void;
+  onPromotionChange: (idx: number, value: string) => void;
+  onRemove: (idx: number) => void;
+  getFilteredOperators: (code: string) => Operator[];
+  getFilteredPromotions: (operatorId: string) => Promotion[];
+  isDuplicateOperator: (operatorId: string, idx: number) => boolean;
+  formatDateTime: (date: string) => string;
+}) => {
+  const selectedPromotion = promotions.find(p => p.code === mapping.promotionCode);
+  const { from, to, dateDiff } = getDateInfo(selectedPromotion, idx, promotionMappings, promotions);
+  const { operatorError, promotionError } = getRowErrors(errors, idx);
+
+  const renderErrorMessages = () => {
+    if (!operatorError && !promotionError) return null;
+    return (
+      <div className="flex gap-8 mb-1">
+        <div className="min-w-[120px] text-red-500 text-xs">{operatorError || ""}</div>
+        <div className="min-w-[120px] text-red-500 text-xs">{promotionError || ""}</div>
+      </div>
+    );
+  };
+
+  const renderDateRange = () => {
+    if (!mapping.promotionCode) return null;
+    return (
+      <span className={`ml-2 text-xs font-semibold ${dateDiff ? 'text-red-600' : 'text-gray-900'}`}>
+        (<b>From {formatDateTime(from)} to {formatDateTime(to)}</b>)
+      </span>
+    );
+  };
+
+  return (
+    <div className="flex flex-col w-full">
+      {renderErrorMessages()}
+      <div className="flex items-center gap-2 w-full flex-wrap">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="flex flex-col min-w-[120px]">
+            <select
+              value={mapping.operatorId || ""}
+              onChange={e => onOperatorChange(idx, e.target.value)}
+              className={`border border-gray-300 rounded-xl px-2 py-1 text-sm min-w-[100px] h-9 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 hover:border-blue-400 transition-all bg-white ${!isEditable ? 'pointer-events-none opacity-60 bg-gray-100' : ''}`}
+              disabled={!isEditable || (isDuplicateOperator(mapping.operatorId, idx) && mapping.operatorId !== "")}
+            >
+              <option value="">Select Operator</option>
+              {getFilteredOperators(mapping.promotionCode)
+                .filter(op => !promotionMappings.some((mm, i) => mm.operatorId === op.PartnerId && i !== idx))
+                .map(op => (
+                  <option key={op.PartnerId} value={op.PartnerId}>{op.Name}</option>
+                ))}
+            </select>
+          </div>
+          <div className="flex flex-col min-w-[120px]">
+            <select
+              value={mapping.promotionCode || ""}
+              onChange={e => onPromotionChange(idx, e.target.value)}
+              className={`border border-gray-300 rounded-xl px-2 py-1 text-sm min-w-[200px] w-[280px] h-9 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 hover:border-blue-400 transition-all bg-white ${!isEditable ? 'pointer-events-none opacity-60 bg-gray-100' : ''}`}
+              disabled={!isEditable}
+            >
+              <option value="">Promotion Code</option>
+              {getFilteredPromotions(mapping.operatorId).map(p => (
+                <option key={p.code} value={p.code}>{p.code}</option>
+              ))}
+            </select>
+          </div>
+          {isEditable && <button onClick={() => onRemove(idx)} className="text-red-500 font-bold text-lg px-1" type="button" disabled={!isEditable}>×</button>}
+          {renderDateRange()}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function AnnouncementStep2({ onBack, onSave, status, mode }: { onBack: () => void; onSave: () => void; status?: string; mode?: 'create' | 'edit' }) {
   const { setValue, watch, formState: { errors }, trigger } = useFormContext();
   const template = watch("template");
@@ -91,17 +214,6 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
 
   const isDuplicateOperator = (op: string, idx: number) => 
     promotionMappings.some((m, i) => m.operatorId === op && i !== idx);
-  const isDateRangeDiff = (from: string, to: string) => {
-    if (!promotionMappings.length || from === "" || to === "") {
-      return false;
-    }
-    const firstPromotionCode = promotionMappings[0].promotionCode;
-    const firstPromotion = promotions.find(p => p.code === firstPromotionCode);
-    if (!firstPromotion) {
-      return false;
-    }
-    return from !== firstPromotion.startDate || to !== firstPromotion.endDate;
-  };
   const handleAdd = () => {
     setValue("promotionMappings", [...promotionMappings, { 
       operatorId: "", 
@@ -184,65 +296,24 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
       <div className="w-full max-w-3xl mx-auto bg-white border border-gray-200 p-3 rounded-lg shadow-sm flex flex-col gap-1.5 mb-3">
         <div className="font-semibold text-gray-800 mb-1 text-sm">Promotion Mapping <span className="text-red-500">*</span></div>
         <div className="flex flex-col gap-1.5 w-full">
-          {promotionMappings.map((m, idx) => {
-            const selectedPromotion = promotions.find(p => p.code === m.promotionCode);
-            const from = selectedPromotion?.startDate || "";
-            const to = selectedPromotion?.endDate || "";
-            const dateDiff = isDateRangeDiff(from, to) && idx > 0;
-
-            const rowError = Array.isArray(errors.promotionMappings) && (errors.promotionMappings as { operatorId?: { message?: string }; promotionCode?: { message?: string } }[])[idx];
-            const operatorError = rowError && typeof rowError === 'object' ? rowError.operatorId?.message : undefined;
-            const promotionError = rowError && typeof rowError === 'object' ? rowError.promotionCode?.message : undefined;
-
-            return (
-              <div key={idx} className="flex flex-col w-full">
-                {(operatorError || promotionError) && (
-                  <div className="flex gap-8 mb-1">
-                    <div className="min-w-[120px] text-red-500 text-xs">{operatorError || ""}</div>
-                    <div className="min-w-[120px] text-red-500 text-xs">{promotionError || ""}</div>
-                  </div>
-                )}
-                <div className="flex items-center gap-2 w-full flex-wrap">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <div className="flex flex-col min-w-[120px]">
-                      <select
-                        value={m.operatorId || ""}
-                        onChange={e => handleChange(idx, "operator", e.target.value)}
-                        className={`border border-gray-300 rounded-xl px-2 py-1 text-sm min-w-[100px] h-9 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 hover:border-blue-400 transition-all bg-white ${!isEditable ? 'pointer-events-none opacity-60 bg-gray-100' : ''}`}
-                        disabled={!isEditable || (isDuplicateOperator(m.operatorId, idx) && m.operatorId !== "")}
-                      >
-                        <option value="">Select Operator</option>
-                        {getFilteredOperators(m.promotionCode)
-                          .filter(op => !promotionMappings.some((mm, i) => mm.operatorId === op.PartnerId && i !== idx))
-                          .map(op => (
-                            <option key={op.PartnerId} value={op.PartnerId}>{op.Name}</option>
-                          ))}
-                      </select>
-                    </div>
-                    <div className="flex flex-col min-w-[120px]">
-                      <select
-                        value={m.promotionCode || ""}
-                        onChange={e => handleChange(idx, "code", e.target.value)}
-                        className={`border border-gray-300 rounded-xl px-2 py-1 text-sm min-w-[200px] w-[280px] h-9 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 hover:border-blue-400 transition-all bg-white ${!isEditable ? 'pointer-events-none opacity-60 bg-gray-100' : ''}`}
-                        disabled={!isEditable}
-                      >
-                        <option value="">Promotion Code</option>
-                        {getFilteredPromotions(m.operatorId).map(p => (
-                          <option key={p.code} value={p.code}>{p.code}</option>
-                        ))}
-                      </select>
-                    </div>
-                    {isEditable && <button onClick={() => handleRemove(idx)} className="text-red-500 font-bold text-lg px-1" type="button" disabled={!isEditable}>×</button>}
-                    {m.promotionCode && (
-                      <span className={`ml-2 text-xs font-semibold ${dateDiff ? 'text-red-600' : 'text-gray-900'}`}>
-                        (<b>From {formatDateTime(from)} to {formatDateTime(to)}</b>)
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {promotionMappings.map((m, idx) => (
+            <MappingRow
+              key={idx}
+              mapping={m}
+              idx={idx}
+              errors={errors}
+              isEditable={isEditable}
+              promotions={promotions}
+              promotionMappings={promotionMappings}
+              onOperatorChange={(idx, value) => handleChange(idx, "operator", value)}
+              onPromotionChange={(idx, value) => handleChange(idx, "code", value)}
+              onRemove={handleRemove}
+              getFilteredOperators={getFilteredOperators}
+              getFilteredPromotions={getFilteredPromotions}
+              isDuplicateOperator={isDuplicateOperator}
+              formatDateTime={formatDateTime}
+            />
+          ))}
         </div>
         {errors.promotionMappings && <div className="text-red-500 text-xs mt-1">{errors.promotionMappings.message as string}</div>}
         <button 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch, UseFormSetValue } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Step1 from "./Step1";
@@ -76,12 +76,9 @@ export const promotionSchema = z
   .refine(
     (data) => {
       // ✅ Validate tại đây
-      const isValid =
-        data.allPlayers ||
+      return data.allPlayers ||
         (data.uploadedFile instanceof File && data.uploadedFile.size > 0) ||
         (data.offeredPlayerIds && data.offeredPlayerIds.length > 0);
-
-      return isValid;
     },
     {
       path: ["uploadedFile"],
@@ -105,6 +102,146 @@ interface PromotionFormProps {
   onSubmit?: (values: Promotion) => Promise<void>;
 }
 
+const getDefaultValues = (initialValues?: Promotion) => {
+  if (initialValues) {
+    return {
+      ...initialValues,
+      startDate: new Date(initialValues.startDate),
+      endDate: new Date(initialValues.endDate),
+      gameConfigType: initialValues.gameConfigType as 2 | 3,
+      offeredSiteNames: initialValues.offeredSiteNames || [],
+      offeredPlayerIds: initialValues.offeredPlayerIds || [],
+      betLevels: initialValues.betLevels || [],
+      allPlayers: !initialValues.offeredPlayerIds || initialValues.offeredPlayerIds.length === 0,
+    };
+  }
+  return {
+    name: "",
+    code: "",
+    bonusItemCount: 0,
+    startDate: addDays(getTodayAtMidnightGMT7(), 1),
+    endDate: addDays(getTodayAtMidnightGMT7(), 1),
+    operatorId: "",
+    offeredSiteNames: [],
+    gameIds: [],
+    currencyGroups: [],
+    allPlayers: true,
+    offeredPlayerIds: [],
+    uploadedFile: undefined,
+    gameConfigType: GAME_TYPES.CLASSIC,
+    betLevels: [],
+  };
+};
+
+const handleOperatorChange = (
+  operatorId: string,
+  initialValues: Promotion | undefined,
+  mode: string,
+  setValue: UseFormSetValue<PromotionFormValues>,
+  setSiteInput: (value: string) => void
+) => {
+  if (!operatorId) {
+    return;
+  }
+
+  const isChanged = operatorId !== initialValues?.operatorId;
+
+  if (mode === "create") {
+    setValue("currencyGroups", []);
+    setValue("betLevels", []);
+    setValue("gameIds", []);
+    setSiteInput("");
+    return;
+  }
+
+  if (mode === "edit") {
+    if (isChanged) {
+      setValue("currencyGroups", []);
+      setValue("betLevels", []);
+      setValue("gameIds", []);
+      setSiteInput("");
+    } else {
+      setValue("currencyGroups", initialValues?.currencyGroups || []);
+      setValue("betLevels", initialValues?.betLevels || []);
+      setValue("gameIds", initialValues?.gameIds || []);
+      setValue("offeredPlayerIds", initialValues?.offeredPlayerIds || []);
+      setSiteInput(initialValues?.offeredSiteNames?.join(";") || "");
+    }
+  }
+};
+
+const StepProgress = ({ step }: { step: number }) => (
+  <div className="space-y-1">
+    <div className="flex justify-between text-sm text-gray-500 font-medium">
+      <span>Step {step} of 2</span>
+      <span>{step === 1 ? "Basic Details" : "Targeting & Settings"}</span>
+    </div>
+    <div className="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
+      <div
+        className="h-full bg-gray-800 transition-all duration-300"
+        style={{ width: step === 1 ? "50%" : "100%" }}
+      />
+    </div>
+  </div>
+);
+
+const FormFooter = ({
+  step,
+  setStep,
+  handleNextStep,
+  trigger,
+  getValues,
+  setPreviewData,
+  setShowPreviewDialog,
+  isPending,
+}: {
+  step: number;
+  setStep: (step: number) => void;
+  handleNextStep: () => Promise<void>;
+  trigger: () => Promise<boolean>;
+  getValues: () => PromotionFormValues;
+  setPreviewData: (data: PromotionFormValues) => void;
+  setShowPreviewDialog: (show: boolean) => void;
+  isPending: boolean;
+}) => (
+  <div className="form-footer relative px-6 py-4">
+    <div className="absolute left-6 top-1/2 -translate-y-1/2">
+      {step === 2 && (
+        <button
+          type="button"
+          onClick={() => setStep(1)}
+          className="btn-cancel flex items-center gap-2"
+        >
+          ← Back
+        </button>
+      )}
+    </div>
+
+    <div className="flex justify-end">
+      {step === 1 ? (
+        <button type="button" onClick={handleNextStep} className="btn-next">
+          Next →
+        </button>
+      ) : step === 2 ? (
+        <button
+          type="button"
+          onClick={async () => {
+            const isValid = await trigger();
+            if (isValid) {
+              setPreviewData(getValues());
+              setShowPreviewDialog(true);
+            }
+          }}
+          disabled={isPending}
+          className="btn-primary flex items-center gap-2"
+        >
+          Save
+        </button>
+      ) : null}
+    </div>
+  </div>
+);
+
 export default function PromotionForm({
   mode = "create",
   initialValues,
@@ -124,46 +261,23 @@ export default function PromotionForm({
   } = useForm<PromotionFormValues>({
     resolver: zodResolver(promotionSchema),
     mode: "onSubmit",
-    defaultValues: initialValues
-      ? {
-          ...initialValues,
-          startDate: new Date(initialValues.startDate),
-          endDate: new Date(initialValues.endDate),
-          gameConfigType: initialValues.gameConfigType as 2 | 3,
-          offeredSiteNames: initialValues.offeredSiteNames || [],
-          offeredPlayerIds: initialValues.offeredPlayerIds || [],
-          betLevels: initialValues.betLevels || [],
-          allPlayers:
-            !initialValues.offeredPlayerIds ||
-            initialValues.offeredPlayerIds.length === 0,
-        }
-      : {
-          name: "",
-          code: "",
-          bonusItemCount: 0,
-          startDate: addDays(getTodayAtMidnightGMT7(), 1),
-          endDate: addDays(getTodayAtMidnightGMT7(), 1),
-          operatorId: "",
-          offeredSiteNames: [],
-          gameIds: [],
-          currencyGroups: [],
-          allPlayers: true,
-          offeredPlayerIds: [],
-          uploadedFile: undefined,
-          gameConfigType: GAME_TYPES.CLASSIC,
-          betLevels: [],
-        },
+    defaultValues: getDefaultValues(initialValues),
   });
 
   const [step, setStep] = useState(1);
   const [codeEdited, setCodeEdited] = useState(false);
   const [openBetSettings, setOpenBetSettings] = useState(false);
   const [siteInput, setSiteInput] = useState("");
+  const [lastCheckedCode, setLastCheckedCode] = useState("");
+  const [previewData, setPreviewData] = useState<PromotionFormValues | null>(null);
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
 
   const currencyGroups = useWatch({ control, name: "currencyGroups" });
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
   const gameIds = useWatch({ control, name: "gameIds" });
+  const operatorId = useWatch({ control, name: "operatorId" });
   const initialGameIds = initialValues?.gameIds ?? [];
+
   const { data: operators = [] } = useOperators();
   const shouldFetchGames = currencyGroups.length > 0 && !!gameConfigType;
   const {
@@ -175,48 +289,19 @@ export default function PromotionForm({
     gameType: shouldFetchGames ? gameConfigType : undefined,
     gameIds: shouldFetchGames ? initialGameIds : [],
   });
-  const operatorId = useWatch({ control, name: "operatorId" });
+
   const { data: currencyGroupsInfo = [], isLoading: isLoadingCurrencyGroups } =
     useCurrencyGroups(operatorId);
 
   useEffect(() => {
-    if (initialValues && initialValues.offeredSiteNames) {
+    if (initialValues?.offeredSiteNames) {
       setSiteInput(initialValues.offeredSiteNames.join(";"));
     }
   }, [initialValues]);
 
   useEffect(() => {
-    if (!operatorId) return;
-
-    const isChanged = operatorId !== initialValues?.operatorId;
-
-    if (mode === "create") {
-      // luôn reset trong create
-      setValue("currencyGroups", []);
-      setValue("betLevels", []);
-      setValue("gameIds", []);
-      setSiteInput("");
-    }
-
-    if (mode === "edit") {
-      if (isChanged) {
-        // chuyển sang operator khác → reset
-        setValue("currencyGroups", []);
-        setValue("betLevels", []);
-        setValue("gameIds", []);
-        setSiteInput("");
-      } else {
-        // quay về operator ban đầu → restore
-        setValue("currencyGroups", initialValues?.currencyGroups || []);
-        setValue("betLevels", initialValues?.betLevels || []);
-        setValue("gameIds", initialValues?.gameIds || []);
-        setValue("offeredPlayerIds", initialValues?.offeredPlayerIds || []);
-        setSiteInput(initialValues?.offeredSiteNames?.join(";") || "");
-      }
-    }
+    handleOperatorChange(operatorId, initialValues, mode, setValue, setSiteInput);
   }, [operatorId, initialValues, mode, setValue]);
-
-  const [lastCheckedCode, setLastCheckedCode] = useState("");
 
   const handleNextStep = async () => {
     const isValid = await trigger([
@@ -228,35 +313,26 @@ export default function PromotionForm({
       "operatorId",
     ]);
 
-    if (!isValid) {
-      return;
-    }
+    if (!isValid) return;
 
     const values = getValues();
-
-    if (mode === "create" && values.code) {
-      if (values.code !== lastCheckedCode) {
-        const exists = await checkPromotionCodeExists(values.code);
-        if (exists) {
-          setError("code", {
-            type: "manual",
-            message:
-              "This promotion code already exists. Please choose another.",
-          });
-          return;
-        }
-        setLastCheckedCode(values.code);
+    if (mode === "create" && values.code && values.code !== lastCheckedCode) {
+      const exists = await checkPromotionCodeExists(values.code);
+      if (exists) {
+        setError("code", {
+          type: "manual",
+          message: "This promotion code already exists. Please choose another.",
+        });
+        return;
       }
+      setLastCheckedCode(values.code);
     }
 
     setStep(2);
   };
 
   const { mutate: createPromotion, isPending } = useCreatePromotion();
-  const [previewData, setPreviewData] = useState<PromotionFormValues | null>(
-    null
-  );
-  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+
   const handleFormSubmit = (data: PromotionFormValues) => {
     const payload: PromotionFormSubmission = {
       betLevels: (data.betLevels || []).map(({ currencyGroup, betLevel }) => ({
@@ -276,7 +352,6 @@ export default function PromotionForm({
       offeredPlayerIds: data.offeredPlayerIds || [],
       ...(initialValues ? { _id: initialValues._id } : {}),
     };
-    console.log(payload);
 
     if (onSubmit) {
       onSubmit(payload as Promotion);
@@ -299,23 +374,8 @@ export default function PromotionForm({
           onSubmit={handleSubmit(handleFormSubmit)}
           className="space-y-6"
         >
-          {/* Step Progress UI */}
-          <div className="space-y-1">
-            <div className="flex justify-between text-sm text-gray-500 font-medium">
-              <span>Step {step} of 2</span>
-              <span>
-                {step === 1 ? "Basic Details" : "Targeting & Settings"}
-              </span>
-            </div>
-            <div className="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
-              <div
-                className="h-full bg-gray-800 transition-all duration-300"
-                style={{ width: step === 1 ? "50%" : "100%" }}
-              />
-            </div>
-          </div>
+          <StepProgress step={step} />
 
-          {/* Form Steps */}
           {step === 1 ? (
             <Step1
               mode={mode}
@@ -358,60 +418,30 @@ export default function PromotionForm({
           )}
         </form>
       </div>
-      {/* Footer fixed at bottom of dialog */}
-      <div className="form-footer relative px-6 py-4">
-        <div className="absolute left-6 top-1/2 -translate-y-1/2">
-          {step === 2 && (
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="btn-cancel flex items-center gap-2"
-            >
-              ← Back
-            </button>
-          )}
-        </div>
 
-        <div className="flex justify-end">
-          {step === 1 ? (
-            <button type="button" onClick={handleNextStep} className="btn-next">
-              Next →
-            </button>
-          ) : step === 2 ? (
-            <button
-              type="button"
-              onClick={async () => {
-                const isValid = await trigger();
-                if (isValid) {
-                  setPreviewData(getValues());
-                  setShowPreviewDialog(true);
-                }
-              }}
-              disabled={isPending}
-              className="btn-primary flex items-center gap-2"
-            >
-              Save
-            </button>
-          ) : null}
-        </div>
-      </div>
+      <FormFooter
+        step={step}
+        setStep={setStep}
+        handleNextStep={handleNextStep}
+        trigger={trigger}
+        getValues={getValues}
+        setPreviewData={setPreviewData}
+        setShowPreviewDialog={setShowPreviewDialog}
+        isPending={isPending}
+      />
+
       {previewData && (
         <PromotionPreviewDialog
           open={showPreviewDialog}
           onClose={() => setShowPreviewDialog(false)}
           data={previewData}
-          operatorName={
-            operators.find((op) => op.PartnerId === previewData?.operatorId)
-              ?.Name
-          }
+          operatorName={operators.find((op) => op.PartnerId === previewData?.operatorId)?.Name}
           gameList={games}
           currencyGroupsInfo={currencyGroupsInfo}
           isSubmitting={isPending}
           mode={mode as "create" | "edit"}
           initialId={initialValues?._id}
-          onConfirm={(finalPayload) => {
-            handleFormSubmit(finalPayload);
-          }}
+          onConfirm={handleFormSubmit}
         />
       )}
     </div>

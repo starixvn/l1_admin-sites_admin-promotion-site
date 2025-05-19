@@ -4,7 +4,9 @@ import React, { useEffect, useState } from "react";
 import { Announcement } from '@/types/announcement';
 
 function formatDateTime(dateStr: string) {
-  if (!dateStr) return "";
+  if (!dateStr) {
+    return "";
+  }
   const date = new Date(dateStr);
   return date.toLocaleString("en-GB", {
     day: "2-digit",
@@ -35,7 +37,9 @@ export default function AnnouncementDetailView({ announcement, onClose }: { anno
       });
   }, []);
 
-  if (!announcement) return null;
+  if (!announcement) {
+    return null;
+  }
 
   return (
     <div className="pt-0 px-6 pb-6 max-h-[80vh] overflow-y-auto from-gray-50 to-white rounded-2xl text-sm">

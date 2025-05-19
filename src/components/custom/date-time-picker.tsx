@@ -80,7 +80,11 @@ export default function DateTimePicker({
         </label>
       )}
 
-      <Popover open={open} onOpenChange={val => { if (!disabled) setOpen(val); }}>
+      <Popover open={open} onOpenChange={val => { 
+        if (!disabled) {
+          setOpen(val); 
+        }
+      }}>
         <PopoverTrigger asChild className="bg-white mt-1">
           <Button
             variant="outline"
