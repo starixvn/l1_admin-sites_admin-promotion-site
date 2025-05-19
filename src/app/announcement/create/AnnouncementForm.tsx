@@ -40,7 +40,9 @@ export default function AnnouncementForm({ onClose, onCreated, initialValues, mo
 
   const handleNext = async () => {
     const valid = await trigger(["promotionTitle", "bannerContent", "termsAndConditions", "uploadedFile"]);
-    if (valid) setStep(2);
+    if (valid) {
+      setStep(2);
+    }
   };
   const handleBack = () => setStep(1);
   const handleSave = handleSubmit(async (data) => {

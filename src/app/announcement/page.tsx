@@ -14,11 +14,15 @@ import PromotionMappingDialog from "./create/PromotionMappingDialog";
 
 async function fetchAnnouncements({ status, pageIndex, pageSize }: { status: string, pageIndex: number, pageSize: number }) {
   const params = new URLSearchParams();
-  if (status && status !== "All") params.append("status", status.toLowerCase());
+  if (status && status !== "All") {
+    params.append("status", status.toLowerCase());
+  }
   params.append("pageIndex", String(pageIndex));
   params.append("pageSize", String(pageSize));
   const res = await fetch(`/api/announcement?${params.toString()}`);
-  if (!res.ok) throw new Error("Failed to fetch announcements");
+  if (!res.ok) {
+    throw new Error("Failed to fetch announcements");
+  }
   return res.json();
 }
 
@@ -77,11 +81,15 @@ export default function Page() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deleteId) return;
+    if (!deleteId) {
+      return;
+    }
     try {
       const res = await fetch(`/api/announcement/${deleteId}`, { method: 'DELETE' });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Delete failed');
+      if (!res.ok) {
+        throw new Error(data.error || 'Delete failed');
+      }
       toast.success("Promotion deleted successfully");
       fetchAnnouncements({ status, pageIndex: 1, pageSize })
         .then((data) => {

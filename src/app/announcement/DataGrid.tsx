@@ -35,8 +35,12 @@ function getAnnouncementStatus(fromDate: string, toDate: string): string {
   const now = new Date();
   const from = new Date(fromDate);
   const to = new Date(toDate);
-  if (now < from) return PROMOTION_STATUS_OPTIONS.Upcoming;
-  if (now > to) return PROMOTION_STATUS_OPTIONS.Completed;
+  if (now < from) {
+    return PROMOTION_STATUS_OPTIONS.Upcoming;
+  }
+  if (now > to) {
+    return PROMOTION_STATUS_OPTIONS.Completed;
+  }
   return PROMOTION_STATUS_OPTIONS.Running;
 }
 

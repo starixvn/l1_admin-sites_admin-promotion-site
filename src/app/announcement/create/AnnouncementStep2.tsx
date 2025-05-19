@@ -10,7 +10,9 @@ import { PromotionMapping } from "@/types/announcement";
 const countTemplate = 3;
 
 function formatDateTime(dateStr: string) {
-  if (!dateStr) return "";
+  if (!dateStr) {
+    return "";
+  }
   const date = new Date(dateStr);
   return date.toLocaleString("en-GB", {
     day: "2-digit",
@@ -81,17 +83,23 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
       return operators;
     }
     const promotion = promotions.find(p => p.code === code);
-    if (!promotion) return [];
+    if (!promotion) {
+      return [];
+    }
     return operators.filter(op => op.PartnerId === promotion.operatorId);
   };
 
   const isDuplicateOperator = (op: string, idx: number) => 
     promotionMappings.some((m, i) => m.operatorId === op && i !== idx);
   const isDateRangeDiff = (from: string, to: string) => {
-    if (!promotionMappings.length || from === "" || to === "") return false;
+    if (!promotionMappings.length || from === "" || to === "") {
+      return false;
+    }
     const firstPromotionCode = promotionMappings[0].promotionCode;
     const firstPromotion = promotions.find(p => p.code === firstPromotionCode);
-    if (!firstPromotion) return false;
+    if (!firstPromotion) {
+      return false;
+    }
     return from !== firstPromotion.startDate || to !== firstPromotion.endDate;
   };
   const handleAdd = () => {

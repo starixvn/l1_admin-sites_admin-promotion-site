@@ -11,7 +11,9 @@ const LANGS = [
 ];
 
 function getNestedErrorMsg(errorObj: unknown, key: string): string | undefined {
-  if (!errorObj || typeof errorObj !== "object") return undefined;
+  if (!errorObj || typeof errorObj !== "object"){
+    return undefined;
+  }
   // @ts-expect-error: dynamic access
   if (key in errorObj && errorObj[key]?.message) {
     // @ts-expect-error: dynamic access
@@ -26,9 +28,14 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
   const bannerContent = watch("bannerContent");
   const termsAndConditions = watch("termsAndConditions");
 
+  const ERROR_BORDER_CLASS = "border-red-500";
+  const BORDER_DEFAULT_CLASS = "border-gray-300";
+
   const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      return;
+    }
     if (!file.name.endsWith(".csv")) {
       setValue("uploadedFile", undefined);
       e.target.value = '';
@@ -48,10 +55,18 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
         const { data } = results;
         data.forEach((row: Record<string, string>) => {
           const lang = row["Language"]?.trim();
-          if (!lang) return;
-          if (row["Promotion Title"]) setValue(`promotionTitle.${lang}`, row["Promotion Title"]);
-          if (row["Banner Content"]) setValue(`bannerContent.${lang}`, row["Banner Content"]);
-          if (row["Terms & Conditions"]) setValue(`termsAndConditions.${lang}`, row["Terms & Conditions"]);
+          if (!lang) {
+            return;
+          }
+          if (row["Promotion Title"]) {
+            setValue(`promotionTitle.${lang}`, row["Promotion Title"]);
+          }
+          if (row["Banner Content"]) {
+            setValue(`bannerContent.${lang}`, row["Banner Content"]);
+          }
+          if (row["Terms & Conditions"]) {
+            setValue(`termsAndConditions.${lang}`, row["Terms & Conditions"]);
+          }
         });
         setValue("uploadedFile", file);
       },
@@ -101,7 +116,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   {lang.code === "en-US" && <span className="text-red-500 ml-1 absolute -top-1 right-8">*</span>}
                 </div>
                 <input
-                  className={`flex-1 border rounded-lg px-4 py-2 text-base ${lang.code === 'en-US' && getNestedErrorMsg(errors.promotionTitle, 'en-US') ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`flex-1 border rounded-lg px-4 py-2 text-base ${lang.code === 'en-US' && getNestedErrorMsg(errors.promotionTitle, 'en-US') ? ERROR_BORDER_CLASS : BORDER_DEFAULT_CLASS}`}
                   maxLength={50}
                   value={promotionTitle?.[lang.code] || ""}
                   onChange={e => setValue(`promotionTitle.${lang.code}`, e.target.value)}
@@ -110,7 +125,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                 <span className="text-gray-400 text-xs w-16 text-right">{(promotionTitle?.[lang.code] || "").length}/50</span>
               </div>
               {lang.code === 'en-US' && getNestedErrorMsg(errors.promotionTitle, 'en-US') && (
-                <div className="text-red-500 text-xs ml-28">{getNestedErrorMsg(errors.promotionTitle, 'en-US')}</div>
+                <div className={`${ERROR_BORDER_CLASS} text-xs ml-28`}>{getNestedErrorMsg(errors.promotionTitle, 'en-US')}</div>
               )}
             </div>
           ))}
@@ -128,7 +143,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   {lang.code === "en-US" && <span className="text-red-500 ml-1 absolute -top-1 right-8">*</span>}
                 </div>
                 <textarea
-                  className={`flex-1 border rounded-lg px-4 py-2 text-base min-h-[60px] ${lang.code === 'en-US' && getNestedErrorMsg(errors.bannerContent, 'en-US') ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`flex-1 border rounded-lg px-4 py-2 text-base min-h-[60px] ${lang.code === 'en-US' && getNestedErrorMsg(errors.bannerContent, 'en-US') ? ERROR_BORDER_CLASS : BORDER_DEFAULT_CLASS}`}
                   maxLength={270}
                   value={bannerContent?.[lang.code] || ""}
                   onChange={e => setValue(`bannerContent.${lang.code}`, e.target.value)}
@@ -137,7 +152,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                 <span className="text-gray-400 text-xs w-20 text-right pt-2">{(bannerContent?.[lang.code] || "").length}/270</span>
               </div>
               {lang.code === 'en-US' && getNestedErrorMsg(errors.bannerContent, 'en-US') && (
-                <div className="text-red-500 text-xs ml-28">{getNestedErrorMsg(errors.bannerContent, 'en-US')}</div>
+                <div className={`${ERROR_BORDER_CLASS} text-xs ml-28`}>{getNestedErrorMsg(errors.bannerContent, 'en-US')}</div>
               )}
             </div>
           ))}
@@ -155,7 +170,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   {lang.code === "en-US" && <span className="text-red-500 ml-1 absolute -top-1 right-8">*</span>}
                 </div>
                 <textarea
-                  className={`flex-1 border rounded-lg px-4 py-2 text-base min-h-[80px] ${lang.code === 'en-US' && getNestedErrorMsg(errors.termsAndConditions, 'en-US') ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`flex-1 border rounded-lg px-4 py-2 text-base min-h-[80px] ${lang.code === 'en-US' && getNestedErrorMsg(errors.termsAndConditions, 'en-US') ? ERROR_BORDER_CLASS : BORDER_DEFAULT_CLASS}`}
                   maxLength={6500}
                   value={termsAndConditions?.[lang.code] || ""}
                   onChange={e => setValue(`termsAndConditions.${lang.code}`, e.target.value)}
@@ -164,7 +179,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                 <span className="text-gray-400 text-xs w-24 text-right pt-2">{(termsAndConditions?.[lang.code] || "").length}/6500</span>
               </div>
               {lang.code === 'en-US' && getNestedErrorMsg(errors.termsAndConditions, 'en-US') && (
-                <div className="text-red-500 text-xs ml-28">{getNestedErrorMsg(errors.termsAndConditions, 'en-US')}</div>
+                <div className={`${ERROR_BORDER_CLASS} text-xs ml-28`}>{getNestedErrorMsg(errors.termsAndConditions, 'en-US')}</div>
               )}
             </div>
           ))}

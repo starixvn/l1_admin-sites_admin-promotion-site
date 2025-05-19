@@ -36,6 +36,7 @@ jest.mock("@/lib/promotion/bet-settings.utils", () => ({
     );
   }),
   getTotalBet: jest.fn(() => 25),
+  createOperatorMap: jest.fn(() => new Map()),
 }));
 
 jest.mock("@/components/ui/dialog", () => ({
