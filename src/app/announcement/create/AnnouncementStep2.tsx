@@ -39,7 +39,9 @@ function isDateRangeDiff(from: string, to: string, promotionMappings: PromotionM
 // Add these helper functions before the main component
 const getRowErrors = (errors: any, idx: number) => {
   const rowError = Array.isArray(errors.promotionMappings) && (errors.promotionMappings as { operatorId?: { message?: string }; promotionCode?: { message?: string } }[])[idx];
-  if (!rowError || typeof rowError !== 'object') return { operatorError: undefined, promotionError: undefined };
+  if (!rowError || typeof rowError !== 'object') {
+    return { operatorError: undefined, promotionError: undefined };
+  }
   return {
     operatorError: rowError.operatorId?.message,
     promotionError: rowError.promotionCode?.message
@@ -88,7 +90,9 @@ const MappingRow = ({
   const { operatorError, promotionError } = getRowErrors(errors, idx);
 
   const renderErrorMessages = () => {
-    if (!operatorError && !promotionError) return null;
+    if (!operatorError && !promotionError) {
+      return null;
+    }
     return (
       <div className="flex gap-8 mb-1">
         <div className="min-w-[120px] text-red-500 text-xs">{operatorError || ""}</div>
@@ -98,7 +102,9 @@ const MappingRow = ({
   };
 
   const renderDateRange = () => {
-    if (!mapping.promotionCode) return null;
+    if (!mapping.promotionCode) {
+      return null;
+    }
     return (
       <span className={`ml-2 text-xs font-semibold ${dateDiff ? 'text-red-600' : 'text-gray-900'}`}>
         (<b>From {formatDateTime(from)} to {formatDateTime(to)}</b>)

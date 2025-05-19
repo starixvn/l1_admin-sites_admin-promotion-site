@@ -313,7 +313,9 @@ export default function PromotionForm({
       "operatorId",
     ]);
 
-    if (!isValid) return;
+    if (!isValid) {
+      return;
+    }
 
     const values = getValues();
     if (mode === "create" && values.code && values.code !== lastCheckedCode) {
