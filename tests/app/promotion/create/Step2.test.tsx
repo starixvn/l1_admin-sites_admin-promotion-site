@@ -1,7 +1,12 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Step2 from "@/app/promotion/create/Step2";
-import { useForm, Control, UseFormSetValue, FieldErrors } from "react-hook-form";
+import {
+  useForm,
+  Control,
+  UseFormSetValue,
+  FieldErrors,
+} from "react-hook-form";
 import type { PromotionFormValues } from "@/app/promotion/create/PromotionForm";
 import { Game } from "@/types/game";
 import { CurrencyGroup } from "@/types/currency-group";
@@ -10,23 +15,28 @@ import { GAME_TYPES } from "@/constants/gameTypes";
 // Mock child components
 jest.mock("@/app/promotion/create/BetSettingsDialog", () => ({
   __esModule: true,
-  default: ({ open, onClose, onSave }: any) => (
+  default: ({ open, onClose, onSave }: any) =>
     open ? (
       <div data-testid="bet-settings-dialog">
-        <button onClick={() => onSave({ currencyGroups: ["USD"], betLevels: [] })}>
+        <button
+          onClick={() => onSave({ currencyGroups: ["USD"], betLevels: [] })}
+        >
           Save Settings
         </button>
         <button onClick={onClose}>Close</button>
       </div>
-    ) : null
-  ),
+    ) : null,
 }));
 
 jest.mock("@/app/promotion/create/PlayerFileUploader", () => ({
   __esModule: true,
   default: ({ onValidFile }: any) => (
     <div data-testid="player-file-uploader">
-      <button onClick={() => onValidFile(new File([], "test.csv"), [{ PlayerID: "123" }])}>
+      <button
+        onClick={() =>
+          onValidFile(new File([], "test.csv"), [{ PlayerID: "123" }])
+        }
+      >
         Upload File
       </button>
     </div>
@@ -35,13 +45,12 @@ jest.mock("@/app/promotion/create/PlayerFileUploader", () => ({
 
 jest.mock("@/app/promotion/create/PlayerListModal", () => ({
   __esModule: true,
-  PlayerListModal: ({ showPlayerList, setShowPlayerList }: any) => (
+  PlayerListModal: ({ showPlayerList, setShowPlayerList }: any) =>
     showPlayerList ? (
       <div data-testid="player-list-modal">
         <button onClick={() => setShowPlayerList(false)}>Close Modal</button>
       </div>
-    ) : null
-  ),
+    ) : null,
 }));
 
 interface TestWrapperProps {
@@ -55,7 +64,11 @@ interface TestWrapperProps {
 
 // Test wrapper component to provide form context
 const TestWrapper = ({ children, defaultValues = {} }: TestWrapperProps) => {
-  const { control, setValue, formState: { errors } } = useForm<PromotionFormValues>({
+  const {
+    control,
+    setValue,
+    formState: { errors },
+  } = useForm<PromotionFormValues>({
     defaultValues: {
       gameIds: [],
       operatorId: "1",
@@ -64,8 +77,8 @@ const TestWrapper = ({ children, defaultValues = {} }: TestWrapperProps) => {
       offeredPlayerIds: [],
       currencyGroups: [],
       betLevels: [],
-      ...defaultValues
-    }
+      ...defaultValues,
+    },
   });
 
   return children({ control, setValue, errors });
@@ -119,7 +132,12 @@ describe("Step2 Component", () => {
   it("handles game selection correctly", async () => {
     const toggleGame = jest.fn();
     render(
-      <TestWrapper defaultValues={{ currencyGroups: ["USD"], gameConfigType: GAME_TYPES.CLASSIC }}>
+      <TestWrapper
+        defaultValues={{
+          currencyGroups: ["USD"],
+          gameConfigType: GAME_TYPES.CLASSIC,
+        }}
+      >
         {({ control, setValue, errors }) => (
           <Step2
             {...defaultProps}
@@ -194,14 +212,23 @@ describe("Step2 Component", () => {
       </TestWrapper>
     );
 
-    expect(screen.getByText("Loading currency groups...")).toBeInTheDocument();
-    expect(screen.getByText("No games available. Please select Game Type and Currency Groups.")).toBeInTheDocument();
+    expect(screen.getByText("Loading Currency Groups...")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "No games available. Please select a currency group in the Currency Group Settings."
+      )
+    ).toBeInTheDocument();
   });
 
   it("handles error states correctly", () => {
     const error = new Error("Failed to load games");
     render(
-      <TestWrapper defaultValues={{ currencyGroups: ["USD"], gameConfigType: GAME_TYPES.CLASSIC }}>
+      <TestWrapper
+        defaultValues={{
+          currencyGroups: ["USD"],
+          gameConfigType: GAME_TYPES.CLASSIC,
+        }}
+      >
         {({ control, setValue, errors }) => (
           <Step2
             {...defaultProps}

@@ -63,7 +63,8 @@ function GameSelection({
   if (!shouldShowGames) {
     return (
       <p className="text-sm text-gray-500 italic">
-        No games available. Please select Game Type and Currency Groups.
+        No games available. Please select a currency group in the{" "}
+        <strong>Currency Group Settings.</strong>
       </p>
     );
   }
@@ -186,23 +187,26 @@ export default function Step2({
       <fieldset className="fieldset-wrapper-operator">
         <legend className="legend-wrapper">⚙️ Configuration</legend>
         {/* Bet Settings */}
-        <div className="flex items-center gap-2 mb-2">
-          <span className="form-label font-semibold text-base leading-tight">
-            Currency Group Settings<span className="text-red-500">*</span>
-          </span>
+        <div className="mb-2">
           {isLoadingCurrencyGroups ? (
-            <p className="text-blue-700">Loading currency groups...</p>
+            <p className="text-blue-700 font-medium text-sm">
+              Loading Currency Groups...
+            </p>
           ) : (
             <button
               type="button"
               onClick={() => setOpenBetSettings(true)}
-              className="text-gray-700 hover:text-blue-600 transition"
               aria-label="Edit Bet Settings"
+              className="h-[35px] px-4 bg-emerald-500 text-white rounded-lg font-medium
+            hover:bg-emerald-600 transition-colors flex items-center gap-2
+            border border-transparent focus:outline-none focus:border-black cursor-pointer"
             >
-              <SquarePen className="w-5 mb-3" />
+              <SquarePen className="w-4 h-4" />
+              Currency Group Settings
             </button>
           )}
         </div>
+
         {errors.currencyGroups && (
           <p className="error-message mt-2">{errors.currencyGroups.message}</p>
         )}
