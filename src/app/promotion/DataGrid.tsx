@@ -211,11 +211,12 @@ export default function DataGrid({
                       onClick={() => setViewPromotion(p)}
                       aria-label="view-promotion"
                       className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                      title="View"
                     >
                       <Eye className="w-4 h-4 text-gray-600 hover:text-black" />
                     </button>
                     {status === PROMOTION_STATUS_OPTIONS.Upcoming && (
-                      <button onClick={() => handleEdit(p)}>
+                      <button onClick={() => handleEdit(p)} title="Edit">
                         <Pencil className="w-4 h-4 text-blue-600" />
                       </button>
                     )}
@@ -223,6 +224,7 @@ export default function DataGrid({
                       <button
                         aria-label="delete-promotion"
                         onClick={() => handleDelete(p._id, p.code)}
+                        title="Delete"
                       >
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </button>

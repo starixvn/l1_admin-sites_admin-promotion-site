@@ -164,6 +164,7 @@ export default function PromotionForm({
   const currencyGroups = useWatch({ control, name: "currencyGroups" });
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
   const gameIds = useWatch({ control, name: "gameIds" });
+  const initialGameIds = initialValues?.gameIds ?? [];
   const { data: operators = [] } = useOperators();
   const shouldFetchGames = currencyGroups.length > 0 && !!gameConfigType;
   const {
@@ -173,7 +174,7 @@ export default function PromotionForm({
   } = useFilteredGames({
     currencyGroups: shouldFetchGames ? currencyGroups : [],
     gameType: shouldFetchGames ? gameConfigType : undefined,
-    gameIds: shouldFetchGames ? gameIds : [],
+    gameIds: shouldFetchGames ? initialGameIds : [],
   });
   const operatorId = useWatch({ control, name: "operatorId" });
   const { data: currencyGroupsInfo = [], isLoading: isLoadingCurrencyGroups } =
