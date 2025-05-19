@@ -157,8 +157,9 @@ export default function Page() {
           <div>
             Are you sure you want to delete the Announcement <strong style='color: black; font-weight: 600;'>${deleteTitle}</strong>?
           </div>
+          <br />
           <div>
-            <strong>Reminder:</strong> Any promotion events currently mapped to this announcement will not run until they are mapped to a different announcement.
+            <strong>Reminder:</strong> ALL promotion events currently mapped to this announcement will not run until they are mapped to a different announcement.
           </div>
         `}
         confirmText="Delete"
