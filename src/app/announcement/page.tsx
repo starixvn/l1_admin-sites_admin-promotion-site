@@ -1,7 +1,8 @@
 'use client';
 import { useState, useEffect } from "react";
 import Filter from "./Filter";
-import DataGrid, { Announcement } from "./DataGrid";
+import DataGrid from "./DataGrid";
+import { Announcement } from "@/types/announcement";
 import ConfirmModal from "@/components/ConfirmDialog";
 import AnnouncementDialog from "./create/AnnouncementDialog";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
@@ -137,8 +138,15 @@ export default function Page() {
       </div>
       <ConfirmModal
         open={showConfirm}
-        title="Confirm Deletion"
-        message={`Are you sure you want to delete announcement <strong style='color: black; font-weight: 600;'>${deleteTitle}</strong>? This action is permanent and cannot be undone.`}
+        title={<span style={{ color: 'red', fontWeight: 700 }}>Confirm Deletion</span>}
+        message={`
+          <div>
+            Are you sure you want to delete the Announcement <strong style='color: black; font-weight: 600;'>${deleteTitle}</strong>?
+          </div>
+          <div>
+            <strong>Reminder:</strong> Any promotion events currently mapped to this announcement will not run until they are mapped to a different announcement.
+          </div>
+        `}
         confirmText="Delete"
         cancelText="Cancel"
         onCancel={() => setShowConfirm(false)}

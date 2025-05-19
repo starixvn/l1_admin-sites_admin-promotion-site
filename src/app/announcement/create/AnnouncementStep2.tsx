@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Promotion } from "@/types/promotion";
 import { Operator } from "@/types/operator";
 import { usePromotions } from '@/hooks/usePromotions';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 const countTemplate = 3;
 
@@ -30,6 +31,7 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
   const [operators, setOperators] = useState<Operator[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [allOperators, setAllOperators] = useState<Operator[]>([]);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const isEditable = mode === 'create' || (mode === 'edit' && status !== 'Upcoming');
 
@@ -122,6 +124,13 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
     });
     setValue("promotionMappings", updatedMappings);
     await trigger("promotionMappings");
+  };
+  const handleSaveClick = () => {
+    setShowConfirm(true);
+  };
+  const handleConfirmSave = () => {
+    setShowConfirm(false);
+    onSave();
   };
 
   return (
@@ -247,10 +256,19 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
       <div className="w-full max-w-3xl mx-auto flex justify-between gap-2 pt-2 mt-auto pb-4">
         <button className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-1.5 rounded-lg font-semibold shadow transition text-sm" onClick={onBack} type="button">← Back</button>
         <div className="flex gap-1.5">
-          <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded-lg font-semibold shadow transition text-sm" onClick={onPreview} type="button">Preview</button>
-          <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded-lg font-semibold shadow transition text-sm" onClick={onSave} type="button">Save</button>
+          <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded-lg font-semibold shadow transition text-sm" onClick={handleSaveClick} type="button">Save</button>
         </div>
       </div>
+      <ConfirmDialog
+        open={showConfirm}
+        title={<span style={{ color: 'red', fontWeight: 700 }}>Confirm Save</span>}
+        message={`<div>Are you sure you want to save this announcement?</div>
+          <div><strong>Reminder:</strong> Please double-check all information before saving.</div>`}
+        confirmText="Yes"
+        cancelText="No"
+        onCancel={() => setShowConfirm(false)}
+        onConfirm={handleConfirmSave}
+      />
     </div>
   );
 } 

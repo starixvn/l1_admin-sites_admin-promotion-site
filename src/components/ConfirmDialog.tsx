@@ -2,7 +2,7 @@ import React from "react";
 
 interface ConfirmDialogProps {
   open: boolean;
-  title?: string;
+  title?: React.ReactNode;
   message?: string;
   confirmText?: string;
   cancelText?: string;
@@ -25,8 +25,8 @@ export default function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className="bg-white rounded-lg p-6 w-[480px] space-y-4 shadow-lg">
-        <h2 className="text-base font-semibold text-gray-900 border-b border-gray-200">
+      <div className="bg-white rounded-lg p-6 w-[550px] space-y-4 shadow-lg">
+        <h2 className="text-base font-semibold border-b border-gray-200">
           {title}
         </h2>
         <p 

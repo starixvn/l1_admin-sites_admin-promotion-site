@@ -1,12 +1,13 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import AnnouncementForm from "./AnnouncementForm";
 import AnnouncementDetailView from "./AnnouncementDetailView";
+import { Announcement } from "@/types/announcement";
 
 export default function AnnouncementDialog({ open, onClose, onCreated, announcement, mode = 'create' }: {
   open: boolean;
   onClose: () => void;
   onCreated?: () => void;
-  announcement?: any;
+  announcement?: Announcement;
   mode?: 'create' | 'edit' | 'view';
 }) {
   return (
@@ -22,7 +23,9 @@ export default function AnnouncementDialog({ open, onClose, onCreated, announcem
         </div>
         {/* Stepper & Form or Detail */}
         {mode === 'view' ? (
-          <AnnouncementDetailView announcement={announcement} onClose={onClose} />
+          announcement ? (
+            <AnnouncementDetailView announcement={announcement} onClose={onClose} />
+          ) : null
         ) : (
           <AnnouncementForm onClose={onClose} onCreated={onCreated} initialValues={announcement} mode={mode} />
         )}

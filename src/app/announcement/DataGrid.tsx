@@ -3,22 +3,7 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import { PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import configs from "../../../configs";
-
-export interface Announcement {
-  _id: string;
-  promotionTitle: Record<string, string>;
-  bannerContent: Record<string, string>;
-  termsAndConditions: Record<string, string>;
-  fromDate: string;
-  toDate: string;
-  promotionMappings: {
-    operatorId: string;
-    promotionCode: string;
-  }[];
-  template: number;
-  createdAt: string;
-  updatedAt: string;
-}
+import { Announcement } from "@/types/announcement";
 
 export function getStatusStyle(status: string) {
   switch (status) {
