@@ -407,9 +407,7 @@ export default function BetSettingsDialog({
           <div className="absolute bottom-7 left-6 text-red-600 text-xs font-medium">
             {rows.every((r) => !r.enabled)
               ? "❗ At least one currency group must be enabled for the promotion."
-              : `❗ Please make sure all enabled rows have ${
-                  gameType === GAME_TYPES.CLASSIC ? "Bet Level" : "Coin Value"
-                } greater than 0`}
+              : `❗ Input value must be greater than 0`}
           </div>
         )}
       </DialogContent>

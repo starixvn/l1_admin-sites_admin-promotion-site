@@ -244,7 +244,7 @@ export default function Step2({
       </fieldset>
 
       <fieldset className="fieldset-wrapper-games">
-        <legend className="legend-wrapper">🎮 Game Selection</legend>
+        <legend className="legend-wrapper">🎮 Game Selection <span className="text-red-500">*</span></legend>
         <GameSelection
           shouldShowGames={shouldShowGames}
           isLoading={isLoading}
