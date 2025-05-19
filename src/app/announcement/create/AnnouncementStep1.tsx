@@ -10,20 +10,21 @@ const LANGS = [
   { code: "id-ID", label: "id-ID" },
 ];
 
-function getNestedErrorMsg(errorObj: any, key: string): string | undefined {
-  if (!errorObj) return undefined;
-  if (typeof errorObj === "object" && key in errorObj && errorObj[key]?.message) {
+function getNestedErrorMsg(errorObj: unknown, key: string): string | undefined {
+  if (!errorObj || typeof errorObj !== "object") return undefined;
+  // @ts-expect-error: dynamic access
+  if (key in errorObj && errorObj[key]?.message) {
+    // @ts-expect-error: dynamic access
     return errorObj[key].message as string;
   }
   return undefined;
 }
 
-export default function AnnouncementStep1({ onNext, status, mode }: { onNext: () => void, status?: string, mode?: 'create' | 'edit' }) {
-  const { register, setValue, watch, formState: { errors } } = useFormContext();
+export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
+  const { setValue, watch, formState: { errors } } = useFormContext();
   const promotionTitle = watch("promotionTitle");
   const bannerContent = watch("bannerContent");
   const termsAndConditions = watch("termsAndConditions");
-
 
   const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -43,9 +44,9 @@ export default function AnnouncementStep1({ onNext, status, mode }: { onNext: ()
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      complete: (results) => {
-        const { data } = results as Papa.ParseResult<any>;
-        data.forEach((row: any) => {
+      complete: (results: Papa.ParseResult<Record<string, string>>) => {
+        const { data } = results;
+        data.forEach((row: Record<string, string>) => {
           const lang = row["Language"]?.trim();
           if (!lang) return;
           if (row["Promotion Title"]) setValue(`promotionTitle.${lang}`, row["Promotion Title"]);
@@ -54,7 +55,7 @@ export default function AnnouncementStep1({ onNext, status, mode }: { onNext: ()
         });
         setValue("uploadedFile", file);
       },
-      error: (err) => {
+      error: () => {
         alert("Upload failed. Please check your data format and try again");
         e.target.value = "";
         setValue("uploadedFile", undefined);

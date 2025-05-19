@@ -1,8 +1,7 @@
-import Image from 'next/image';
 import { Operator } from "@/types/operator";
 import { Promotion } from "@/types/promotion";
-import { Announcement } from "@/types/announcement";
 import React, { useEffect, useState } from "react";
+import { Announcement } from '@/types/announcement';
 
 function formatDateTime(dateStr: string) {
   if (!dateStr) return "";
@@ -58,7 +57,7 @@ export default function AnnouncementDetailView({ announcement, onClose }: { anno
         <div className="flex flex-col h-full">
           <div className="font-semibold text-base mb-2 text-gray-800 border-l-4 border-blue-500 pl-2">Banner Template</div>
           <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm h-full flex flex-col items-center justify-start">
-            <Image
+            <img
               src={`${process.env.NEXT_PUBLIC_API_CONFIGURATION_URL}/template-${announcement.template}/banner-1.png`}
               alt="Banner Template"
               width={120}

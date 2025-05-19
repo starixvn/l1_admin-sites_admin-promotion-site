@@ -5,6 +5,7 @@ import { Promotion } from "@/types/promotion";
 import { Operator } from "@/types/operator";
 import { usePromotions } from '@/hooks/usePromotions';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { PromotionMapping } from "@/types/announcement";
 
 const countTemplate = 3;
 
@@ -21,12 +22,12 @@ function formatDateTime(dateStr: string) {
   }).replace(",", "");
 }
 
-export default function AnnouncementStep2({ onBack, onPreview, onSave, status, mode }: { onBack: () => void; onPreview: () => void; onSave: () => void; status?: string; mode?: 'create' | 'edit' }) {
+export default function AnnouncementStep2({ onBack, onSave, status, mode }: { onBack: () => void; onSave: () => void; status?: string; mode?: 'create' | 'edit' }) {
   const { setValue, watch, formState: { errors }, trigger } = useFormContext();
   const template = watch("template");
   const fromDate = watch("fromDate");
   const toDate = watch("toDate");
-  const promotionMappings = watch("promotionMappings");
+  const promotionMappings: PromotionMapping[] = watch("promotionMappings");
 
   const [operators, setOperators] = useState<Operator[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
@@ -49,7 +50,7 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
   }, []); // Empty dependency array
 
   // Replace the useEffect with usePromotions hook
-  const { promotions: allPromotions, loading: loadingPromotions } = usePromotions({ 
+  const { promotions: allPromotions } = usePromotions({ 
     mode: mode || 'create', // Use the mode from props, default to 'create'
     // Only filter by operatorId in create mode
     operatorId: mode === 'create' && allOperators.length > 0 ? allOperators[0].PartnerId : undefined 
@@ -85,7 +86,7 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
   };
 
   const isDuplicateOperator = (op: string, idx: number) => 
-    promotionMappings.some((m: any, i: number) => m.operatorId === op && i !== idx);
+    promotionMappings.some((m, i) => m.operatorId === op && i !== idx);
   const isDateRangeDiff = (from: string, to: string) => {
     if (!promotionMappings.length || from === "" || to === "") return false;
     const firstPromotionCode = promotionMappings[0].promotionCode;
@@ -100,10 +101,10 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
     }]);
   };
   const handleRemove = (idx: number) => {
-    setValue("promotionMappings", promotionMappings.filter((_: any, i: number) => i !== idx));
+    setValue("promotionMappings", promotionMappings.filter((_, i) => i !== idx));
   };
   const handleChange = async (idx: number, field: string, value: string) => {
-    const updatedMappings = promotionMappings.map((m: any, i: number) => {
+    const updatedMappings = promotionMappings.map((m, i) => {
       if (i === idx) {
         if (field === "operator") {
           return {
@@ -175,15 +176,15 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
       <div className="w-full max-w-3xl mx-auto bg-white border border-gray-200 p-3 rounded-lg shadow-sm flex flex-col gap-1.5 mb-3">
         <div className="font-semibold text-gray-800 mb-1 text-sm">Promotion Mapping <span className="text-red-500">*</span></div>
         <div className="flex flex-col gap-1.5 w-full">
-          {promotionMappings.map((m: any, idx: number) => {
+          {promotionMappings.map((m, idx) => {
             const selectedPromotion = promotions.find(p => p.code === m.promotionCode);
             const from = selectedPromotion?.startDate || "";
             const to = selectedPromotion?.endDate || "";
             const dateDiff = isDateRangeDiff(from, to) && idx > 0;
 
-            const rowError = Array.isArray(errors.promotionMappings) && (errors.promotionMappings as any[])[idx];
-            const operatorError = rowError?.operatorId?.message;
-            const promotionError = rowError?.promotionCode?.message;
+            const rowError = Array.isArray(errors.promotionMappings) && (errors.promotionMappings as { operatorId?: { message?: string }; promotionCode?: { message?: string } }[])[idx];
+            const operatorError = rowError && typeof rowError === 'object' ? rowError.operatorId?.message : undefined;
+            const promotionError = rowError && typeof rowError === 'object' ? rowError.promotionCode?.message : undefined;
 
             return (
               <div key={idx} className="flex flex-col w-full">
@@ -204,7 +205,7 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
                       >
                         <option value="">Select Operator</option>
                         {getFilteredOperators(m.promotionCode)
-                          .filter(op => !promotionMappings.some((mm: any, i: number) => mm.operatorId === op.PartnerId && i !== idx))
+                          .filter(op => !promotionMappings.some((mm, i) => mm.operatorId === op.PartnerId && i !== idx))
                           .map(op => (
                             <option key={op.PartnerId} value={op.PartnerId}>{op.Name}</option>
                           ))}

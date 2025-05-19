@@ -2,7 +2,9 @@
 import { useState, useEffect } from "react";
 import Filter from "./Filter";
 import DataGrid from "./DataGrid";
-import { Announcement } from "@/types/announcement";
+import { Announcement, PromotionMapping } from "@/types/announcement";
+import { Operator } from "@/types/operator";
+import { Promotion } from "@/types/promotion";
 import ConfirmModal from "@/components/ConfirmDialog";
 import AnnouncementDialog from "./create/AnnouncementDialog";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
@@ -31,12 +33,12 @@ export default function Page() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [editAnnouncement, setEditAnnouncement] = useState<any | null>(null);
+  const [editAnnouncement, setEditAnnouncement] = useState<Announcement | null>(null);
   const [dialogMode, setDialogMode] = useState<'create' | 'edit' | 'view'>('create');
   const [openMappingDialog, setOpenMappingDialog] = useState(false);
-  const [mappingData, setMappingData] = useState<any[]>([]);
-  const [operators, setOperators] = useState<any[]>([]);
-  const [promotions, setPromotions] = useState<any[]>([]);
+  const [mappingData, setMappingData] = useState<PromotionMapping[]>([]);
+  const [operators, setOperators] = useState<Operator[]>([]);
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
 
   useEffect(() => {
     setError(null);
@@ -87,8 +89,12 @@ export default function Page() {
           setTotalItems(data.metadata?.total || data.total || 0);
           setCurrentPage(data.metadata?.pageIndex || 1);
         });
-    } catch (err: any) {
-      toast.error(err.message || 'Delete failed!');
+    } catch (err: unknown) {
+      if (err && typeof err === "object" && "message" in err) {
+        toast.error((err as { message?: string }).message || 'Delete failed!');
+      } else {
+        toast.error('Delete failed!');
+      }
     } finally {
       setShowConfirm(false);
       setDeleteId(null);
@@ -105,7 +111,7 @@ export default function Page() {
       });
   };
 
-  const handlePromotionMappingDetail = (mappings: any[]) => {
+  const handlePromotionMappingDetail = (mappings: PromotionMapping[]) => {
     setMappingData(mappings);
     setOpenMappingDialog(true);
   };
@@ -152,7 +158,7 @@ export default function Page() {
         onCancel={() => setShowConfirm(false)}
         onConfirm={handleDeleteConfirm}
       />
-      <AnnouncementDialog open={openDialog} onClose={() => setOpenDialog(false)} onCreated={reloadAnnouncements} announcement={editAnnouncement} mode={editAnnouncement ? dialogMode : 'create'} />
+      <AnnouncementDialog open={openDialog} onClose={() => setOpenDialog(false)} onCreated={reloadAnnouncements} announcement={editAnnouncement ?? undefined} mode={editAnnouncement ? dialogMode : 'create'} />
       <PromotionMappingDialog
         open={openMappingDialog}
         onClose={() => setOpenMappingDialog(false)}

@@ -3,7 +3,7 @@ import { Eye, Pencil, Trash2 } from "lucide-react";
 import { PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import configs from "../../../configs";
-import { Announcement } from "@/types/announcement";
+import { Announcement, PromotionMapping } from "@/types/announcement";
 
 export function getStatusStyle(status: string) {
   switch (status) {
@@ -28,7 +28,7 @@ interface DataGridProps {
   onDelete: (id: string, title: string) => void;
   onEdit?: (announcement: Announcement) => void;
   onView?: (announcement: Announcement) => void;
-  onPromotionMappingDetail?: (mappings: any[]) => void;
+  onPromotionMappingDetail?: (mappings: PromotionMapping[]) => void;
 }
 
 function getAnnouncementStatus(fromDate: string, toDate: string): string {

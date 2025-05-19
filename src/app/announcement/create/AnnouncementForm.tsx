@@ -6,21 +6,12 @@ import AnnouncementStep1 from "./AnnouncementStep1";
 import AnnouncementStep2 from "./AnnouncementStep2";
 import { addDays } from "date-fns";
 import { toast } from "react-toastify";
-import { PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
-
-function getAnnouncementStatus(fromDate: Date, toDate: Date): string {
-  const now = new Date();
-  const from = new Date(fromDate);
-  const to = new Date(toDate);
-  if (now < from) return PROMOTION_STATUS_OPTIONS.Upcoming;
-  if (now > to) return PROMOTION_STATUS_OPTIONS.Completed;
-  return PROMOTION_STATUS_OPTIONS.Running;
-}
+import { Announcement } from "@/types/announcement";
 
 export default function AnnouncementForm({ onClose, onCreated, initialValues, mode = 'create' }: {
   onClose: () => void,
   onCreated?: () => void,
-  initialValues?: any,
+  initialValues?: Announcement,
   mode?: 'create' | 'edit'
 }) {
   const [step, setStep] = useState(1);
@@ -45,28 +36,16 @@ export default function AnnouncementForm({ onClose, onCreated, initialValues, mo
       },
   });
 
-  const { handleSubmit, trigger, getValues, formState: { errors } } = methods;
-
-  const watch = methods.watch;
-  const fromDate = watch("fromDate");
-  const toDate = watch("toDate");
-  const status = getAnnouncementStatus(fromDate, toDate);
+  const { handleSubmit, trigger } = methods;
 
   const handleNext = async () => {
     const valid = await trigger(["promotionTitle", "bannerContent", "termsAndConditions", "uploadedFile"]);
     if (valid) setStep(2);
   };
   const handleBack = () => setStep(1);
-  const handlePreview = async () => {
-    const valid = await trigger();
-    if (valid) {
-      // TODO: show preview modal
-      alert("Preview: " + JSON.stringify(getValues(), null, 2));
-    }
-  };
   const handleSave = handleSubmit(async (data) => {
     try {
-      const { uploadedFile, ...body } = data;
+      const body = { ...data };
       if (mode === 'edit' && initialValues?._id) {
         await fetch(`/api/announcement/${initialValues._id}`, {
           method: 'PUT',
@@ -84,7 +63,7 @@ export default function AnnouncementForm({ onClose, onCreated, initialValues, mo
       }
       onCreated?.();
       onClose();
-    } catch (err) {
+    } catch {
       alert('Failed to save announcement');
     }
   });
@@ -102,8 +81,8 @@ export default function AnnouncementForm({ onClose, onCreated, initialValues, mo
             <div className={`h-full bg-gray-800 transition-all duration-300`} style={{ width: step === 1 ? "50%" : "100%" }} />
           </div>
         </div>
-        {step === 1 && <AnnouncementStep1 onNext={handleNext} status={status} mode={mode} />}
-        {step === 2 && <AnnouncementStep2 onBack={handleBack} onPreview={handlePreview} onSave={handleSave} status={status} mode={mode} />}
+        {step === 1 && <AnnouncementStep1 onNext={handleNext} />}
+        {step === 2 && <AnnouncementStep2 onBack={handleBack} onSave={handleSave} mode={mode} />}
       </div>
     </FormProvider>
   );
