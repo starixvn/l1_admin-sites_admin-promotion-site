@@ -51,7 +51,7 @@ export default function Page() {
   useEffect(() => {
     if (openMappingDialog) {
       fetch("/api/operators").then(res => res.json()).then(setOperators);
-      fetch("/api/promotions?status=not_started&pageIndex=1&pageSize=100")
+      fetch("/api/promotions?pageIndex=1&pageSize=1000")
         .then(res => res.json())
         .then(data => setPromotions(data.items || data.data || []));
     }

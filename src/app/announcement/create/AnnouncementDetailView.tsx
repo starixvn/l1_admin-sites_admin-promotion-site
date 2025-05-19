@@ -26,7 +26,7 @@ export default function AnnouncementDetailView({ announcement, onClose }: { anno
       .then(data => {
         setOperators(data);
       });
-    fetch("/api/promotions?status=not_started&pageIndex=1&pageSize=100")
+    fetch("/api/promotions?pageIndex=1&pageSize=1000")
       .then(res => res.json())
       .then(data => {
         const items = data.items || data.data || [];

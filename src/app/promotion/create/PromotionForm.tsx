@@ -15,6 +15,7 @@ import { checkPromotionCodeExists } from "@/lib/api/checkPromotionCodeExists";
 import { addDays } from "date-fns";
 import PromotionPreviewDialog from "./PromotionPreviewDialog";
 import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
+import { usePromotions } from '@/hooks/usePromotions';
 
 export const promotionSchema = z
   .object({
@@ -177,6 +178,12 @@ export default function PromotionForm({
   const operatorId = useWatch({ control, name: "operatorId" });
   const { data: currencyGroupsInfo = [], isLoading: isLoadingCurrencyGroups } =
     useCurrencyGroups(operatorId);
+
+  // Add usePromotions hook for edit mode
+  const { promotions: availablePromotions } = usePromotions({
+    mode: mode === 'edit' ? 'edit' : 'create',
+    operatorId: operatorId
+  });
 
   useEffect(() => {
     if (initialValues && initialValues.offeredSiteNames) {

@@ -3,6 +3,7 @@ import DateTimePicker from "@/components/custom/date-time-picker";
 import { useEffect, useState } from "react";
 import { Promotion } from "@/types/promotion";
 import { Operator } from "@/types/operator";
+import { usePromotions } from '@/hooks/usePromotions';
 
 const countTemplate = 3;
 
@@ -29,7 +30,6 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
   const [operators, setOperators] = useState<Operator[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [allOperators, setAllOperators] = useState<Operator[]>([]);
-  const [allPromotions, setAllPromotions] = useState<Promotion[]>([]);
 
   const isEditable = mode === 'create' || (mode === 'edit' && status !== 'Upcoming');
 
@@ -39,48 +39,32 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
       .then(res => res.json())
       .then(data => {
         setAllOperators(data);
-        // Initial filter of operators with promotions
-        const operatorsWithPromotions = data.filter((op: Operator) => 
-          allPromotions.some(p => p.operatorId === op.PartnerId)
-        );
-        setOperators(operatorsWithPromotions);
+        setOperators(data);
       })
       .catch(error => {
         console.error("Error fetching operators:", error);
       });
   }, []); // Empty dependency array
 
-  // Fetch all promotions once
-  useEffect(() => {
-    fetch("/api/promotions?status=not_started&pageIndex=1&pageSize=100")
-      .then(res => res.json())
-      .then(data => {
-        const items = data.items || data.data || [];
-        setAllPromotions(items);
-        // Initial filter of promotions with operators
-        const validPromotions = items.filter((p: Promotion) => 
-          allOperators.some(op => op.PartnerId === p.operatorId)
-        );
-        setPromotions(validPromotions);
-      });
-  }, []); // Empty dependency array
+  // Replace the useEffect with usePromotions hook
+  const { promotions: allPromotions, loading: loadingPromotions } = usePromotions({ 
+    mode: mode || 'create', // Use the mode from props, default to 'create'
+    // Only filter by operatorId in create mode
+    operatorId: mode === 'create' && allOperators.length > 0 ? allOperators[0].PartnerId : undefined 
+  });
 
-  // Update filtered lists when either allOperators or allPromotions change
   useEffect(() => {
-    if (allOperators.length > 0 && allPromotions.length > 0) {
-      // Update operators list
-      const operatorsWithPromotions = allOperators.filter((op: Operator) => 
-        allPromotions.some(p => p.operatorId === op.PartnerId)
-      );
-      setOperators(operatorsWithPromotions);
-
-      // Update promotions list
-      const validPromotions = allPromotions.filter((p: Promotion) => 
-        allOperators.some(op => op.PartnerId === p.operatorId)
-      );
+    if (allPromotions.length > 0) {
+      // For edit mode, show all promotions
+      // For create mode, filter promotions with operators
+      const validPromotions = mode === 'create' 
+        ? allPromotions.filter((p: Promotion) => 
+            operators.some(op => op.PartnerId === p.operatorId)
+          )
+        : allPromotions;
       setPromotions(validPromotions);
     }
-  }, [allOperators, allPromotions]);
+  }, [allPromotions, operators, mode]);
 
   const getFilteredPromotions = (operatorId: string) => {
     if (!operatorId) {
@@ -221,7 +205,7 @@ export default function AnnouncementStep2({ onBack, onPreview, onSave, status, m
                       <select
                         value={m.promotionCode || ""}
                         onChange={e => handleChange(idx, "code", e.target.value)}
-                        className={`border border-gray-300 rounded-xl px-2 py-1 text-sm min-w-[100px] h-9 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 hover:border-blue-400 transition-all bg-white ${!isEditable ? 'pointer-events-none opacity-60 bg-gray-100' : ''}`}
+                        className={`border border-gray-300 rounded-xl px-2 py-1 text-sm min-w-[200px] w-[280px] h-9 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 hover:border-blue-400 transition-all bg-white ${!isEditable ? 'pointer-events-none opacity-60 bg-gray-100' : ''}`}
                         disabled={!isEditable}
                       >
                         <option value="">Promotion Code</option>
