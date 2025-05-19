@@ -324,7 +324,7 @@ describe("BetSettingsDialog", () => {
 
     expect(onSave).not.toHaveBeenCalled();
     expect(
-      screen.getByText(/Please make sure all enabled rows have/i)
+      screen.getByText("❗ Input value must be greater than 0")
     ).toBeInTheDocument();
   });
 });

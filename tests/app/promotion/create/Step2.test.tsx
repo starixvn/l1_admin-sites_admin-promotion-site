@@ -108,6 +108,7 @@ describe("Step2 Component", () => {
     isLoading: false,
     error: null,
     toggleGame: jest.fn(),
+    operators: [{ PartnerId: "op1", Name: "Operator 1" }],
   };
 
   it("renders all main sections", () => {
@@ -198,7 +199,12 @@ describe("Step2 Component", () => {
 
   it("shows loading states correctly", () => {
     render(
-      <TestWrapper>
+      <TestWrapper
+        defaultValues={{
+          currencyGroups: ["USD"],
+          gameConfigType: GAME_TYPES.CLASSIC,
+        }}
+      >
         {({ control, setValue, errors }) => (
           <Step2
             {...defaultProps}
@@ -213,11 +219,7 @@ describe("Step2 Component", () => {
     );
 
     expect(screen.getByText("Loading Currency Groups...")).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "No games available. Please select a currency group in the Currency Group Settings."
-      )
-    ).toBeInTheDocument();
+    expect(screen.getByText("Loading games...")).toBeInTheDocument();
   });
 
   it("handles error states correctly", () => {
