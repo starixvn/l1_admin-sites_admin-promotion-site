@@ -2,6 +2,7 @@ import React from "react";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
+import configs from "../../../configs";
 
 export interface Announcement {
   _id: string;
@@ -93,7 +94,7 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
                 </td>
                 <td className="px-4 py-4 text-center">
                   <img
-                    src={`${process.env.NEXT_PUBLIC_API_CONFIGURATION_URL}/template-${a.template}/banner-1.png`}
+                    src={`${configs.apiConfigurationUrl}/template-${a.template}/banner-1.png`}
                     alt="Banner Template"
                     className="h-12 w-auto rounded shadow object-contain border mx-auto"
                     style={{ maxWidth: 100 }}
