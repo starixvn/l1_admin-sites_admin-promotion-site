@@ -12,7 +12,7 @@ export default function AnnouncementDialog({ open, onClose, onCreated, announcem
 }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="min-w-[850px] max-w-[72rem] p-0 bg-white rounded-2xl shadow-2xl border-0 max-h-[100vh]">
+      <DialogContent aria-describedby={undefined} className="min-w-[850px] max-w-[72rem] p-0 bg-white rounded-2xl shadow-2xl border-0 max-h-[100vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-8 pt-8 pb-4 border-b">
           <DialogTitle asChild>

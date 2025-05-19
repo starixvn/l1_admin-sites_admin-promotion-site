@@ -1,5 +1,5 @@
 import React from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface Mapping {
   operatorId: string;
@@ -26,9 +26,11 @@ export default function PromotionMappingDialog({ open, onClose, mappings, operat
 }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="min-w-[800px] max-w-2xl w-full p-0 bg-white rounded-2xl shadow-xl border border-gray-100">
+      <DialogContent aria-describedby={undefined} className="min-w-[800px] max-w-2xl w-full p-0 bg-white rounded-2xl shadow-xl border border-gray-100">
         <div className="px-8 pt-8 pb-4 border-b flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Promotion Mapping</h2>
+          <DialogTitle asChild>
+            <h2 className="text-2xl font-bold text-gray-900">Promotion Mapping</h2>
+          </DialogTitle>
         </div>
         <div className="px-8">
           <div className="flex flex-col">

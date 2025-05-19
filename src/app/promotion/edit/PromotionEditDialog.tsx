@@ -21,7 +21,7 @@ export default function PromotionEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="dialog-content">
+      <DialogContent aria-describedby={undefined} className="dialog-content">
         <div className="flex items-center justify-between px-6 pt-6 pb-2 border-b">
           <DialogTitle className="text-2xl font-bold text-gray-800">
             Edit Promotion
