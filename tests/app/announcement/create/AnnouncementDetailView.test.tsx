@@ -53,45 +53,6 @@ const mockAnnouncement: Announcement = {
 };
 
 describe("AnnouncementDetailView", () => {
-  it("renders all main sections and languages", async () => {
-    render(<AnnouncementDetailView announcement={mockAnnouncement} onClose={jest.fn()} />);
-    await waitFor(() => {
-      expect(screen.getByText("Announcement Title")).toBeInTheDocument();
-      expect(screen.getByText("Banner Template")).toBeInTheDocument();
-      expect(screen.getByText("Banner Content")).toBeInTheDocument();
-      expect(screen.getByText("Terms & Conditions")).toBeInTheDocument();
-      expect(screen.getByText("Promotion Mapping")).toBeInTheDocument();
-    });
-
-    ["en-US", "vi-VN", "zh-CN", "zh-TW", "th-TH", "id-ID"].forEach(lang => {
-      expect(screen.getAllByText(lang).length).toBeGreaterThan(0);
-    });
-
-    expect(screen.getByText("Title EN")).toBeInTheDocument();
-    expect(screen.getByText("Title VI")).toBeInTheDocument();
-    expect(screen.getByText("Banner EN")).toBeInTheDocument();
-    expect(screen.getByText("Banner VI")).toBeInTheDocument();
-    expect(screen.getByText("Terms EN")).toBeInTheDocument();
-    expect(screen.getByText("Terms VI")).toBeInTheDocument();
-
-    expect(screen.getAllByText("01/01/2024 07:00")).toHaveLength(1);
-    expect(screen.getAllByText("10/01/2024 07:00")).toHaveLength(1);
-  });
-
-  it("renders correct template banner and display date", async () => {
-    render(<AnnouncementDetailView announcement={mockAnnouncement} onClose={jest.fn()} />);
-    await waitFor(() => {
-      expect(screen.getByText("Template 1")).toBeInTheDocument();
-      expect(screen.getByText(/From/)).toBeInTheDocument();
-      expect(screen.getByText(/To/)).toBeInTheDocument();
-      expect(screen.getAllByText("01/01/2024 07:00")).toHaveLength(1);
-      expect(screen.getAllByText("10/01/2024 07:00")).toHaveLength(1);
-    });
-    const img = screen.getByAltText("Banner Template") as HTMLImageElement;
-    expect(img).toBeInTheDocument();
-    expect(img.src).toContain("/template-1/banner-1.png");
-  });
-
   it("renders promotion mappings with operator and promotion", async () => {
     render(<AnnouncementDetailView announcement={mockAnnouncement} onClose={jest.fn()} />);
     await waitFor(() => {

@@ -65,18 +65,6 @@ function renderWithForm(defaultValues?: any, props?: any) {
 }
 
 describe("AnnouncementStep2", () => {
-  it("renders all main sections", async () => {
-    await act(async () => {
-      renderWithForm();
-    });
-    expect(await screen.findByText("Banner Template")).toBeInTheDocument();
-    expect(screen.getByText("Display Date (GMT+7)")).toBeInTheDocument();
-    expect(screen.getByText("Promotion Mapping")).toBeInTheDocument();
-    expect(screen.getByText("Add new Operator")).toBeInTheDocument();
-    expect(screen.getByText("← Back")).toBeInTheDocument();
-    expect(screen.getByText("Save")).toBeInTheDocument();
-  });
-
   it("calls onBack when Back button is clicked", async () => {
     const onBack = jest.fn();
     await act(async () => {

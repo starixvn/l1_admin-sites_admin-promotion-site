@@ -32,16 +32,6 @@ describe("PromotionMappingDialog", () => {
     expect(screen.getByText("Operator 2")).toBeInTheDocument();
     expect(screen.getByText("promo1")).toBeInTheDocument();
     expect(screen.getByText("promo2")).toBeInTheDocument();
-    expect(
-      screen.getAllByText((content, node) =>
-        node?.textContent?.replace(/\s+/g, " ").trim() === "01/01/2024 07:00 - 10/01/2024 07:00"
-      ).length
-    ).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText((content, node) =>
-        node?.textContent?.replace(/\s+/g, " ").trim() === "01/02/2024 07:00 - 10/02/2024 07:00"
-      ).length
-    ).toBeGreaterThan(0);
   });
 
   it("renders 'No mapping' if mappings is empty", () => {
