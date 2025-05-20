@@ -8,8 +8,6 @@ export async function GET(req: NextRequest) {
   if (!code) {
     return NextResponse.json({ error: "code is required" }, { status: 400 });
   }
-  console.log("code", code);
-  console.log("configs.apiPromotionUrl", configs.apiPromotionUrl);
   try {
     const res = await axios.get(`${configs.apiPromotionUrl}/promotions/check-code`, {
       params: { code },

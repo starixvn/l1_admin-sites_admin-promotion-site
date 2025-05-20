@@ -2,7 +2,8 @@ import { GAME_TYPES } from "@/constants/gameTypes";
 import {
   selectSuggestedBetLevel,
   validateBetRows,
-  createOperatorMap
+  createOperatorMap,
+  getSecureRandomIndex
 } from "@/lib/promotion/bet-settings.utils";
 
 describe("selectSuggestedBetLevel", () => {
@@ -128,3 +129,48 @@ describe("createOperatorMap", () => {
     expect(map.size).toBe(2);
   });
 });
+
+describe('getSecureRandomIndex', () => {
+  const originalCrypto = window.crypto;
+
+  beforeEach(() => {
+    // mock window.crypto.getRandomValues
+    Object.defineProperty(window, 'crypto', {
+      value: {
+        getRandomValues: jest.fn(),
+      },
+      writable: true,
+    });
+  });
+
+  afterEach(() => {
+    window.crypto = originalCrypto;
+  });
+
+  it('should return index between 0 and max - 1', () => {
+    const mockValue = 123456;
+
+    (window.crypto.getRandomValues as jest.Mock).mockImplementation((arr) => {
+      arr[0] = mockValue;
+      return arr;
+    });
+
+    const result = getSecureRandomIndex(10);
+    expect(result).toBe(mockValue % 10);
+    expect(result).toBeGreaterThanOrEqual(0);
+    expect(result).toBeLessThan(10);
+  });
+
+  it('should return 0 if random value is divisible by max', () => {
+    const mockValue = 20;
+
+    (window.crypto.getRandomValues as jest.Mock).mockImplementation((arr) => {
+      arr[0] = mockValue;
+      return arr;
+    });
+
+    const result = getSecureRandomIndex(10);
+    expect(result).toBe(0);
+  });
+});
+

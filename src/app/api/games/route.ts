@@ -13,7 +13,6 @@ export async function GET(req: NextRequest) {
 
   try {
     const token = await getAccessToken();
-    console.log(gameType, currencyGroups, gameIds);
     if (gameType && currencyGroups) {
       const response = await axios.get(
         `${configs.apiBaseUrl}/general_game_settings/games`,
