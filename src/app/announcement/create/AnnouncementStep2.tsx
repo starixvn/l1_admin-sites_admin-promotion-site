@@ -136,7 +136,7 @@ const MappingRow = ({
             <select
               value={mapping.promotionCode || ""}
               onChange={e => onPromotionChange(idx, e.target.value)}
-              className={`border border-gray-300 rounded-xl px-2 py-1 text-sm min-w-[200px] w-[280px] h-9 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 hover:border-blue-400 transition-all bg-white ${!isEditable ? 'pointer-events-none opacity-60 bg-gray-100' : ''}`}
+              className={`border border-gray-300 rounded-xl px-2 py-1 text-sm min-w-[200px] w-[260px] h-9 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 hover:border-blue-400 transition-all bg-white ${!isEditable ? 'pointer-events-none opacity-60 bg-gray-100' : ''}`}
               disabled={!isEditable}
             >
               <option value="">Promotion Code</option>
@@ -252,8 +252,11 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
     setValue("promotionMappings", updatedMappings);
     await trigger("promotionMappings");
   };
-  const handleSaveClick = () => {
-    setShowConfirm(true);
+  const handleSaveClick = async () => {
+    const isValid = await trigger(["template", "fromDate", "toDate", "promotionMappings"]);
+    if (isValid) {
+      setShowConfirm(true);
+    }
   };
   const handleConfirmSave = () => {
     setShowConfirm(false);

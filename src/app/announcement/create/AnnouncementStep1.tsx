@@ -68,12 +68,10 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
             setValue(`termsAndConditions.${lang}`, row["Terms & Conditions"]);
           }
         });
-        setValue("uploadedFile", file);
       },
       error: () => {
         alert("Upload failed. Please check your data format and try again");
         e.target.value = "";
-        setValue("uploadedFile", undefined);
       },
     });
   };

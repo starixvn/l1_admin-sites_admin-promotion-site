@@ -28,7 +28,6 @@ export default function AnnouncementForm({ onClose, onCreated, initialValues, mo
         promotionTitle: { "en-US": "" },
         bannerContent: { "en-US": "" },
         termsAndConditions: { "en-US": "" },
-        uploadedFile: undefined,
         template: 1,
         fromDate: addDays(new Date(), 7),
         toDate: addDays(new Date(), 7),
@@ -39,7 +38,7 @@ export default function AnnouncementForm({ onClose, onCreated, initialValues, mo
   const { handleSubmit, trigger } = methods;
 
   const handleNext = async () => {
-    const valid = await trigger(["promotionTitle", "bannerContent", "termsAndConditions", "uploadedFile"]);
+    const valid = await trigger(["promotionTitle", "bannerContent", "termsAndConditions"]);
     if (valid) {
       setStep(2);
     }

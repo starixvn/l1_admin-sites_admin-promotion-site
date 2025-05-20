@@ -10,7 +10,6 @@ export const announcementSchema = z.object({
   termsAndConditions: z.object({
     "en-US": z.string().min(1, "English terms & conditions are required").max(6500),
   }).catchall(z.string().max(6500)),
-  uploadedFile: z.any().optional(),
   template: z.number().min(1, "Banner is required"),
   fromDate: z.date({ required_error: "Start date is required" }),
   toDate: z.date({ required_error: "End date is required" }),
