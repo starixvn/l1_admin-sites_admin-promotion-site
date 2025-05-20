@@ -7,12 +7,25 @@ export const selectSuggestedBetLevel = (
   groupGames: CurrencyGroupGame[],
   gameIds?: number[]
 ): number => {
-  const filtered = groupGames.filter((gg) => gameIds?.includes(gg.GameId));
+  const filtered = groupGames
+    .filter((gg) => {
+      if (type === GAME_TYPES.CLASSIC) {
+        return gg.BetLevels?.length > 0 && gg.Enabled;
+      }
+      if (type === GAME_TYPES.CASCADING) {
+        return gg.CoinValues?.length > 0 && gg.Enabled;
+      }
+      return false;
+    })
+    .sort((a, b) => b.GameId - a.GameId); // Sort descending by GameId
+
   if (filtered.length === 0) {
+    console.log("No game found");
     return type === GAME_TYPES.CASCADING ? 1 : 0.1;
   }
-  const index = getSecureRandomIndex(filtered.length);
-  const selected = filtered[index];
+
+  const selected = filtered[0];
+
   return type === GAME_TYPES.CASCADING
     ? selected.DefaultCoinValue ?? 1
     : selected.DefaultBetLevel ?? 0.1;

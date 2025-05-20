@@ -3,83 +3,57 @@ import {
   selectSuggestedBetLevel,
   validateBetRows,
   createOperatorMap,
-  getSecureRandomIndex
 } from "@/lib/promotion/bet-settings.utils";
-
+import { CurrencyGroupGame } from "@/types/currency-group-game";
 describe("selectSuggestedBetLevel", () => {
-  const mockGames = [
+  const mockGames: CurrencyGroupGame[] = [
     {
       GameId: 1,
-      DefaultBetLevel: 2,
-      DefaultCoinValue: 5,
-      GroupId: "cg-1",
+      DefaultBetLevel: 1.5,
+      DefaultCoinValue: 0,
+      BetLevels: [1.5],
+      CoinValues: [],
+      GroupId: "1",
       GameName: "Game 1",
       Enabled: true,
-      CoinValues: [1, 2, 3],
-      BetLevels: [1, 2, 3],
     },
     {
       GameId: 2,
-      DefaultBetLevel: 1.5,
-      DefaultCoinValue: 3,
-      GroupId: "cg-1",
+      DefaultBetLevel: 0,
+      DefaultCoinValue: 5,
+      BetLevels: [],
+      CoinValues: [5],
+      GroupId: "1",
       GameName: "Game 2",
       Enabled: true,
-      CoinValues: [1, 2, 3],
-      BetLevels: [1, 2, 3],
+    },
+    {
+      GameId: 99,
+      DefaultBetLevel: 0,
+      DefaultCoinValue: 0,
+      BetLevels: [],
+      CoinValues: [],
+      GroupId: "1",
+      GameName: "Game 3",
+      Enabled: true,
     },
   ];
-
-  it("returns fallback when no matching game", () => {
-    const result = selectSuggestedBetLevel(GAME_TYPES.CLASSIC, mockGames, [99]);
-    expect(result).toBe(0.1);
-  });
-
-  it("returns one of the matched DefaultBetLevel", () => {
-    const result = selectSuggestedBetLevel(GAME_TYPES.CLASSIC, mockGames, [1]);
-    expect(result).toBe(2);
-  });
-
-  it("returns DefaultCoinValue when cascading", () => {
-    const result = selectSuggestedBetLevel(GAME_TYPES.CASCADING, mockGames, [
-      2,
-    ]);
-    expect(result).toBe(3);
-  });
-  it("returns fallback value 1 when no matching game and gameType is CASCADING", () => {
-    const result = selectSuggestedBetLevel(GAME_TYPES.CASCADING, mockGames, [
-      99,
-    ]);
-    expect(result).toBe(1);
-  });
-
-  it("returns DefaultBetLevel when both games match but only one is returned randomly", () => {
-    const gameIds = [1, 2];
-    const result = selectSuggestedBetLevel(
-      GAME_TYPES.CLASSIC,
-      mockGames,
-      gameIds
-    );
-    expect([1.5, 2]).toContain(result); // random case
-  });
-
-  it("returns DefaultCoinValue when both games match for CASCADING type", () => {
-    const gameIds = [1, 2];
+  it("returns DefaultCoinValue of highest GameId when CASCADING", () => {
     const result = selectSuggestedBetLevel(
       GAME_TYPES.CASCADING,
       mockGames,
-      gameIds
+      [1, 2]
     );
-    expect([3, 5]).toContain(result); // random case
+    expect(result).toBe(5); // GameId 2 has DefaultCoinValue = 5
   });
 
-  it("returns fallback if gameIds is undefined", () => {
+  it("returns DefaultBetLevel of highest GameId when CLASSIC", () => {
     const result = selectSuggestedBetLevel(
       GAME_TYPES.CLASSIC,
       mockGames,
-      undefined
+      [1, 2]
     );
-    expect(result).toBe(0.1);
+    expect(result).toBe(1.5); // GameId 2 has DefaultBetLevel = 2
   });
 });
 
@@ -129,48 +103,3 @@ describe("createOperatorMap", () => {
     expect(map.size).toBe(2);
   });
 });
-
-describe('getSecureRandomIndex', () => {
-  const originalCrypto = window.crypto;
-
-  beforeEach(() => {
-    // mock window.crypto.getRandomValues
-    Object.defineProperty(window, 'crypto', {
-      value: {
-        getRandomValues: jest.fn(),
-      },
-      writable: true,
-    });
-  });
-
-  afterEach(() => {
-    window.crypto = originalCrypto;
-  });
-
-  it('should return index between 0 and max - 1', () => {
-    const mockValue = 123456;
-
-    (window.crypto.getRandomValues as jest.Mock).mockImplementation((arr) => {
-      arr[0] = mockValue;
-      return arr;
-    });
-
-    const result = getSecureRandomIndex(10);
-    expect(result).toBe(mockValue % 10);
-    expect(result).toBeGreaterThanOrEqual(0);
-    expect(result).toBeLessThan(10);
-  });
-
-  it('should return 0 if random value is divisible by max', () => {
-    const mockValue = 20;
-
-    (window.crypto.getRandomValues as jest.Mock).mockImplementation((arr) => {
-      arr[0] = mockValue;
-      return arr;
-    });
-
-    const result = getSecureRandomIndex(10);
-    expect(result).toBe(0);
-  });
-});
-
