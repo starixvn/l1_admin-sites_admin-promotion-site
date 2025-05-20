@@ -6,6 +6,8 @@ import { Operator } from "@/types/operator";
 import { usePromotions } from '@/hooks/usePromotions';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { PromotionMapping } from "@/types/announcement";
+import configs from "../../../../configs";
+import { ImageIcon } from "lucide-react";
 
 const countTemplate = 3;
 
@@ -153,6 +155,34 @@ const MappingRow = ({
   );
 };
 
+// Add this component for template image
+const TemplateImage = ({ template }: { template: number }) => {
+  if (!configs.apiConfigurationUrl) {
+    return (
+      <div className="w-32 h-20 rounded bg-gray-100 flex items-center justify-center">
+        <ImageIcon className="w-8 h-8 text-gray-400" />
+      </div>
+    );
+  }
+
+  return (
+    <img 
+      src={`${configs.apiConfigurationUrl}/template-${template}/banner-1.png`} 
+      alt={`Template ${template}`} 
+      className="w-32 h-20 rounded object-cover"
+      onError={(e) => {
+        const target = e.target as HTMLImageElement;
+        target.style.display = 'none';
+        target.parentElement?.classList.add('bg-gray-100');
+        const icon = document.createElement('div');
+        icon.className = 'w-32 h-20 rounded bg-gray-100 flex items-center justify-center';
+        icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`;
+        target.parentElement?.appendChild(icon);
+      }}
+    />
+  );
+};
+
 export default function AnnouncementStep2({ onBack, onSave, status, mode }: { onBack: () => void; onSave: () => void; status?: string; mode?: 'create' | 'edit' }) {
   const { setValue, watch, formState: { errors }, trigger } = useFormContext();
   const template = watch("template");
@@ -271,7 +301,7 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
         <div className="flex justify-center gap-4">
           {Array.from({ length: countTemplate }, (_, i) => (
             <div key={i + 1} className={`cursor-pointer border-2 rounded-lg p-1 ${template === i + 1 ? 'border-emerald-500' : 'border-transparent'}`} onClick={() => setValue("template", i + 1)}>
-              <img src={`${process.env.NEXT_PUBLIC_API_CONFIGURATION_URL}/template-${i + 1}/banner-1.png`} alt={`Template ${i + 1}`} className="w-32 h-20 rounded object-cover" />
+              <TemplateImage template={i + 1} />
               <div className="text-center mt-1 text-sm font-medium">{`Template ${i + 1}`}</div>
             </div>
           ))}

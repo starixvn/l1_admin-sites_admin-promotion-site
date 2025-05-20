@@ -2,6 +2,8 @@ import { Operator } from "@/types/operator";
 import { Promotion } from "@/types/promotion";
 import React, { useEffect, useState } from "react";
 import { Announcement } from '@/types/announcement';
+import { ImageIcon } from "lucide-react";
+import configs from "../../../../configs";
 
 function formatDateTime(dateStr: string) {
   if (!dateStr) {
@@ -17,6 +19,37 @@ function formatDateTime(dateStr: string) {
     hour12: false,
   }).replace(",", "");
 }
+
+const TemplateImage = ({ template }: { template: number }) => {
+  if (!configs.apiConfigurationUrl) {
+    return (
+      <div className="h-20 w-auto rounded bg-gray-100 flex items-center justify-center" style={{ maxWidth: 120 }}>
+        <ImageIcon className="w-8 h-8 text-gray-400" />
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={`${configs.apiConfigurationUrl}/template-${template}/banner-1.png`}
+      alt="Banner Template"
+      width={120}
+      height={80}
+      className="h-20 w-auto rounded-lg shadow border mb-2"
+      style={{ maxWidth: 120 }}
+      onError={(e) => {
+        const target = e.target as HTMLImageElement;
+        target.style.display = 'none';
+        target.parentElement?.classList.add('bg-gray-100');
+        const icon = document.createElement('div');
+        icon.className = 'h-20 w-auto rounded bg-gray-100 flex items-center justify-center';
+        icon.style.maxWidth = '120px';
+        icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`;
+        target.parentElement?.appendChild(icon);
+      }}
+    />
+  );
+};
 
 export default function AnnouncementDetailView({ announcement, onClose }: { announcement: Announcement, onClose: () => void }) {
   const [operators, setOperators] = useState<Operator[]>([]);
@@ -61,14 +94,7 @@ export default function AnnouncementDetailView({ announcement, onClose }: { anno
         <div className="flex flex-col h-full">
           <div className="font-semibold text-base mb-2 text-gray-800 border-l-4 border-blue-500 pl-2">Banner Template</div>
           <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm h-full flex flex-col items-center justify-start">
-            <img
-              src={`${process.env.NEXT_PUBLIC_API_CONFIGURATION_URL}/template-${announcement.template}/banner-1.png`}
-              alt="Banner Template"
-              width={120}
-              height={80}
-              className="h-20 w-auto rounded-lg shadow border mb-2"
-              style={{ maxWidth: 120 }}
-            />
+            <TemplateImage template={announcement.template} />
             <span className="font-medium text-sm mb-3">Template {announcement.template}</span>
             <div className="w-full">
               <div className="font-semibold text-base mb-2 text-gray-800 border-l-4 border-blue-500 pl-2">Display Date (GMT+7)</div>
