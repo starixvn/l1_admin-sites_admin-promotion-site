@@ -118,7 +118,7 @@ export default function PromotionViewForm({
       </section>
       <ReadOnlyField
         label="Site Offering"
-        value={offeredSiteNames?.join("; ") || ""}
+        value={offeredSiteNames?.join("; ") || "All Sites"}
         require={false}
       />
 
