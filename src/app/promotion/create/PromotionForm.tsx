@@ -342,7 +342,7 @@ export default function PromotionForm({
         betLevel,
       })),
       bonusItemCount: data.bonusItemCount,
-      code: data.code,
+      code: data.code.toLowerCase(),
       currencyGroups: data.currencyGroups,
       gameConfigType: data.gameConfigType,
       gameIds: data.gameIds,
