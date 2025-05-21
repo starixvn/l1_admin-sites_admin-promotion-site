@@ -18,6 +18,7 @@ import { useEffect, useState } from "react";
 import { CurrencyGroup } from "@/types/currency-group";
 import { PlayerListModal } from "./PlayerListModal";
 import { Operator } from "@/types/operator";
+import { parseSiteInput } from "@/lib/promotion/promotion.utils";
 
 interface Step2Props {
   mode: string;
@@ -182,6 +183,10 @@ export default function Step2({
       setValue("gameIds", validGameIds);
     }
   }, [games]);
+  useEffect(() => {
+    const array = parseSiteInput(siteInput);
+    setValue("offeredSiteNames", array);
+  }, [siteInput]);
   return (
     <div className="space-y-6">
       <fieldset className="fieldset-wrapper-operator">
@@ -217,19 +222,10 @@ export default function Step2({
             className="form-input"
             placeholder="e.g. site1;site2"
             value={siteInput}
-            onChange={(e) => {
-              const value = e.target.value;
-              setSiteInput(value);
-              const array = Array.from(
-                new Set(
-                  value
-                    .split(";")
-                    .map((s) => s.trim())
-                    .filter(Boolean)
-                )
-              );
-              setValue("offeredSiteNames", array);
-            }}
+            onChange={(e) => setSiteInput(e.target.value)}
+            onBlur={() =>
+              setValue("offeredSiteNames", parseSiteInput(siteInput))
+            }
             disabled={isRunning}
           />
           <p className="text-xs text-muted-foreground mt-1">
@@ -244,7 +240,9 @@ export default function Step2({
       </fieldset>
 
       <fieldset className="fieldset-wrapper-games">
-        <legend className="legend-wrapper">🎮 Game Selection <span className="text-red-500">*</span></legend>
+        <legend className="legend-wrapper">
+          🎮 Game Selection <span className="text-red-500">*</span>
+        </legend>
         <GameSelection
           shouldShowGames={shouldShowGames}
           isLoading={isLoading}
