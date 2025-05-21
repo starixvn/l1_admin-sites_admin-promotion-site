@@ -1,0 +1,208 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import Filter from "./Filter";
+import DataGrid from "./DataGrid";
+import ConfirmModal from "@/components/ConfirmDialog";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { Promotion } from "@/types/promotion";
+import { Operator } from "@/types/operator";
+
+interface PromotionFilters {
+  status: string;
+  operator: string[];
+  promotionCode: string;
+  pageIndex: number;
+  pageSize: number;
+}
+
+export default function Page() {
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [operators, setOperators] = useState<Operator[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalItems, setTotalItems] = useState(0);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deletingPromotionId, setDeletingPromotionId] = useState<string | null>(
+    null
+  );
+  const [deletingPromotionCode, setDeletingPromotionCode] = useState<
+    string | null
+  >(null);
+  const [currentFilters, setCurrentFilters] = useState<PromotionFilters>({
+    status: "All",
+    operator: [],
+    promotionCode: "",
+    pageIndex: 1,
+    pageSize: 10,
+  });
+
+  // Memoize the filter handler to prevent unnecessary re-renders
+  const handleFilterSubmit = useCallback(
+    async (filters: PromotionFilters) => {
+      setCurrentFilters(filters);
+      try {
+        setError(null);
+        const queryParams = new URLSearchParams();
+
+        if (filters.status !== "All") {
+          queryParams.append("status", filters.status);
+        }
+
+        if (filters.operator?.length > 0) {
+          queryParams.append("operator", filters.operator.toString());
+        }
+
+        if (filters.promotionCode) {
+          queryParams.append("promotionCode", filters.promotionCode);
+        }
+
+        queryParams.append("pageIndex", filters.pageIndex.toString());
+        queryParams.append("pageSize", filters.pageSize.toString());
+
+        const response = await axios.get(
+          `/api/promotions?${queryParams.toString()}`
+        );
+        setPromotions(response.data.items);
+        setTotalItems(response.data.metadata.total);
+      } catch (error) {
+        console.error(error);
+        setError("Failed to fetch promotions");
+      }
+    },
+    [operators]
+  );
+
+  // Fetch operators only once on mount
+  useEffect(() => {
+    const fetchOperators = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get("/api/operators");
+        const operatorsList = response.data.map((op: Operator) => ({
+          Name: op.Name,
+          PartnerId: op.PartnerId,
+        }));
+        setOperators(operatorsList);
+
+        // Set initial operator filter only if empty
+        if (currentFilters.operator.length === 0) {
+          const newFilters = {
+            ...currentFilters,
+            operator: operatorsList.map((op: Operator) => op.PartnerId),
+          };
+          setCurrentFilters(newFilters);
+          handleFilterSubmit(newFilters);
+        }
+      } catch (error) {
+        console.error("Failed to fetch operators:", error);
+        setError("Failed to fetch operators");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOperators();
+  }, []); // Empty dependency array - only run on mount
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      handleFilterSubmit({
+        ...currentFilters,
+        pageIndex: newPage,
+      });
+    },
+    [currentFilters, handleFilterSubmit]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (size: number) => {
+      handleFilterSubmit({
+        ...currentFilters,
+        pageSize: size,
+        pageIndex: 1,
+      });
+    },
+    [currentFilters, handleFilterSubmit]
+  );
+
+  const handleDeleteClick = useCallback(async (id: string, code: string) => {
+    setDeletingPromotionId(id);
+    setDeletingPromotionCode(code);
+    setIsDeleteModalOpen(true);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deletingPromotionId) {
+      return;
+    }
+
+    try {
+      await axios.delete(`/api/promotions/${deletingPromotionId}`);
+      setPromotions((prev) =>
+        prev.filter((p) => p._id !== deletingPromotionId)
+      );
+      setIsDeleteModalOpen(false);
+      toast.success("Promotion deleted successfully");
+      handleFilterSubmit(currentFilters); // Refresh the list
+    } catch (error) {
+      console.error("Error deleting promotion:", error);
+      toast.error("Failed to delete promotion");
+    } finally {
+      setDeletingPromotionId(null);
+      setDeletingPromotionCode(null);
+    }
+  }, [deletingPromotionId, currentFilters, handleFilterSubmit]);
+
+  return (
+    <div className="space-y-4 w-full">
+      <h1 className="text-2xl font-semibold text-gray-800 mb-6">
+        Promotion Management
+      </h1>
+
+      {/* Filter section */}
+      <div className="w-full bg-white rounded-xl shadow-sm">
+        <Filter
+          onFilterChange={handleFilterSubmit}
+          operatorOptions={operators}
+          initialFilters={currentFilters}
+        />
+      </div>
+
+      {/* Data grid */}
+      <div className="w-full bg-white rounded-xl shadow-sm">
+        <DataGrid
+          promotions={promotions}
+          loading={loading}
+          error={error}
+          onDelete={handleDeleteClick}
+          onRefresh={() => handleFilterSubmit(currentFilters)}
+          currentPage={currentFilters.pageIndex}
+          pageSize={currentFilters.pageSize}
+          totalItems={totalItems}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      </div>
+
+      <ConfirmModal
+        open={isDeleteModalOpen}
+        title="Confirm Deletion"
+        message={`Are you sure you want to delete promotion with code <strong style="color: black; font-weight: 600;">${deletingPromotionCode}</strong>? 
+        This action is permanent and cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onCancel={() => {
+          setIsDeleteModalOpen(false);
+          setDeletingPromotionId(null);
+          setDeletingPromotionCode(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+      />
+
+      <ToastContainer />
+    </div>
+  );
+}
