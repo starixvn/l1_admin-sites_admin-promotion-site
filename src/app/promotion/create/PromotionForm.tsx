@@ -73,6 +73,10 @@ export const promotionSchema = z
     message: "Start Date must be earlier than the End Date",
     path: ["startDate"],
   })
+  .refine((data) => data.startDate > new Date(), {
+    message: "Start Date must be greater than the current time",
+    path: ["startDate"],
+  })
   .refine(
     (data) => {
       // ✅ Validate tại đây
