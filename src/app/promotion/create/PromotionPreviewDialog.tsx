@@ -34,7 +34,7 @@ export default function PromotionPreviewDialog({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
         className="w-[70vw] !max-w-[800px] max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-2xl p-0 flex flex-col"
-        aria-describedby="promotion-preview-desc"
+        aria-describedby={!readonly ? "promotion-preview-desc" : undefined}
       >
         <div className="sticky px-6 py-4 border-b bg-white rounded-t-2xl">
           <DialogTitle className="text-2xl font-semibold text-gray-800">
@@ -42,11 +42,6 @@ export default function PromotionPreviewDialog({
               ? "🎯 Promotion Details"
               : "📝 Review & Confirm Promotion"}
           </DialogTitle>
-          <span id="promotion-preview-desc" className="sr-only">
-            {readonly
-              ? "View promotion details"
-              : "Review promotion details and confirm or go back to edit"}
-          </span>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
           <PromotionViewForm

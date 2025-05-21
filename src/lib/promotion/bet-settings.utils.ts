@@ -20,7 +20,6 @@ export const selectSuggestedBetLevel = (
     .sort((a, b) => b.GameId - a.GameId); // Sort descending by GameId
 
   if (filtered.length === 0) {
-    console.log("No game found");
     return type === GAME_TYPES.CASCADING ? 1 : 0.1;
   }
 
