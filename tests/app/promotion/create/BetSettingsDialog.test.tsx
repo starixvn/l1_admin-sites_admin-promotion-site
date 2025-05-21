@@ -135,7 +135,7 @@ describe("BetSettingsDialog", () => {
     });
 
     expect(screen.getByText(/Cascading Slot/)).toBeInTheDocument();
-    expect(screen.getByText(/Coin Value/)).toBeInTheDocument();
+    expect(screen.getByText("The suggested Coin Value value is based on the default setting currently displayed in the game for each currency group.")).toBeInTheDocument();
   });
 
   it("does not crash if currencyGroups is empty", async () => {
