@@ -334,7 +334,7 @@ export default function Step2({
               />
 
               <a
-                href="/sample-files/player-list-template.csv"
+                href="/sample-files/FSB Players List.csv"
                 download
                 className="inline-flex items-center gap-2 text-blue-700 hover:text-blue-900 text-sm font-medium"
               >
