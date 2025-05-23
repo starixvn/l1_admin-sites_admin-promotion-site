@@ -3,14 +3,18 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 export default function Page() {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
     rememberMe: false
   });
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -20,9 +24,37 @@ export default function Page() {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push('/promotion');
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/authentication', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          UserName: formData.username,
+          Password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      await login(data);
+      
+      router.push('/promotion');
+    } catch (err: any) {
+      setError(err.message || 'Failed to login');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -31,6 +63,11 @@ export default function Page() {
         {/* Left side - Login form */}
         <div className="w-1/2 p-8">
           <h2 className="text-2xl font-semibold mb-6">Sign In</h2>
+          {error && (
+            <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-md text-sm">
+              {error}
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -62,9 +99,10 @@ export default function Page() {
 
             <button
               type="submit"
-              className="w-full bg-[#FF5B6B] text-white py-2 rounded-md hover:bg-[#FF4559] transition-colors cursor-pointer"
+              disabled={isLoading}
+              className="w-full bg-[#FF5B6B] text-white py-2 rounded-md hover:bg-[#FF4559] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </button>
 
             <div className="flex items-center justify-between mt-4">
