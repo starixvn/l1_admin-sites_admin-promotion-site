@@ -22,6 +22,7 @@ export interface Promotion {
   updatedAt: string;
   __v: number;
   status?: string;
+  announcementTitle?: string;
   announcement?: string;
 }
 
