@@ -58,84 +58,55 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="flex w-full max-w-3xl bg-white rounded-lg shadow-lg overflow-hidden">
-        {/* Left side - Login form */}
-        <div className="w-1/2 p-8">
-          <h2 className="text-2xl font-semibold mb-6">Sign In</h2>
-          {error && (
-            <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-md text-sm">
-              {error}
-            </div>
-          )}
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                USERNAME
-              </label>
-              <input
-                type="text"
-                name="username"
-                value={formData.username}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border rounded-md bg-gray-50"
-                placeholder="Username"
-              />
-            </div>
-            
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                PASSWORD
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border rounded-md bg-gray-50"
-                placeholder="Password"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-[#FF5B6B] text-white py-2 rounded-md hover:bg-[#FF4559] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading ? 'Signing in...' : 'Sign In'}
-            </button>
-
-            <div className="flex items-center justify-between mt-4">
-              <label className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  name="rememberMe"
-                  checked={formData.rememberMe}
-                  onChange={handleChange}
-                  className="mr-2 accent-[#FF5B6B] cursor-pointer"
-                />
-                <span className="text-sm text-gray-600">Remember Me</span>
-              </label>
-              <Link 
-                href="/forgot-password"
-                className="text-sm text-gray-600 hover:text-[#FF5B6B] cursor-pointer"
-              >
-                Forgot Password
-              </Link>
-            </div>
-          </form>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#f8fafc] to-[#ffe3e8]">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 p-10 flex flex-col justify-center">
+        <div className="mb-8 flex flex-col items-center">
+          <div className="w-16 h-16 bg-[#FF5B6B] rounded-full flex items-center justify-center mb-2">
+            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 11c1.656 0 3-1.344 3-3s-1.344-3-3-3-3 1.344-3 3 1.344 3 3 3zm0 2c-2.67 0-8 1.336-8 4v3h16v-3c0-2.664-5.33-4-8-4z"/></svg>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-800">Admin Promotion</h1>
+          <p className="text-gray-400 mt-1 text-sm">Sign in to your dashboard</p>
         </div>
-
-        {/* Right side - Welcome message */}
-        <div className="w-1/2 bg-[#FF5B6B] p-8 flex flex-col items-center justify-center text-white">
-          <h2 className="text-2xl font-semibold mb-4">Welcome to login</h2>
-          <Link 
-            href="/signup"
-            className="px-6 py-2 border-2 border-white rounded-md hover:bg-white hover:text-[#FF5B6B] transition-colors cursor-pointer"
+        {error && (
+          <div className="mb-4 p-2 bg-red-100 text-red-700 rounded-md text-sm text-center">
+            {error}
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Username</label>
+            <input
+              type="text"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#FF5B6B] text-base"
+              placeholder="Enter your username"
+              autoComplete="username"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#FF5B6B] text-base"
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-[#FF5B6B] text-white py-3 rounded-lg font-semibold text-lg shadow-md hover:bg-[#FF4559] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign Up
-          </Link>
-        </div>
+            {isLoading ? 'Signing in...' : 'Sign In'}
+          </button>
+        </form>
       </div>
     </div>
   );
