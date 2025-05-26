@@ -32,7 +32,9 @@ export const useResetOnChange = ({
       };
 
       const restoreFields = () => {
-        if (!initialValues) return;
+        if (!initialValues) {
+          return;
+        }
         setValue("currencyGroups", initialValues.currencyGroups || []);
         setValue("betLevels", initialValues.betLevels || []);
         setValue("gameIds", initialValues.gameIds || []);

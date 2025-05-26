@@ -42,8 +42,7 @@ describe("selectSuggestedBetLevel", () => {
   it("returns game and DefaultCoinValue of highest GameId when CASCADING", () => {
     const result = selectSuggestedBetLevel(
       GAME_TYPES.CASCADING,
-      mockGames,
-      [1, 2]
+      mockGames
     );
     expect(result.value).toBe(5);
     expect(result.game?.GameId).toBe(2);
