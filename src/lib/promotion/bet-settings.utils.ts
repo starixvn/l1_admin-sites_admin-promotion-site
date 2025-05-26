@@ -4,9 +4,8 @@ import { Operator } from "@/types/operator";
 
 export const selectSuggestedBetLevel = (
   type: number,
-  groupGames: CurrencyGroupGame[],
-  gameIds?: number[]
-): number => {
+  groupGames: CurrencyGroupGame[]
+): { game: CurrencyGroupGame | null; value: number } => {
   const filtered = groupGames
     .filter((gg) => {
       if (type === GAME_TYPES.CLASSIC) {
@@ -17,17 +16,21 @@ export const selectSuggestedBetLevel = (
       }
       return false;
     })
-    .sort((a, b) => b.GameId - a.GameId); // Sort descending by GameId
-
-  if (filtered.length === 0) {
-    return type === GAME_TYPES.CASCADING ? 1 : 0.1;
-  }
-
+    .sort((a, b) => b.GameId - a.GameId);
+    if (filtered.length === 0) {
+      return {
+        game: null,
+        value: type === GAME_TYPES.CASCADING ? 1 : 0.1,
+      };
+    }
   const selected = filtered[0];
 
-  return type === GAME_TYPES.CASCADING
-    ? selected.DefaultCoinValue ?? 1
-    : selected.DefaultBetLevel ?? 0.1;
+  const value =
+    type === GAME_TYPES.CASCADING
+      ? selected?.DefaultCoinValue ?? 0
+      : selected?.DefaultBetLevel ?? 0;
+
+  return { game: selected, value };
 };
 
 export const validateBetRows = (

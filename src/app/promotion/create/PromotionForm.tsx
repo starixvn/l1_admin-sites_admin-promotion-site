@@ -7,7 +7,6 @@ import Step2 from "./Step2";
 import { useCreatePromotion } from "@/hooks/useCreatePromotion";
 import { GAME_TYPES } from "@/constants/gameTypes";
 import { useOperators } from "@/hooks/useOperators";
-import { useFilteredGames } from "@/hooks/useFilteredGames";
 import { Promotion } from "@/types/promotion";
 import { getStatus } from "@/constants/promotionStatusMap";
 import { getTodayAtMidnightGMT7 } from "@/lib/date-time.utils";
@@ -16,6 +15,7 @@ import { addDays } from "date-fns";
 import PromotionPreviewDialog from "./PromotionPreviewDialog";
 import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 import { useResetOnChange } from "@/hooks/useResetOnChange";
+import { useFilteredSelectedGames } from "@/hooks/useFilteredSelectedGames";
 
 export const promotionSchema = z
   .object({
@@ -259,7 +259,7 @@ export default function PromotionForm({
     data: games = [],
     isLoading,
     error,
-  } = useFilteredGames({
+  } = useFilteredSelectedGames({
     currencyGroups: shouldFetchGames ? currencyGroups : [],
     gameType: shouldFetchGames ? gameConfigType : undefined,
     gameIds: shouldFetchGames ? initialGameIds : [],

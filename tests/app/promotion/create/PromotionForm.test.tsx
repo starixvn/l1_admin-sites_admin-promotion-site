@@ -25,8 +25,8 @@ jest.mock("@/hooks/useCurrencyGroups", () => ({
   }),
 }));
 
-jest.mock("@/hooks/useFilteredGames", () => ({
-  useFilteredGames: () => ({
+jest.mock("@/hooks/useFilteredSelectedGames", () => ({
+  useFilteredSelectedGames: () => ({
     data: [
       { GameId: 1, Name: "Game 1" },
       { GameId: 2, Name: "Game 2" },

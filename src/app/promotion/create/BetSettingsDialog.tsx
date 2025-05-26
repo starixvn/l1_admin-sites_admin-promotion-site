@@ -22,6 +22,7 @@ import {
   createOperatorMap,
 } from "@/lib/promotion/bet-settings.utils";
 import { Operator } from "@/types/operator";
+import { useGameSettingsByType } from "@/hooks/useGameSettingsByType";
 
 type Props = {
   open: boolean;
@@ -47,6 +48,7 @@ type RowState = {
   name: string;
   enabled: boolean;
   betLevel: number;
+  suggestedGameName?: string;
 };
 
 export default function BetSettingsDialog({
@@ -63,11 +65,10 @@ export default function BetSettingsDialog({
 }: Props) {
   const [rows, setRows] = useState<RowState[]>([]);
   const { mutateAsync: getCurrencyGroupGames } = useCurrencyGroupGames();
-  const memoizedGameIds = useMemo(() => games?.map((g) => g.GameId), [games]);
   const [invalidRows, setInvalidRows] = useState<Set<string>>(new Set());
   const [showGlobalError, setShowGlobalError] = useState(false);
   const [enableAll, setEnableAll] = useState(false);
-
+  const { data: settingsGames } = useGameSettingsByType(gameType);
   const memoizedGetCurrencyGroupGames = useCallback(getCurrencyGroupGames, []);
   const operatorMap = useMemo(
     () => createOperatorMap(operators || []),
@@ -93,16 +94,25 @@ export default function BetSettingsDialog({
         const mapped = await Promise.all(
           currencyGroupsInfo.map(async (cg: CurrencyGroup) => {
             const existingBetLevel = initialBetMap.get(cg.Id);
-            const groupGames = await memoizedGetCurrencyGroupGames(cg.Id);
-            const betLevel =
-              existingBetLevel ??
-              selectSuggestedBetLevel(gameType, groupGames, memoizedGameIds);
 
+            const groupGames = await memoizedGetCurrencyGroupGames(cg.Id);
+            const { game: selectedGame, value } = selectSuggestedBetLevel(
+              gameType,
+              groupGames
+            );
+            const betLevel = existingBetLevel ?? value;
+            const gameSetting = settingsGames?.find(
+              (g) => g.GameId === selectedGame?.GameId
+            );
             return {
               id: cg.Id,
               name: cg.Name,
               enabled: existingBetLevel !== undefined,
               betLevel,
+              suggestedGameName:
+                existingBetLevel !== undefined
+                  ? undefined
+                  : gameSetting?.DisplayName ?? "No offer games",
             };
           })
         );
@@ -132,20 +142,19 @@ export default function BetSettingsDialog({
 
     const updatedRows = await Promise.all(
       rows.map(async (row) => {
-        let betLevel = row.betLevel;
-        if (enabled && !betLevel) {
-          const groupGames = await memoizedGetCurrencyGroupGames(row.id);
-          betLevel = selectSuggestedBetLevel(
-            gameType,
-            groupGames,
-            memoizedGameIds
-          );
-        }
+        const groupGames = await memoizedGetCurrencyGroupGames(row.id);
+        const { game: suggestedGame, value: suggestedBet } =
+          selectSuggestedBetLevel(gameType, groupGames);
+
+        const suggestedGameName =
+          settingsGames?.find((g) => g.GameId === suggestedGame?.GameId)
+            ?.DisplayName || "No offer games";
 
         return {
           ...row,
           enabled,
-          betLevel: enabled && !row.betLevel ? betLevel : row.betLevel,
+          betLevel: enabled ? suggestedBet : 0,
+          suggestedGameName: enabled ? suggestedGameName : undefined,
         };
       })
     );
@@ -157,24 +166,30 @@ export default function BetSettingsDialog({
     if (readonly) {
       return;
     }
-    let suggested = rows[index].betLevel;
-    if (enabled && !suggested) {
-      const groupGames = await memoizedGetCurrencyGroupGames(rows[index].id);
-      suggested = selectSuggestedBetLevel(
-        gameType,
-        groupGames,
-        memoizedGameIds
-      );
-    }
+
+    const groupId = rows[index].id;
+
+    const groupGames = await memoizedGetCurrencyGroupGames(groupId);
+    const { game: suggestedGame, value: suggestedBet } =
+      selectSuggestedBetLevel(gameType, groupGames);
+
+    const suggestedGameName =
+      settingsGames?.find((g) => g.GameId === suggestedGame?.GameId)
+        ?.DisplayName || "No offer games";
+
     setRows((prev) => {
       const updated = [...prev];
-      updated[index].enabled = enabled;
-      if (enabled && !updated[index].betLevel) {
-        updated[index].betLevel = suggested;
-      }
+      updated[index] = {
+        ...updated[index],
+        enabled,
+        betLevel: enabled ? suggestedBet : 0,
+        suggestedGameName: enabled ? suggestedGameName : undefined,
+      };
+
       const total = updated.length;
       const enabledCount = updated.filter((r) => r.enabled).length;
       setEnableAll(enabledCount === total);
+
       return updated;
     });
   };
@@ -344,7 +359,7 @@ export default function BetSettingsDialog({
                       </td>
                       <td className="text-center border-r">
                         {row.enabled ? (
-                          <div className="flex justify-center">
+                          <div className="flex flex-col items-center space-y-1 mt-1 mb-1">
                             <Input
                               type="number"
                               min="0"
@@ -374,6 +389,11 @@ export default function BetSettingsDialog({
                                   : "border-blue-300 focus:border-blue-500 focus:ring-blue-200"
                               }`}
                             />
+                            {row.suggestedGameName && (
+                              <p className="text-xs text-muted-foreground italic">
+                                From: {row.suggestedGameName}
+                              </p>
+                            )}
                           </div>
                         ) : (
                           <span className="text-gray-400">-</span>

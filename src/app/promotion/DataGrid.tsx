@@ -12,7 +12,7 @@ import {
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import PromotionPreviewDialog from "./create/PromotionPreviewDialog";
-import { useFilteredGames } from "@/hooks/useFilteredGames";
+import { useFilteredSelectedGames } from "@/hooks/useFilteredSelectedGames";
 import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 import { toGMTString } from "@/lib/date-time.utils";
 import { useOperators } from "@/hooks/useOperators";
@@ -110,7 +110,7 @@ export default function DataGrid({
     }
   );
 
-  const { data: gameList = [] } = useFilteredGames({
+  const { data: gameList = [] } = useFilteredSelectedGames({
     currencyGroups: viewPromotion?.currencyGroups || [],
     gameType: viewPromotion?.gameConfigType as GameType,
     gameIds: viewPromotion?.gameIds || [],

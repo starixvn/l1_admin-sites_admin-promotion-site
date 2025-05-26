@@ -38,22 +38,31 @@ describe("selectSuggestedBetLevel", () => {
       Enabled: true,
     },
   ];
-  it("returns DefaultCoinValue of highest GameId when CASCADING", () => {
+
+  it("returns game and DefaultCoinValue of highest GameId when CASCADING", () => {
     const result = selectSuggestedBetLevel(
       GAME_TYPES.CASCADING,
       mockGames,
       [1, 2]
     );
-    expect(result).toBe(5); // GameId 2 has DefaultCoinValue = 5
+    expect(result.value).toBe(5);
+    expect(result.game?.GameId).toBe(2);
   });
 
-  it("returns DefaultBetLevel of highest GameId when CLASSIC", () => {
+  it("returns game and DefaultBetLevel of highest GameId when CLASSIC", () => {
     const result = selectSuggestedBetLevel(
       GAME_TYPES.CLASSIC,
       mockGames,
       [1, 2]
     );
-    expect(result).toBe(1.5); // GameId 2 has DefaultBetLevel = 2
+    expect(result.value).toBe(1.5);
+    expect(result.game?.GameId).toBe(1);
+  });
+
+  it("returns default value and null game when no enabled games match", () => {
+    const result = selectSuggestedBetLevel(GAME_TYPES.CLASSIC, []);
+    expect(result.value).toBe(0.1);
+    expect(result.game).toBeNull();
   });
 });
 
