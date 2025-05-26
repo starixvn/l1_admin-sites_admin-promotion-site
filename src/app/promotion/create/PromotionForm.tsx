@@ -104,6 +104,7 @@ interface PromotionFormProps {
   initialValues?: Promotion;
   onClose?: (shouldReload?: boolean) => void;
   onSubmit?: (values: Promotion) => Promise<void>;
+  onSuccess?: (promotionCode: string) => void;
 }
 
 const getDefaultValues = (initialValues?: Promotion) => {
@@ -251,6 +252,7 @@ export default function PromotionForm({
   initialValues,
   onClose,
   onSubmit,
+  onSuccess,
 }: PromotionFormProps) {
   const status = initialValues ? getStatus(initialValues) : "";
   const {
@@ -365,7 +367,7 @@ export default function PromotionForm({
       createPromotion(payload, {
         onSuccess: () => {
           setShowPreviewDialog(false);
-          onClose?.(true);
+          onSuccess?.(payload.code);
         },
         onError: (err) => console.error("Failed to create promotion", err),
       });
