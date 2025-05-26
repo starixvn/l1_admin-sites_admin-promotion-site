@@ -1,7 +1,7 @@
 {
-  "apiBaseUrl": "http://localhost:9000/api",
+  "apiBaseUrl": "http://l2",
   "env": "development",
-  "identityUrl": "https://l2-auth1.lumigame.com/connect/token",
+  "identityUrl": "http://l2-auth1.lumigame.com/connect/token",
   "clientId": "admin-api",
   "clientSecret": "adminapi@20luminet&",
   "siteId": "admin-api",

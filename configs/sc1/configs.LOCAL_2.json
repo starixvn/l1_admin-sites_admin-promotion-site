@@ -1,7 +1,7 @@
 {
   "apiBaseUrl": "http://l1-admin-api-local2-service:5000/api",
   "env": "LOCAL_2",
-  "identityUrl": "https://l1-auth-api-local2-service:5000/connect/token",
+  "identityUrl": "http://l1-auth-api-local2-service:5000/connect/token",
   "clientId": "admin-api",
   "clientSecret": "adminapi@20luminet&",
   "siteId": "admin-api",
