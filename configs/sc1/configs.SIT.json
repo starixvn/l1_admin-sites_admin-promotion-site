@@ -1,0 +1,11 @@
+{
+  "apiBaseUrl": "http://l1-admin-api-sit-service:5000/api",
+  "env": "SIT",
+  "identityUrl": "http://l1-auth-api-sit-service:5000/connect/token",
+  "clientId": "admin-api",
+  "clientSecret": "adminapi@20luminet&",
+  "siteId": "admin-api",
+  "scope": "admin-api",
+  "apiPromotionUrl": "http://l1-sc1-game-promotion-api-sit-service:5000",
+  "apiConfigurationUrl": "https://l1uatproxy.sgamesuat.com/sit/game/static/free-spins-promotion-template"
+}

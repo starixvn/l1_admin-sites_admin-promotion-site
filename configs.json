@@ -1,0 +1,11 @@
+{
+  "apiBaseUrl": "http://localhost:7778/api",
+  "env": "development",
+  "identityUrl": "https://l2-auth1.lumigame.com/connect/token",
+  "clientId": "admin-api",
+  "clientSecret": "adminapi@20luminet&",
+  "siteId": "admin-api",
+  "scope": "admin-api",
+  "apiPromotionUrl": "https://l2-proxy.lumigame.com/game-promotion-api",
+  "apiConfigurationUrl": "https://l1-proxy1.lumigame.com/game/static/free-spins-promotion-template"
+}

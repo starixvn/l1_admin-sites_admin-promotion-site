@@ -7,6 +7,7 @@ const configs = {
   scope: process.env.SCOPE!,
   apiPromotionUrl: process.env.NEXT_PUBLIC_API_PROMOTION_URL || "",
   apiConfigurationUrl: process.env.NEXT_PUBLIC_API_CONFIGURATION_URL || "",
+  siteId: process.env.IDENTITY_SITE_ID!,
 };
 
 export default configs;

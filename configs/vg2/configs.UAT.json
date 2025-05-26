@@ -1,0 +1,11 @@
+{
+  "apiBaseUrl": "http://l2-admin-api-uat-service:5000/api",
+  "env": "UAT",
+  "identityUrl": "http://l2-auth-api-uat-service:5000/connect/token",
+  "clientId": "admin-api",
+  "clientSecret": "adminapi@20luminet&",
+  "siteId": "admin-api",
+  "scope": "admin-api",
+  "apiPromotionUrl": "http://l2-sc2-game-promotion-api-uat-service:5000",
+  "apiConfigurationUrl": "https://l2uatproxy.sgamesuat.com/uat/game/static/free-spins-promotion-template"
+}

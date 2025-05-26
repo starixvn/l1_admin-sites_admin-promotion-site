@@ -1,0 +1,11 @@
+{
+    "apiBaseUrl": "http://l1_admin_api_prod:5000/api",
+    "env": "PROD",
+    "identityUrl": "http://l1_auth_api_prod:5000/connect/token",
+    "clientId": "admin-api",
+    "clientSecret": "adminapi@20luminet&",
+    "siteId": "admin-api",
+    "scope": "admin-api",
+    "apiPromotionUrl": "http://l1_sc1_game_promotion_api_prod:5000",
+    "apiConfigurationUrl": "https://client.sabagame.com/game/static/free-spins-promotion-template"
+  }
