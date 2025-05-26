@@ -20,7 +20,7 @@ export const selectSuggestedBetLevel = (
     if (filtered.length === 0) {
       return {
         game: null,
-        value: type === GAME_TYPES.CASCADING ? 1 : 0.1,
+        value: 0,
       };
     }
   const selected = filtered[0];

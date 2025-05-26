@@ -52,8 +52,7 @@ describe("selectSuggestedBetLevel", () => {
   it("returns game and DefaultBetLevel of highest GameId when CLASSIC", () => {
     const result = selectSuggestedBetLevel(
       GAME_TYPES.CLASSIC,
-      mockGames,
-      [1, 2]
+      mockGames
     );
     expect(result.value).toBe(1.5);
     expect(result.game?.GameId).toBe(1);
@@ -61,7 +60,7 @@ describe("selectSuggestedBetLevel", () => {
 
   it("returns default value and null game when no enabled games match", () => {
     const result = selectSuggestedBetLevel(GAME_TYPES.CLASSIC, []);
-    expect(result.value).toBe(0.1);
+    expect(result.value).toBe(0);
     expect(result.game).toBeNull();
   });
 });
