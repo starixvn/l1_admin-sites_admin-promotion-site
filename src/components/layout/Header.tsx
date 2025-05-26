@@ -4,10 +4,12 @@ import { useState, useRef, useEffect } from "react";
 import { useSidebar } from "@/context/SidebarContext";
 import ResponsiveLayout from "./ResponsiveLayout";
 import { useAuth } from '@/lib/auth/AuthContext';
+import { useRouter } from "next/navigation";
 
 const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   const { isCollapsed, toggleSidebar } = useSidebar();
   const { logout, user } = useAuth();
   const displayName = user?.Username|| "User";
@@ -70,7 +72,10 @@ const Header = () => {
               {showDropdown && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-100">
                   <button
-                    onClick={() => logout()}
+                    onClick={() => {
+                      router.push('/login');
+                      logout();
+                    }}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   >
                     <div className="flex items-center space-x-2">
