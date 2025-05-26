@@ -30,6 +30,16 @@ jest.mock("../../../../src/components/ui/dialog", () => ({
   ),
 }));
 
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    refresh: jest.fn(),
+    back: jest.fn(),
+  }),
+}));
+
 describe("PromotionDialog", () => {
   const onClose = jest.fn();
 

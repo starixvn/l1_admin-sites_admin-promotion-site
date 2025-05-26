@@ -4,9 +4,20 @@ import "@testing-library/jest-dom";
 import Filter from "../../../src/app/promotion/Filter";
 import Page from "../../../src/app/promotion/page";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    refresh: jest.fn(),
+    back: jest.fn(),
+  }),
+}));
 
 // Mock data
 const mockOperators = [
