@@ -1,3 +1,4 @@
+import {withSentryConfig} from "@sentry/nextjs";
 import type { NextConfig } from "next";
 /**
  * @type {import('next').NextConfig}
@@ -13,7 +14,17 @@ const nextConfig: NextConfig = {
     IDENTITY_CLIENT_SECRET: configs.clientSecret,
     SCOPE: configs.scope,
     IDENTITY_SITE_ID: configs.siteId,
+    SENTRY_DSN: configs.sentry.dsn,
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  sentryUrl: configs.sentry.dsn,
+  release: {
+    deploy: {
+      env: configs.sentry.environment,
+    },
+  },
+  widenClientFileUpload: true,
+  automaticVercelMonitors: false,
+});

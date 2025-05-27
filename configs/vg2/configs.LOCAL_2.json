@@ -1,4 +1,8 @@
 {
+  "sentry": {
+    "dsn": "https://e52a19408611fd0c062a103291c58791@sentry-k8s.lumigame.com/20",
+    "environment": "LOCAL_2"
+  },
   "apiBaseUrl": "http://l2-admin-api-local2-service:5000/api",
   "env": "LOCAL_2",
   "identityUrl": "http://l2-auth-api-local2-service:5000/connect/token",

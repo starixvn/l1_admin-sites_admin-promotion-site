@@ -5,6 +5,7 @@ import axios from "axios";
 import configs from "../../../../configs";
 import { Game } from "@/types/game";
 import { IGNORE_GAME_ID } from "@/constants/constants";
+import * as Sentry from "@sentry/nextjs";
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
@@ -52,7 +53,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Error fetching games:", error);
+    Sentry.captureException(error, {
+      extra: {
+        route: "/api/games",
+      },
+    });
     return NextResponse.json(
       { error: "Failed to fetch games" },
       { status: 500 }

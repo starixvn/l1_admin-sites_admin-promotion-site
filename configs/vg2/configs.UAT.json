@@ -1,4 +1,8 @@
 {
+  "sentry": {
+    "dsn": "https://eec49637498af1b112f1f8fc5c599717@sentry-k8s.sgamesuat.com/19",
+    "environment": "UAT"
+  },
   "apiBaseUrl": "http://l2-admin-api-uat-service:5000/api",
   "env": "UAT",
   "identityUrl": "http://l2-auth-api-uat-service:5000/connect/token",

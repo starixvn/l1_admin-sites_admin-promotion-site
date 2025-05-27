@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAccessToken } from "@/lib/auth/getAccessToken";
 import axios from "axios";
 import configs from "../../../../configs";
+import * as Sentry from "@sentry/nextjs";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,7 +19,9 @@ export async function POST(req: NextRequest) {
     const token = await getAccessToken();
 
     const response = await axios.post(
-      `${configs.apiBaseUrl}/users/signin?username=${encodeURIComponent(UserName)}&password=${encodeURIComponent(Password)}`,
+      `${configs.apiBaseUrl}/users/signin?username=${encodeURIComponent(
+        UserName
+      )}&password=${encodeURIComponent(Password)}`,
       {},
       {
         headers: {
@@ -34,10 +37,14 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
-    console.log(response.data)
+    console.log(response.data);
     return NextResponse.json(response.data, { status: 200 });
   } catch (error: any) {
-    console.error("Error signing in:", error);
+    Sentry.captureException(error, {
+      extra: {
+        route: "/api/authentication",
+      },
+    });
     return NextResponse.json(
       { error: error?.response?.data?.error || "Failed to sign in" },
       { status: 500 }

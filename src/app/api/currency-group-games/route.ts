@@ -4,6 +4,7 @@ import axios from "axios";
 import configs from "../../../../configs";
 import { IGNORE_GAME_ID } from "@/constants/constants";
 import { CurrencyGroupGame } from "@/types/currency-group-game";
+import * as Sentry from "@sentry/nextjs";
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
@@ -35,7 +36,12 @@ export async function GET(req: NextRequest) {
     );
     return NextResponse.json(filtered, { status: 200 });
   } catch (error) {
-    console.error("Error fetching currency group games:", error);
+    Sentry.captureException(error, {
+      extra: {
+        currencyGroupId,
+        route: "/api/currency-group-games",
+      },
+    });
     return NextResponse.json(
       { error: "Failed to fetch currency group games" },
       { status: 500 }

@@ -1,4 +1,8 @@
 {
+  "sentry": {
+    "dsn": "https://e52a19408611fd0c062a103291c58791@sentry-k8s.lumigame.com/20",
+    "environment": "development"
+  },
   "apiBaseUrl": "http://localhost:7778/api",
   "env": "development",
   "identityUrl": "https://l2-auth1.lumigame.com/connect/token",

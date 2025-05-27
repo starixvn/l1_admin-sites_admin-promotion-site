@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import axios, { AxiosError } from "axios";
 import configs from "../../../../configs";
 import { PROMOTION_STATUS_MAP } from "@/constants/promotionStatusMap";
+import * as Sentry from "@sentry/nextjs";
 
 export async function POST(req: NextRequest) {
   try {
@@ -61,7 +62,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(response.data);
   } catch (error) {
-    console.error("Error in GET /api/promotions:", error);
+    Sentry.captureException(error, {
+      extra: {
+        route: "/api/promotions",
+      },
+    });
     if (error instanceof AxiosError) {
       return NextResponse.json(
         { error: error.response?.data?.message || error.message },

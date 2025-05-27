@@ -1,10 +1,14 @@
 {
-    "apiBaseUrl": "http://l1_admin_api_prod:5000/api",
-    "env": "PROD",
-    "identityUrl": "http://l1_auth_api_prod:5000/connect/token",
-    "clientId": "admin-api",
-    "clientSecret": "adminapi@20luminet&",
-    "siteId": "admin-api",
+  "sentry": {
+    "dsn": "https://4d926dbc7f59e5de5c0346087f60a75c@sentry-k8s.sabagame.com/17",
+    "environment": "PROD"
+  },
+  "apiBaseUrl": "http://l1_admin_api_prod:5000/api",
+  "env": "PROD",
+  "identityUrl": "http://l1_auth_api_prod:5000/connect/token",
+  "clientId": "admin-api",
+  "clientSecret": "adminapi@20luminet&",
+  "siteId": "admin-api",
     "scope": "admin-api",
     "apiPromotionUrl": "http://l1_sc1_game_promotion_api_prod:5000",
     "apiConfigurationUrl": "https://client.sabagame.com/game/static/free-spins-promotion-template"

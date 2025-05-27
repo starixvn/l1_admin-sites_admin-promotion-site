@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAccessToken } from "@/lib/auth/getAccessToken";
 import axios from "axios";
 import configs from "../../../../../configs";
+import * as Sentry from "@sentry/nextjs";
 
 export async function GET(
   req: NextRequest,
@@ -23,7 +24,12 @@ export async function GET(
 
     return NextResponse.json(res.data);
   } catch (error) {
-    console.error("Error fetching currency groups:", error);
+    Sentry.captureException(error, {
+      extra: {
+        partnerId,
+        route: "/api/currency-group/[partnerId]",
+      },
+    });
     return NextResponse.json(
       { error: "Failed to fetch currency groups" },
       { status: 500 }

@@ -1,4 +1,8 @@
 {
+  "sentry": {
+    "dsn": "https://615c2a9e13111950e59a1ee36a22d858@sentry-k8s.sabagame.com/18",
+    "environment": "PROD"
+  },
   "apiBaseUrl": "http://l2_admin_api_prod:5000/api",
   "env": "PROD",
   "identityUrl": "http://l2_auth_api_prod:5000/connect/token",

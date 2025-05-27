@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios, { AxiosError } from "axios";
 import configs from "../../../../../configs";
-
+import * as Sentry from "@sentry/nextjs";
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
@@ -16,7 +16,11 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       message: `Promotion announcement with ID ${id} deleted successfully`,
     });
   } catch (error) {
-    console.error("Error deleting promotion announcement:", error);
+    Sentry.captureException(error, {
+      extra: {
+        route: "/api/announcement/[id]",
+      },
+    });
     if (error instanceof AxiosError) {
       return NextResponse.json(
         {
@@ -46,7 +50,11 @@ export async function PUT(
     );
     return NextResponse.json(response.data, { status: 200 });
   } catch (error) {
-    console.error("Error updating promotion:", error);
+    Sentry.captureException(error, {
+      extra: {
+        route: "/api/announcement/[id]",
+      },
+    });
     if (error instanceof AxiosError) {
       return NextResponse.json(
         {
