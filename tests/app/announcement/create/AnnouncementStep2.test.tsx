@@ -99,7 +99,7 @@ describe("AnnouncementStep2", () => {
     await act(async () => {
       renderWithForm();
     });
-    const template2 = screen.getByAltText("Template 2");
+    const template2 = screen.getByText("Template 2");
     fireEvent.click(template2);
     expect(template2.parentElement).toHaveClass("border-emerald-500");
   });
