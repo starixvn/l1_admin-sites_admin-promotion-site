@@ -4,6 +4,7 @@ import { getAccessToken } from "@/lib/auth/getAccessToken";
 import axios from "axios";
 import configs from "../../../../configs";
 import { Game } from "@/types/game";
+import { IGNORE_GAME_ID } from "@/constants/constants";
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
@@ -27,8 +28,10 @@ export async function GET(req: NextRequest) {
           },
         }
       );
-
-      return NextResponse.json(response.data);
+      const filtered = response.data.filter(
+        (g: Game) => g.GameId !== IGNORE_GAME_ID
+      );
+      return NextResponse.json(filtered);
     }
 
     const res = await axios.get(
@@ -45,7 +48,9 @@ export async function GET(req: NextRequest) {
       ? games.filter((g: Game) => g.Type === Number(gameType))
       : games;
 
-    return NextResponse.json(filtered);
+    const result = filtered.filter((g: Game) => g.GameId !== IGNORE_GAME_ID);
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching games:", error);
     return NextResponse.json(
@@ -54,4 +59,3 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-
