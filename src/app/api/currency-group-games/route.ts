@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAccessToken } from "@/lib/auth/getAccessToken";
 import axios from "axios";
 import configs from "../../../../configs";
+import { IGNORE_GAME_ID } from "@/constants/constants";
+import { CurrencyGroupGame } from "@/types/currency-group-game";
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
@@ -28,8 +30,10 @@ export async function GET(req: NextRequest) {
         },
       }
     );
-
-    return NextResponse.json(response.data, { status: 200 });
+    const filtered = response.data.filter(
+      (g: CurrencyGroupGame) => g.GameId !== IGNORE_GAME_ID
+    );
+    return NextResponse.json(filtered, { status: 200 });
   } catch (error) {
     console.error("Error fetching currency group games:", error);
     return NextResponse.json(
