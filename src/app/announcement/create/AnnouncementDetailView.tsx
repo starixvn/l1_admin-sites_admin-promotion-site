@@ -84,7 +84,7 @@ export default function AnnouncementDetailView({ announcement, onClose }: { anno
           <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm h-full flex flex-col">
             {langs.map(lang => (
               <div key={lang} className="flex gap-2 items-center mb-3">
-                <span className="w-16 font-medium text-gray-500 uppercase text-xs flex items-center">{lang}</span>
+                <span className="w-16 font-medium text-gray-500 text-xs flex items-center">{lang}</span>
                 <span className="flex-1 text-gray-900 whitespace-pre-line text-sm flex items-center">{announcement.promotionTitle?.[lang] || <span className="text-gray-300">—</span>}</span>
               </div>
             ))}
@@ -115,7 +115,7 @@ export default function AnnouncementDetailView({ announcement, onClose }: { anno
         <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
           {langs.map(lang => (
             <div key={lang} className="flex gap-2 items-center mb-3">
-              <span className="w-16 font-medium text-gray-500 uppercase text-xs flex items-center">{lang}</span>
+              <span className="w-16 font-medium text-gray-500 text-xs flex items-center">{lang}</span>
               <span className="flex-1 text-gray-900 whitespace-pre-line text-sm flex items-center">{announcement.bannerContent?.[lang] || <span className="text-gray-300">—</span>}</span>
             </div>
           ))}
@@ -128,7 +128,7 @@ export default function AnnouncementDetailView({ announcement, onClose }: { anno
         <div className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
           {langs.map(lang => (
             <div key={lang} className="flex gap-2 items-center mb-3">
-              <span className="w-16 font-medium text-gray-500 uppercase text-xs flex items-center">{lang}</span>
+              <span className="w-16 font-medium text-gray-500 text-xs flex items-center">{lang}</span>
               <span className="flex-1 text-gray-900 whitespace-pre-line text-sm flex items-center">{announcement.termsAndConditions?.[lang] || <span className="text-gray-300">—</span>}</span>
             </div>
           ))}

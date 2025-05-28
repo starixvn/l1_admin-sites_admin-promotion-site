@@ -4,7 +4,10 @@ import React from "react";
 export default function Filter({ status, pageSize, onStatusChange, onAddNew }: 
   { status: string; pageSize: number; onStatusChange: (status: string, pageSize: number) => void; onAddNew: () => void }) {
   return (
-    <form className="bg-white rounded-xl p-6 shadow-sm flex items-end gap-4">
+    <form
+      className="bg-white rounded-xl p-6 shadow-sm flex items-end gap-4"
+      onSubmit={e => { e.preventDefault(); onStatusChange(status, pageSize); }}
+    >
       <div className="flex flex-col min-w-[140px]">
         <label htmlFor="status-select" className="text-sm font-medium text-gray-700 mb-2">
           Status

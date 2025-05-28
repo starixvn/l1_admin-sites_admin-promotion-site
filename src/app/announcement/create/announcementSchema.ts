@@ -18,9 +18,17 @@ export const announcementSchema = z.object({
       operatorId: z.string().min(1, "Operator is required"),
       promotionCode: z.string().min(1, "Promotion code is required"),
     })
-  ).min(1, "At least one Operator must be added"),
+  ).min(1, "The Announcement must be linked to at least one Promotion code"),
 }).refine((data) => !data.fromDate || !data.toDate || data.fromDate <= data.toDate, {
   message: "The Display Date must be earlier than or equal to the Promotion end date.",
+  path: ["fromDate"],
+})
+.refine((data) => data.toDate > data.fromDate, {
+  message: "From Date must be earlier than To Date",
+  path: ["fromDate"],
+})
+.refine((data) => data.fromDate > new Date(), {
+  message: "From Date must be greater than the current time",
   path: ["fromDate"],
 });
 

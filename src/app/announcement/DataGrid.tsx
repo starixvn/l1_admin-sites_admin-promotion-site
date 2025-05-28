@@ -82,6 +82,12 @@ const TemplateImage = ({ template }: { template: number }) => {
 
 export default function DataGrid({ announcements, currentPage, pageSize, totalItems, onPageChange, onPageSizeChange, onDelete, onEdit, onView, onPromotionMappingDetail }: DataGridProps) {
   const totalPages = Math.ceil(totalItems / pageSize);
+
+  if (!Array.isArray(announcements) || announcements.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-400">No results found</div>
+    );
+  }
   return (
     <div className="bg-white rounded-xl shadow overflow-x-auto">
       <table className="w-full text-sm">
@@ -114,23 +120,23 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
                 <td className="px-4 py-4 text-center">
                   <TemplateImage template={a.template} />
                 </td>
-                <td className="px-4 py-4 text-center text-blue-500 cursor-pointer truncate" onClick={() => onPromotionMappingDetail && onPromotionMappingDetail(a.promotionMappings)}>
-                  Detail
+                <td className="px-4 py-4 text-center text-blue-500 truncate" >
+                  <span onClick={() => onPromotionMappingDetail && onPromotionMappingDetail(a.promotionMappings)} className="cursor-pointer text-blue-500">Details</span>
                 </td>
                 <td className="px-4 py-4 text-center">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(status)}`}>{status}</span>
                 </td>
                 <td className="px-4 py-4 text-center">
                   <div className="flex justify-center gap-1">
-                    <button className="p-1 rounded-full transition-colors group" aria-label="view-announcement" onClick={() => onView && onView(a)}>
+                    <button className="p-1 rounded-full transition-colors group" title="View" aria-label="view-announcement" onClick={() => onView && onView(a)}>
                       <Eye className="w-4 h-4 text-gray-600 group-hover:text-black group-hover:bg-gray-200 rounded-full transition-colors" />
                     </button>
                     {status === PROMOTION_STATUS_OPTIONS.Upcoming && (
                       <>
-                        <button className="p-1 rounded-full transition-colors group" aria-label="edit-announcement" onClick={() => onEdit && onEdit(a)}>
-                          <Pencil className="w-4 h-4 text-blue-600 group-hover:bg-gray-200 rounded-full transition-colors" />
+                        <button className="p-1 rounded-full transition-colors group" title="Edit" aria-label="edit-announcement" onClick={() => onEdit && onEdit(a)}>
+                          <Pencil className="w-4 h-4 text-blue-600" />
                         </button>
-                        <button className="p-1 rounded-full transition-colors group" aria-label="delete-announcement" onClick={() => onDelete(a._id, a.promotionTitle?.['en-US'] || '')}>
+                        <button className="p-1 rounded-full transition-colors group" title="Delete" aria-label="delete-announcement" onClick={() => onDelete(a._id, a.promotionTitle?.['en-US'] || '')}>
                           <Trash2 className="w-4 h-4 text-red-500 group-hover:bg-gray-200 rounded-full transition-colors" />
                         </button>
                       </>

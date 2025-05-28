@@ -159,7 +159,7 @@ export default function Page() {
           </div>
           <br />
           <div>
-            <strong>Reminder:</strong> ALL promotion events currently mapped to this announcement will not run until they are mapped to a different announcement.
+            <strong>Reminder:</strong> All promotion events currently mapped to this announcement will not run until they are mapped to a different announcement.
           </div>
         `}
         confirmText="Delete"

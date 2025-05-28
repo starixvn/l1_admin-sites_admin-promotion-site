@@ -193,7 +193,6 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
   const [operators, setOperators] = useState<Operator[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [allOperators, setAllOperators] = useState<Operator[]>([]);
-  const [showConfirm, setShowConfirm] = useState(false);
 
   const isEditable = mode === 'create' || (mode === 'edit' && status !== 'Upcoming');
 
@@ -285,16 +284,12 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
   const handleSaveClick = async () => {
     const isValid = await trigger(["template", "fromDate", "toDate", "promotionMappings"]);
     if (isValid) {
-      setShowConfirm(true);
+      onSave();
     }
-  };
-  const handleConfirmSave = () => {
-    setShowConfirm(false);
-    onSave();
   };
 
   return (
-    <div className="flex flex-col space-y-4 pb-0">
+    <div className="flex flex-col space-y-4 pb-0 max-h-[70vh] overflow-y-auto">
       {/* Banner Template */}
       <div className="w-full max-w-3xl mx-auto bg-white border border-gray-200 p-3 rounded-lg shadow-sm flex flex-col gap-1.5 mb-3">
         <div className="font-semibold text-gray-800 mb-1 text-sm">Banner Template <span className="text-red-500">*</span></div>
@@ -368,7 +363,7 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-            Add new Operator
+            Add Promotion
         </button>
       </div>
       {/* Actions */}
@@ -378,16 +373,6 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
           <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded-lg font-semibold shadow transition text-sm" onClick={handleSaveClick} type="button">Save</button>
         </div>
       </div>
-      <ConfirmDialog
-        open={showConfirm}
-        title={<span style={{ color: 'red', fontWeight: 700 }}>Confirm Save</span>}
-        message={`<div>Are you sure you want to save this announcement?</div>
-          <div><strong>Reminder:</strong> Please double-check all information before saving.</div>`}
-        confirmText="Yes"
-        cancelText="No"
-        onCancel={() => setShowConfirm(false)}
-        onConfirm={handleConfirmSave}
-      />
     </div>
   );
 } 

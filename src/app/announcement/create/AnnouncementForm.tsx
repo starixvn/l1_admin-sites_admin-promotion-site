@@ -8,6 +8,13 @@ import { addDays } from "date-fns";
 import { toast } from "react-toastify";
 import { Announcement } from "@/types/announcement";
 
+function getTomorrowAtMidnight() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + 1);
+  return d;
+}
+
 export default function AnnouncementForm({ onClose, onCreated, initialValues, mode = 'create' }: {
   onClose: () => void,
   onCreated?: () => void,
@@ -29,8 +36,8 @@ export default function AnnouncementForm({ onClose, onCreated, initialValues, mo
         bannerContent: { "en-US": "" },
         termsAndConditions: { "en-US": "" },
         template: 1,
-        fromDate: addDays(new Date(), 7),
-        toDate: addDays(new Date(), 7),
+        fromDate: getTomorrowAtMidnight(),
+        toDate: getTomorrowAtMidnight(),
         promotionMappings: [],
       },
   });
