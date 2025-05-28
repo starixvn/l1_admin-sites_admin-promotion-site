@@ -3,7 +3,12 @@ import axios, { AxiosError } from "axios";
 import configs from "../../../../configs";
 import { PROMOTION_STATUS_MAP } from "@/constants/promotionStatusMap";
 import * as Sentry from "@sentry/nextjs";
+import { getUserFromCookie } from "@/lib/auth/cookie";
 export async function POST(req: NextRequest) {
+  const user = await getUserFromCookie();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const body = await req.json();
 

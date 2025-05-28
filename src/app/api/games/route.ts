@@ -6,8 +6,13 @@ import configs from "../../../../configs";
 import { Game } from "@/types/game";
 import { IGNORE_GAME_ID } from "@/constants/constants";
 import * as Sentry from "@sentry/nextjs";
+import { getUserFromCookie } from "@/lib/auth/cookie";
 
 export async function GET(req: NextRequest) {
+  const user = await getUserFromCookie();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  } 
   const searchParams = req.nextUrl.searchParams;
   const gameType = searchParams.get("type");
   const currencyGroups = searchParams.get("currencyGroups");

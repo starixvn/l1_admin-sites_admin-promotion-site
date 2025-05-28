@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import configs from "../../../../../configs";
 import * as Sentry from "@sentry/nextjs";
+import { getUserFromCookie } from "@/lib/auth/cookie";
 
 export async function GET(req: NextRequest) {
+  const user = await getUserFromCookie();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const code = req.nextUrl.searchParams.get("code");
 
   if (!code) {

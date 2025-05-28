@@ -5,8 +5,13 @@ import configs from "../../../../configs";
 import { IGNORE_GAME_ID } from "@/constants/constants";
 import { CurrencyGroupGame } from "@/types/currency-group-game";
 import * as Sentry from "@sentry/nextjs";
+import { getUserFromCookie } from "@/lib/auth/cookie";
 
 export async function GET(req: NextRequest) {
+  const user = await getUserFromCookie();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const searchParams = req.nextUrl.searchParams;
   const currencyGroupId = searchParams.get("currencyGroupId");
 

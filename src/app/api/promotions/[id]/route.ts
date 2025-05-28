@@ -2,11 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import axios, { AxiosError } from "axios";
 import configs from "../../../../../configs";
 import * as Sentry from "@sentry/nextjs";
+import { getUserFromCookie } from "@/lib/auth/cookie";
 interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
 export async function DELETE(request: NextRequest, context: RouteContext) {
+  const user = await getUserFromCookie();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const { id } = await context.params;
     await axios.delete(`${configs.apiPromotionUrl}/promotions/${id}`);
