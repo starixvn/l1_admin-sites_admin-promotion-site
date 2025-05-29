@@ -12,6 +12,11 @@ export interface Announcement {
   template: number;
   createdAt: string;
   updatedAt: string;
+  mappings: {
+    operatorId: string;
+    promotionCode: string;
+    time?: string;
+  }[];
 }
 
 export interface PromotionMapping {

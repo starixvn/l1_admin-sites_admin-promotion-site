@@ -49,6 +49,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
 
     clearErrors("uploadedFile");
 
+    // 1. Kiểm tra định dạng file
     if (!file.name.endsWith(".csv")) {
       setError("uploadedFile", {
         type: "manual",
@@ -60,6 +61,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
       return;
     }
 
+    // 2. Kiểm tra kích thước
     if (file.size > MAX_SIZE) {
       setError("uploadedFile", {
         type: "manual",
@@ -71,6 +73,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
       return;
     }
 
+    // 3. Parse file CSV
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
@@ -87,6 +90,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
           (col) => !meta.fields?.includes(col)
         );
 
+        // 4. Kiểm tra thiếu cột
         if (missingColumns.length > 0) {
           setError("uploadedFile", {
             type: "manual",
@@ -99,9 +103,15 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
           return;
         }
 
-        let hasEnContent = false;
+        // 5. Reset toàn bộ dữ liệu cũ
+        LANGS.forEach(({ code }) => {
+          setValue(`promotionTitle.${code}`, "");
+          setValue(`bannerContent.${code}`, "");
+          setValue(`termsAndConditions.${code}`, "");
+        });
 
-        data.forEach((row: Record<string, string>) => {
+        // 6. Gán dữ liệu từ file
+        data.forEach((row) => {
           const lang = row["Language"]?.trim();
           if (!lang) return;
 
@@ -112,40 +122,12 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
           setValue(`promotionTitle.${lang}`, title || "");
           setValue(`bannerContent.${lang}`, banner || "");
           setValue(`termsAndConditions.${lang}`, terms || "");
-
-          if (lang === "en-US" && title && banner && terms) {
-            hasEnContent = true;
-          }
         });
 
-        if (!hasEnContent) {
-          setError("promotionTitle", {
-            type: "manual",
-            message: {
-              "en-US": "English content cannot be left empty.",
-            } as any,
-          });
-          setError("bannerContent", {
-            type: "manual",
-            message: {
-              "en-US": "English content cannot be left empty.",
-            } as any,
-          });
-          setError("termsAndConditions", {
-            type: "manual",
-            message: {
-              "en-US": "English content cannot be left empty.",
-            } as any,
-          });
-          setValue("uploadedFile", undefined);
-          setValue("uploadedFileName", "");
-          input.value = "";
-          return;
-        }
-
-        // ✅ Cuối cùng, nếu mọi thứ ổn
+        // 7. OK, update file info
         setValue("uploadedFile", file);
         setValue("uploadedFileName", file.name);
+        input.value = "";
       },
       error: (error) => {
         console.error("PapaParse error:", error);
@@ -249,11 +231,8 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   value={promotionTitle?.[lang.code] || ""}
                   onChange={(e) => {
                     const value = e.target.value;
-                    // Chỉ cho phép ký tự chữ, số, khoảng trắng và dấu thông thường (có thể tùy biến thêm)
-                    const sanitized = value.replace(
-                      /[!@#$%^&*()+={}\[\]|\\:;"'<>,.?/~`]/g,
-                      ""
-                    );
+                    // Loại bỏ chỉ 3 ký tự: %, $, #
+                    const sanitized = value.replace(/[%$#]/g, "");
                     setValue(`promotionTitle.${lang.code}`, sanitized);
                   }}
                   placeholder={`Enter title in ${lang.label}`}
@@ -262,12 +241,11 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   {(promotionTitle?.[lang.code] || "").length}/50
                 </span>
               </div>
-              {lang.code === "en-US" &&
-                getNestedErrorMsg(errors.promotionTitle, "en-US") && (
-                  <div className={`${ERROR_TEXT_CLASS} text-xs ml-28`}>
-                    {getNestedErrorMsg(errors.promotionTitle, "en-US")}
-                  </div>
-                )}
+              {getNestedErrorMsg(errors.promotionTitle, lang.code) && (
+                <div className={`${ERROR_TEXT_CLASS} text-xs ml-28`}>
+                  {getNestedErrorMsg(errors.promotionTitle, lang.code)}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -372,7 +350,26 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
       <div className="w-full max-w-3xl mx-auto flex justify-end">
         <button
           className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-2 rounded-lg font-semibold shadow transition"
-          onClick={onNext}
+          onClick={() => {
+            const forbiddenChars = /[%$#]/;
+            let hasInvalid = false;
+
+            LANGS.forEach((lang) => {
+              const value = promotionTitle?.[lang.code] || "";
+              if (forbiddenChars.test(value)) {
+                setError(`promotionTitle.${lang.code}`, {
+                  type: "manual",
+                  message: `Title must not contain %, $, or #`,
+                });
+                hasInvalid = true;
+              } else {
+                clearErrors(`promotionTitle.${lang.code}`);
+              }
+            });
+
+            if (hasInvalid) return;
+            onNext();
+          }}
           type="button"
         >
           Next →

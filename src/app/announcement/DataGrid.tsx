@@ -121,7 +121,7 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
                   <TemplateImage template={a.template} />
                 </td>
                 <td className="px-4 py-4 text-center text-blue-500 truncate" >
-                  <span onClick={() => onPromotionMappingDetail && onPromotionMappingDetail(a.promotionMappings)} className="cursor-pointer text-blue-500">Details</span>
+                  <span onClick={() => onPromotionMappingDetail && onPromotionMappingDetail(a.mappings)} className="cursor-pointer text-blue-500">Details</span>
                 </td>
                 <td className="px-4 py-4 text-center">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(status)}`}>{status}</span>
