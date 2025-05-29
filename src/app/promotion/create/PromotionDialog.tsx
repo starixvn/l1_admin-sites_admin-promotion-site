@@ -46,7 +46,7 @@ export default function PromotionDialog({ open, onClose }: Props) {
       <ConfirmDialog
         open={showSuccessDialog}
         title="Promotion Event Created Successfully!"
-        message={`<b>Reminder:</b> The promotion <span style=\"color: #d97706; font-weight: 600;\">${createdPromotionCode}</span> will not run unless it is mapped to a Promotion Announcement.`}
+        message={`<b style="bold">Note:</b> The promotion <span style="color: #fbbf24; font-weight: 600;">${createdPromotionCode}</span> will use the <span style="color: #2563eb; font-weight: 600;">Default Announcement Template</span> if no specific announcement is selected.`}
         confirmText="Add Announcement"
         cancelText="OK"
         onConfirm={handleAddAnnouncement}

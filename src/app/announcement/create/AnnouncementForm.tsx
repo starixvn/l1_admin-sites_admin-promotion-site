@@ -4,15 +4,28 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { announcementSchema, AnnouncementFormValues } from "./announcementSchema";
 import AnnouncementStep1 from "./AnnouncementStep1";
 import AnnouncementStep2 from "./AnnouncementStep2";
-import { addDays } from "date-fns";
 import { toast } from "react-toastify";
 import { Announcement } from "@/types/announcement";
+import { PROMOTION_STATUS_MAP } from "@/constants/promotionStatusMap";
 
 function getTomorrowAtMidnight() {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() + 1);
   return d;
+}
+
+function getAnnouncementStatus(fromDate: string, toDate: string): string {
+  const now = new Date();
+  const from = new Date(fromDate);
+  const to = new Date(toDate);
+  if (now < from) {
+    return PROMOTION_STATUS_MAP.Upcoming;
+  }
+  if (now > to) {
+    return PROMOTION_STATUS_MAP.Completed;
+  }
+  return PROMOTION_STATUS_MAP.Running;
 }
 
 export default function AnnouncementForm({ onClose, onCreated, initialValues, mode = 'create' }: {
@@ -77,6 +90,8 @@ export default function AnnouncementForm({ onClose, onCreated, initialValues, mo
     }
   });
 
+  const status = initialValues ? getAnnouncementStatus(initialValues.fromDate, initialValues.toDate) : PROMOTION_STATUS_MAP.Upcoming;
+
   return (
     <FormProvider {...methods}>
       <div className="w-full">
@@ -91,7 +106,7 @@ export default function AnnouncementForm({ onClose, onCreated, initialValues, mo
           </div>
         </div>
         {step === 1 && <AnnouncementStep1 onNext={handleNext} />}
-        {step === 2 && <AnnouncementStep2 onBack={handleBack} onSave={handleSave} mode={mode} />}
+        {step === 2 && <AnnouncementStep2 onBack={handleBack} onSave={handleSave} mode={mode} status={status} />}
       </div>
     </FormProvider>
   );

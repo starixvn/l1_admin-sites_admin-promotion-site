@@ -73,8 +73,21 @@ const Header = () => {
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-100">
                   <button
                     onClick={() => {
-                      router.push('/login');
+                      // Clear all storage and cookies
+                      localStorage.clear();
+                      sessionStorage.clear();
+                      document.cookie.split(';').forEach(function(c) {
+                        document.cookie = c
+                          .replace(/^ +/, '')
+                          .replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
+                      });
+                      if ('caches' in window) {
+                        caches.keys().then(function(names) {
+                          for (let name of names) caches.delete(name);
+                        });
+                      }
                       logout();
+                      window.location.href = '/login';
                     }}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                   >

@@ -20,9 +20,6 @@ export const announcementSchema = z.object({
     })
   ).min(1, "The Announcement must be linked to at least one Promotion code"),
   uploadedFileName: z.any().optional(),
-}).refine((data) => !data.fromDate || !data.toDate || data.fromDate <= data.toDate, {
-  message: "The Display Date must be earlier than or equal to the Promotion end date.",
-  path: ["fromDate"],
 })
 .refine((data) => data.toDate > data.fromDate, {
   message: "From Date must be earlier than To Date",

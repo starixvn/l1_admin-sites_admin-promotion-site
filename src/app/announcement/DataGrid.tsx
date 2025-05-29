@@ -131,7 +131,7 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
                     <button className="p-1 rounded-full transition-colors group" title="View" aria-label="view-announcement" onClick={() => onView && onView(a)}>
                       <Eye className="w-4 h-4 text-gray-600 group-hover:text-black group-hover:bg-gray-200 rounded-full transition-colors" />
                     </button>
-                    {status === PROMOTION_STATUS_OPTIONS.Upcoming && (
+                    {status !== PROMOTION_STATUS_OPTIONS.Completed && (
                       <>
                         <button className="p-1 rounded-full transition-colors group" title="Edit" aria-label="edit-announcement" onClick={() => onEdit && onEdit(a)}>
                           <Pencil className="w-4 h-4 text-blue-600" />

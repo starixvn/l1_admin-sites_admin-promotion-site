@@ -60,7 +60,7 @@ export default function Filter({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onFilterChange(filters);
+    onFilterChange({ ...filters, pageIndex: 1 });
   };
 
   const handleOperatorSelect = (operatorId: string) => {
