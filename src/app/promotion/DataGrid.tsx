@@ -172,6 +172,7 @@ export default function DataGrid({
         </thead>
         <tbody className="divide-y divide-gray-100">
           {promotions.map((p) => {
+            console.log(p);
             const status = getStatus(p);
             return (
               <tr key={p._id} className="hover:bg-green-50">

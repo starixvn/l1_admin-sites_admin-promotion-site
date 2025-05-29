@@ -62,7 +62,7 @@ export default function AnnouncementForm({
           promotionMappings: [],
         },
   });
-  console.log("initialValues", initialValues);
+
   const { handleSubmit, trigger } = methods;
 
   const handleNext = async () => {
@@ -136,6 +136,7 @@ export default function AnnouncementForm({
             onBack={handleBack}
             onSave={handleSave}
             mode={mode}
+            status={status}
           />
         )}
       </div>
