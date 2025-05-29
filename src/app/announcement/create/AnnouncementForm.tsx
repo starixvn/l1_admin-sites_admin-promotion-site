@@ -54,6 +54,7 @@ export default function AnnouncementForm({ onClose, onCreated, initialValues, mo
   const handleSave = handleSubmit(async (data) => {
     try {
       const body = { ...data };
+      delete (body as any).uploadedFileName;
       if (mode === 'edit' && initialValues?._id) {
         await fetch(`/api/announcement/${initialValues._id}`, {
           method: 'PUT',

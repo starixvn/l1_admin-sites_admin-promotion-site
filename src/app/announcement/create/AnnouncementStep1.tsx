@@ -27,12 +27,14 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
   const {
     setValue,
     watch,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useFormContext();
   const promotionTitle = watch("promotionTitle");
   const bannerContent = watch("bannerContent");
   const termsAndConditions = watch("termsAndConditions");
-  const [selectedFileName, setSelectedFileName] = React.useState<string>("");
+  const uploadedFileName = watch("uploadedFileName");
 
   const ERROR_BORDER_CLASS = "border-red-500";
   const ERROR_TEXT_CLASS = "text-red-500";
@@ -40,49 +42,121 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
 
   const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) {
-      return;
-    }
-    setSelectedFileName(file.name);
+    const input = e.target;
+    const MAX_SIZE = 2 * 1024 * 1024;
+
+    if (!file) return;
+
+    clearErrors("uploadedFile");
+
     if (!file.name.endsWith(".csv")) {
+      setError("uploadedFile", {
+        type: "manual",
+        message: "Only .csv files are allowed!",
+      });
       setValue("uploadedFile", undefined);
-      e.target.value = "";
-      alert("Only .csv files are allowed!");
-      setSelectedFileName("");
+      setValue("uploadedFileName", "");
+      input.value = "";
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
+
+    if (file.size > MAX_SIZE) {
+      setError("uploadedFile", {
+        type: "manual",
+        message: "File size must be less than 2MB!",
+      });
       setValue("uploadedFile", undefined);
-      e.target.value = "";
-      alert("File size must be less than 2MB!");
-      setSelectedFileName("");
+      setValue("uploadedFileName", "");
+      input.value = "";
       return;
     }
+
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
       complete: (results: Papa.ParseResult<Record<string, string>>) => {
-        const { data } = results;
+        const { data, meta } = results;
+
+        const requiredColumns = [
+          "Language",
+          "Announcement Title",
+          "Banner Content",
+          "Terms & Conditions",
+        ];
+        const missingColumns = requiredColumns.filter(
+          (col) => !meta.fields?.includes(col)
+        );
+
+        if (missingColumns.length > 0) {
+          setError("uploadedFile", {
+            type: "manual",
+            message:
+              "Upload failed. Please check your data format and try again.",
+          });
+          setValue("uploadedFile", undefined);
+          setValue("uploadedFileName", "");
+          input.value = "";
+          return;
+        }
+
+        let hasEnContent = false;
+
         data.forEach((row: Record<string, string>) => {
           const lang = row["Language"]?.trim();
-          if (!lang) {
-            return;
-          }
-          if (row["Promotion Title"]) {
-            setValue(`promotionTitle.${lang}`, row["Promotion Title"]);
-          }
-          if (row["Banner Content"]) {
-            setValue(`bannerContent.${lang}`, row["Banner Content"]);
-          }
-          if (row["Terms & Conditions"]) {
-            setValue(`termsAndConditions.${lang}`, row["Terms & Conditions"]);
+          if (!lang) return;
+
+          const title = row["Announcement Title"]?.trim();
+          const banner = row["Banner Content"]?.trim();
+          const terms = row["Terms & Conditions"]?.trim();
+
+          setValue(`promotionTitle.${lang}`, title || "");
+          setValue(`bannerContent.${lang}`, banner || "");
+          setValue(`termsAndConditions.${lang}`, terms || "");
+
+          if (lang === "en-US" && title && banner && terms) {
+            hasEnContent = true;
           }
         });
+
+        if (!hasEnContent) {
+          setError("promotionTitle", {
+            type: "manual",
+            message: {
+              "en-US": "English content cannot be left empty.",
+            } as any,
+          });
+          setError("bannerContent", {
+            type: "manual",
+            message: {
+              "en-US": "English content cannot be left empty.",
+            } as any,
+          });
+          setError("termsAndConditions", {
+            type: "manual",
+            message: {
+              "en-US": "English content cannot be left empty.",
+            } as any,
+          });
+          setValue("uploadedFile", undefined);
+          setValue("uploadedFileName", "");
+          input.value = "";
+          return;
+        }
+
+        // ✅ Cuối cùng, nếu mọi thứ ổn
+        setValue("uploadedFile", file);
+        setValue("uploadedFileName", file.name);
       },
-      error: () => {
-        alert("Upload failed. Please check your data format and try again");
-        e.target.value = "";
-        setSelectedFileName("");
+      error: (error) => {
+        console.error("PapaParse error:", error);
+        setError("uploadedFile", {
+          type: "manual",
+          message:
+            "Upload failed. Please check your data format and try again.",
+        });
+        setValue("uploadedFile", undefined);
+        setValue("uploadedFileName", "");
+        input.value = "";
       },
     });
   };
@@ -116,7 +190,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
             <input
               type="text"
               className="bg-gray-50 px-4 h-10 text-sm outline-none border-0 w-107"
-              value={selectedFileName}
+              value={uploadedFileName || ""}
               placeholder="No file chosen"
               readOnly
             />
@@ -138,11 +212,16 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
             </div>
           </div>
         </div>
+        {getNestedErrorMsg(errors, "uploadedFile") && (
+          <div className="text-sm text-red-500 mt-1 ml-2">
+            {getNestedErrorMsg(errors, "uploadedFile")}
+          </div>
+        )}
       </div>
       {/* Promotion Title */}
       <div className="border border-gray-200 rounded-xl p-6 shadow-sm w-full max-w-3xl mx-auto">
         <div className="font-semibold text-gray-800 mb-4 text-base">
-          Promotion Title{" "}
+          Announcement Title{" "}
         </div>
         <div className="flex flex-col gap-3">
           {LANGS.map((lang) => (
