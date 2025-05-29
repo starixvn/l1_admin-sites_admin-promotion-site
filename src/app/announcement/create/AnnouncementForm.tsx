@@ -28,6 +28,7 @@ function getAnnouncementStatus(fromDate: string, toDate: string): string {
   if (now > to) {
     return PROMOTION_STATUS_MAP.Completed;
   }
+  return PROMOTION_STATUS_MAP.Running;
 }
 export default function AnnouncementForm({
   onClose,
@@ -39,8 +40,6 @@ export default function AnnouncementForm({
   onCreated?: () => void;
   initialValues?: Announcement;
   mode?: "create" | "edit";
-  return PROMOTION_STATUS_MAP.Running;
-
 }) {
   const [step, setStep] = useState(1);
   const methods = useForm<AnnouncementFormValues>({
@@ -107,7 +106,9 @@ export default function AnnouncementForm({
     }
   });
 
-  const status = initialValues ? getAnnouncementStatus(initialValues.fromDate, initialValues.toDate) : PROMOTION_STATUS_MAP.Upcoming;
+  const status = initialValues
+    ? getAnnouncementStatus(initialValues.fromDate, initialValues.toDate)
+    : PROMOTION_STATUS_MAP.Upcoming;
 
   return (
     <FormProvider {...methods}>
