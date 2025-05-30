@@ -283,7 +283,11 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
     await trigger("promotionMappings");
   };
   const handleSaveClick = async () => {
-    const isValid = await trigger(["template", "fromDate", "toDate", "promotionMappings"]);
+    const isValid = await trigger(
+      isEditable
+        ? ["template"]
+        : ["template", "fromDate", "toDate", "promotionMappings"]
+    );
     if (isValid) {
       onSave();
     }

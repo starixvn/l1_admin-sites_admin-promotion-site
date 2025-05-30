@@ -1,6 +1,6 @@
 import { useFormContext } from "react-hook-form";
 import Papa from "papaparse";
-import React from "react";
+import React, { useRef } from "react";
 
 const LANGS = [
   { code: "en-US", label: "en-US" },
@@ -39,6 +39,11 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
   const ERROR_BORDER_CLASS = "border-red-500";
   const ERROR_TEXT_CLASS = "text-red-500";
   const BORDER_DEFAULT_CLASS = "border-gray-300";
+
+  // Add refs for en-US fields
+  const enUsTitleRef = useRef<HTMLInputElement | null>(null);
+  const enUsBannerRef = useRef<HTMLTextAreaElement | null>(null);
+  const enUsTermsRef = useRef<HTMLTextAreaElement | null>(null);
 
   const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -222,8 +227,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                 </div>
                 <input
                   className={`flex-1 border rounded-lg px-4 py-2 text-base ${
-                    lang.code === "en-US" &&
-                    getNestedErrorMsg(errors.promotionTitle, "en-US")
+                    getNestedErrorMsg(errors.promotionTitle, lang.code)
                       ? ERROR_BORDER_CLASS
                       : BORDER_DEFAULT_CLASS
                   }`}
@@ -231,11 +235,11 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   value={promotionTitle?.[lang.code] || ""}
                   onChange={(e) => {
                     const value = e.target.value;
-                    // Loại bỏ chỉ 3 ký tự: %, $, #
                     const sanitized = value.replace(/[%$#]/g, "");
                     setValue(`promotionTitle.${lang.code}`, sanitized);
                   }}
                   placeholder={`Enter title in ${lang.label}`}
+                  ref={lang.code === "en-US" ? enUsTitleRef : undefined}
                 />
                 <span className="text-gray-400 text-xs w-16 text-right">
                   {(promotionTitle?.[lang.code] || "").length}/50
@@ -272,8 +276,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                 </div>
                 <textarea
                   className={`flex-1 border rounded-lg px-4 py-2 text-base min-h-[60px] ${
-                    lang.code === "en-US" &&
-                    getNestedErrorMsg(errors.bannerContent, "en-US")
+                    getNestedErrorMsg(errors.bannerContent, lang.code)
                       ? ERROR_BORDER_CLASS
                       : BORDER_DEFAULT_CLASS
                   }`}
@@ -283,17 +286,17 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                     setValue(`bannerContent.${lang.code}`, e.target.value)
                   }
                   placeholder={`Enter banner content in ${lang.label}`}
+                  ref={lang.code === "en-US" ? enUsBannerRef : undefined}
                 />
                 <span className="text-gray-400 text-xs w-20 text-right pt-2">
                   {(bannerContent?.[lang.code] || "").length}/150
                 </span>
               </div>
-              {lang.code === "en-US" &&
-                getNestedErrorMsg(errors.bannerContent, "en-US") && (
-                  <div className={`${ERROR_TEXT_CLASS} text-xs ml-28`}>
-                    {getNestedErrorMsg(errors.bannerContent, "en-US")}
-                  </div>
-                )}
+              {getNestedErrorMsg(errors.bannerContent, lang.code) && (
+                <div className={`${ERROR_TEXT_CLASS} text-xs ml-28`}>
+                  {getNestedErrorMsg(errors.bannerContent, lang.code)}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -320,8 +323,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                 </div>
                 <textarea
                   className={`flex-1 border rounded-lg px-4 py-2 text-base min-h-[80px] ${
-                    lang.code === "en-US" &&
-                    getNestedErrorMsg(errors.termsAndConditions, "en-US")
+                    getNestedErrorMsg(errors.termsAndConditions, lang.code)
                       ? ERROR_BORDER_CLASS
                       : BORDER_DEFAULT_CLASS
                   }`}
@@ -331,17 +333,17 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                     setValue(`termsAndConditions.${lang.code}`, e.target.value)
                   }
                   placeholder={`Enter terms in ${lang.label}`}
+                  ref={lang.code === "en-US" ? enUsTermsRef : undefined}
                 />
                 <span className="text-gray-400 text-xs w-24 text-right pt-2">
                   {(termsAndConditions?.[lang.code] || "").length}/1500
                 </span>
               </div>
-              {lang.code === "en-US" &&
-                getNestedErrorMsg(errors.termsAndConditions, "en-US") && (
-                  <div className={`${ERROR_TEXT_CLASS} text-xs ml-28`}>
-                    {getNestedErrorMsg(errors.termsAndConditions, "en-US")}
-                  </div>
-                )}
+              {getNestedErrorMsg(errors.termsAndConditions, lang.code) && (
+                <div className={`${ERROR_TEXT_CLASS} text-xs ml-28`}>
+                  {getNestedErrorMsg(errors.termsAndConditions, lang.code)}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -353,7 +355,9 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
           onClick={() => {
             const forbiddenChars = /[%$#]/;
             let hasInvalid = false;
+            let firstErrorField: HTMLElement | null = null;
 
+            // Always check and set/clear errors for all fields
             LANGS.forEach((lang) => {
               const value = promotionTitle?.[lang.code] || "";
               if (forbiddenChars.test(value)) {
@@ -362,12 +366,62 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   message: `Title must not contain %, $, or #`,
                 });
                 hasInvalid = true;
+                if (!firstErrorField && lang.code === "en-US") firstErrorField = enUsTitleRef.current;
+              } else if (lang.code === "en-US" && !value) {
+                setError(`promotionTitle.${lang.code}`, {
+                  type: "manual",
+                  message: `English title cannot be left empty.`,
+                });
+                hasInvalid = true;
+                if (!firstErrorField) firstErrorField = enUsTitleRef.current;
               } else {
                 clearErrors(`promotionTitle.${lang.code}`);
               }
+
+              const bannerValue = bannerContent?.[lang.code] || "";
+              if (forbiddenChars.test(bannerValue)) {
+                setError(`bannerContent.${lang.code}`, {
+                  type: "manual",
+                  message: `Banner content must not contain %, $, or #`,
+                });
+                hasInvalid = true;
+                if (!firstErrorField && lang.code === "en-US") firstErrorField = enUsBannerRef.current;
+              } else if (lang.code === "en-US" && !bannerValue) {
+                setError(`bannerContent.${lang.code}`, {
+                  type: "manual",
+                  message: `English banner content cannot be left empty.`,
+                });
+                hasInvalid = true;
+                if (!firstErrorField) firstErrorField = enUsBannerRef.current;
+              } else {
+                clearErrors(`bannerContent.${lang.code}`);
+              }
+
+              const termsValue = termsAndConditions?.[lang.code] || "";
+              if (forbiddenChars.test(termsValue)) {
+                setError(`termsAndConditions.${lang.code}`, {
+                  type: "manual",
+                  message: `Terms & Conditions must not contain %, $, or #`,
+                });
+                hasInvalid = true;
+                if (!firstErrorField && lang.code === "en-US") firstErrorField = enUsTermsRef.current;
+              } else if (lang.code === "en-US" && !termsValue) {
+                setError(`termsAndConditions.${lang.code}`, {
+                  type: "manual",
+                  message: `English terms & conditions cannot be left empty.`,
+                });
+                hasInvalid = true;
+                if (!firstErrorField) firstErrorField = enUsTermsRef.current;
+              } else {
+                clearErrors(`termsAndConditions.${lang.code}`);
+              }
             });
 
-            if (hasInvalid) return;
+            if (hasInvalid) {
+              (firstErrorField as HTMLElement | null)?.scrollIntoView({ behavior: "smooth", block: "center" });
+              (firstErrorField as HTMLElement | null)?.focus();
+              return;
+            }
             onNext();
           }}
           type="button"

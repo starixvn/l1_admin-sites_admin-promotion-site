@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  announcementSchema,
+  getAnnouncementSchema,
   AnnouncementFormValues,
 } from "./announcementSchema";
 import AnnouncementStep1 from "./AnnouncementStep1";
@@ -30,6 +30,7 @@ function getAnnouncementStatus(fromDate: string, toDate: string): string {
   }
   return PROMOTION_STATUS_MAP.Running;
 }
+
 export default function AnnouncementForm({
   onClose,
   onCreated,
@@ -42,8 +43,13 @@ export default function AnnouncementForm({
   mode?: "create" | "edit";
 }) {
   const [step, setStep] = useState(1);
+  let status = PROMOTION_STATUS_MAP.Upcoming;
+  if (initialValues) {
+    status = getAnnouncementStatus(initialValues.fromDate, initialValues.toDate);
+  }
+  const isEditable = mode === 'edit' && status !== "not_started";
   const methods = useForm<AnnouncementFormValues>({
-    resolver: zodResolver(announcementSchema),
+    resolver: zodResolver(getAnnouncementSchema(!isEditable)),
     mode: "onSubmit",
     defaultValues: initialValues
       ? {
@@ -105,10 +111,6 @@ export default function AnnouncementForm({
       alert("Failed to save announcement");
     }
   });
-
-  const status = initialValues
-    ? getAnnouncementStatus(initialValues.fromDate, initialValues.toDate)
-    : PROMOTION_STATUS_MAP.Upcoming;
 
   return (
     <FormProvider {...methods}>
