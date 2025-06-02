@@ -241,7 +241,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   placeholder={`Enter title in ${lang.label}`}
                   ref={lang.code === "en-US" ? enUsTitleRef : undefined}
                 />
-                <span className="text-gray-400 text-xs w-16 text-right">
+                <span className={`text-xs w-16 text-right ${getNestedErrorMsg(errors.promotionTitle, lang.code)?.includes('at most') ? ERROR_TEXT_CLASS : 'text-gray-400'}`}>
                   {(promotionTitle?.[lang.code] || "").length}/50
                 </span>
               </div>
@@ -288,7 +288,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   placeholder={`Enter banner content in ${lang.label}`}
                   ref={lang.code === "en-US" ? enUsBannerRef : undefined}
                 />
-                <span className="text-gray-400 text-xs w-20 text-right pt-2">
+                <span className={`text-xs w-20 text-right pt-2 ${getNestedErrorMsg(errors.bannerContent, lang.code)?.includes('at most') ? ERROR_TEXT_CLASS : 'text-gray-400'}`}>
                   {(bannerContent?.[lang.code] || "").length}/150
                 </span>
               </div>
@@ -335,7 +335,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   placeholder={`Enter terms in ${lang.label}`}
                   ref={lang.code === "en-US" ? enUsTermsRef : undefined}
                 />
-                <span className="text-gray-400 text-xs w-24 text-right pt-2">
+                <span className={`text-xs w-24 text-right pt-2 ${getNestedErrorMsg(errors.termsAndConditions, lang.code)?.includes('at most') ? ERROR_TEXT_CLASS : 'text-gray-400'}`}>
                   {(termsAndConditions?.[lang.code] || "").length}/1500
                 </span>
               </div>

@@ -8,6 +8,7 @@ import { PromotionMapping } from "@/types/announcement";
 import configs from "../../../../configs";
 import { ImageIcon } from "lucide-react";
 import { PROMOTION_STATUS_MAP } from "@/constants/promotionStatusMap";
+import { usePromotionsUnLink } from "@/hooks/usePromotionsUnLink";
 
 const countTemplate = 3;
 
@@ -217,18 +218,31 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
     operatorId: mode === 'create' && allOperators.length > 0 ? allOperators[0].PartnerId : undefined 
   });
 
+  const { promotions: unmappedPromotions } = usePromotionsUnLink();
+
   useEffect(() => {
     if (allPromotions.length > 0) {
-      // For edit mode, show all promotions
-      // For create mode, filter promotions with operators
-      const validPromotions = mode === 'create' 
-        ? allPromotions.filter((p: Promotion) => 
-            operators.some(op => op.PartnerId === p.operatorId)
-          )
-        : allPromotions;
+      // For edit mode, show unmapped + currently mapped promotions
+      let validPromotions: Promotion[] = [];
+      if (mode === 'create') {
+        validPromotions = unmappedPromotions.filter((p: Promotion) =>
+          operators.some(op => op.PartnerId === p.operatorId)
+        );
+      } else {
+        // Get all codes in current mappings
+        const mappedCodes = promotionMappings.map(m => m.promotionCode).filter(Boolean);
+        // Get all unmapped + mapped promotions (by code)
+        const allCodes = Array.from(new Set([
+          ...unmappedPromotions.map(p => p.code),
+          ...mappedCodes
+        ]));
+        validPromotions = allCodes
+          .map(code => allPromotions.find(p => p.code === code))
+          .filter((p): p is Promotion => !!p);
+      }
       setPromotions(validPromotions);
     }
-  }, [allPromotions, operators, mode]);
+  }, [allPromotions, operators, mode, unmappedPromotions, promotionMappings]);
 
   const getFilteredPromotions = (operatorId: string) => {
     if (!operatorId) {
