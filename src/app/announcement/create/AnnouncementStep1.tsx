@@ -40,6 +40,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
   const ERROR_TEXT_CLASS = "text-red-500";
   const BORDER_DEFAULT_CLASS = "border-gray-300";
   const TEXT_GRAY_CLASS = "text-gray-400";
+  const TERMS_AND_CONDITIONS_LABEL = "Terms & Conditions";
 
   // Add refs for en-US fields
   const enUsTitleRef = useRef<HTMLInputElement | null>(null);
@@ -92,7 +93,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
           "Language",
           "Announcement Title",
           "Banner Content",
-          "Terms & Conditions",
+          TERMS_AND_CONDITIONS_LABEL,
         ];
         const missingColumns = requiredColumns.filter(
           (col) => !meta.fields?.includes(col)
@@ -127,7 +128,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
 
           const title = row["Announcement Title"]?.trim();
           const banner = row["Banner Content"]?.trim();
-          const terms = row["Terms & Conditions"]?.trim();
+          const terms = row[TERMS_AND_CONDITIONS_LABEL]?.trim();
 
           setValue(`promotionTitle.${lang}`, title || "");
           setValue(`bannerContent.${lang}`, banner || "");
@@ -168,14 +169,14 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
     if (forbiddenChars.test(currentValue)) {
       setError(`${fieldName}.${langCode}`, {
         type: "manual",
-        message: `${fieldName === "promotionTitle" ? "Title" : fieldName === "bannerContent" ? "Banner content" : "Terms & Conditions"} must not contain %, $, or #`,
+        message: `${fieldName === "promotionTitle" ? "Title" : fieldName === "bannerContent" ? "Banner content" : TERMS_AND_CONDITIONS_LABEL} must not contain %, $, or #`,
       });
       hasError = true;
       isFirstError = isEnglish;
     } else if (isEnglish && !currentValue) {
       setError(`${fieldName}.${langCode}`, {
         type: "manual",
-        message: `English ${fieldName === "promotionTitle" ? "title" : fieldName === "bannerContent" ? "banner content" : "terms & conditions"} cannot be left empty.`,
+        message: `English ${fieldName === "promotionTitle" ? "title" : fieldName === "bannerContent" ? "banner content" : TERMS_AND_CONDITIONS_LABEL} cannot be left empty.`,
       });
       hasError = true;
       isFirstError = true;
