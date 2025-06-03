@@ -39,6 +39,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
   const ERROR_BORDER_CLASS = "border-red-500";
   const ERROR_TEXT_CLASS = "text-red-500";
   const BORDER_DEFAULT_CLASS = "border-gray-300";
+  const TEXT_GRAY_CLASS = "text-gray-400";
 
   // Add refs for en-US fields
   const enUsTitleRef = useRef<HTMLInputElement | null>(null);
@@ -50,7 +51,9 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
     const input = e.target;
     const MAX_SIZE = 2 * 1024 * 1024;
 
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     clearErrors("uploadedFile");
 
@@ -118,7 +121,9 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
         // 6. Gán dữ liệu từ file
         data.forEach((row) => {
           const lang = row["Language"]?.trim();
-          if (!lang) return;
+          if (!lang) {
+            return;
+          }
 
           const title = row["Announcement Title"]?.trim();
           const banner = row["Banner Content"]?.trim();
@@ -146,6 +151,100 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
         input.value = "";
       },
     });
+  };
+
+  const validateField = <T extends HTMLElement>(
+    value: string | undefined,
+    langCode: string,
+    fieldName: string,
+    ref: React.RefObject<T | null>,
+    isEnglish: boolean
+  ): { hasError: boolean; isFirstError: boolean } => {
+    const forbiddenChars = /[%$#]/;
+    const currentValue = value || "";
+    let hasError = false;
+    let isFirstError = false;
+
+    if (forbiddenChars.test(currentValue)) {
+      setError(`${fieldName}.${langCode}`, {
+        type: "manual",
+        message: `${fieldName === "promotionTitle" ? "Title" : fieldName === "bannerContent" ? "Banner content" : "Terms & Conditions"} must not contain %, $, or #`,
+      });
+      hasError = true;
+      isFirstError = isEnglish;
+    } else if (isEnglish && !currentValue) {
+      setError(`${fieldName}.${langCode}`, {
+        type: "manual",
+        message: `English ${fieldName === "promotionTitle" ? "title" : fieldName === "bannerContent" ? "banner content" : "terms & conditions"} cannot be left empty.`,
+      });
+      hasError = true;
+      isFirstError = true;
+    } else {
+      clearErrors(`${fieldName}.${langCode}`);
+    }
+
+    return { hasError, isFirstError };
+  };
+
+  const validateAllFields = (): { hasInvalid: boolean; firstErrorField: HTMLElement | null } => {
+    let hasInvalid = false;
+    let firstErrorField: HTMLElement | null = null;
+
+    LANGS.forEach((lang) => {
+      const isEnglish = lang.code === "en-US";
+      
+      // Validate title
+      const { hasError: titleError, isFirstError: isFirstTitleError } = validateField<HTMLInputElement>(
+        promotionTitle?.[lang.code],
+        lang.code,
+        "promotionTitle",
+        enUsTitleRef,
+        isEnglish
+      );
+      if (titleError && !firstErrorField && isFirstTitleError) {
+        firstErrorField = enUsTitleRef.current;
+      }
+      hasInvalid = hasInvalid || titleError;
+
+      // Validate banner content
+      const { hasError: bannerError, isFirstError: isFirstBannerError } = validateField<HTMLTextAreaElement>(
+        bannerContent?.[lang.code],
+        lang.code,
+        "bannerContent",
+        enUsBannerRef,
+        isEnglish
+      );
+      if (bannerError && !firstErrorField && isFirstBannerError) {
+        firstErrorField = enUsBannerRef.current;
+      }
+      hasInvalid = hasInvalid || bannerError;
+
+      // Validate terms and conditions
+      const { hasError: termsError, isFirstError: isFirstTermsError } = validateField<HTMLTextAreaElement>(
+        termsAndConditions?.[lang.code],
+        lang.code,
+        "termsAndConditions",
+        enUsTermsRef,
+        isEnglish
+      );
+      if (termsError && !firstErrorField && isFirstTermsError) {
+        firstErrorField = enUsTermsRef.current;
+      }
+      hasInvalid = hasInvalid || termsError;
+    });
+
+    return { hasInvalid, firstErrorField };
+  };
+
+  const handleNextClick = () => {
+    const { hasInvalid, firstErrorField } = validateAllFields();
+
+    if (hasInvalid) {
+      firstErrorField?.scrollIntoView({ behavior: "smooth", block: "center" });
+      firstErrorField?.focus();
+      return;
+    }
+    onNext();
   };
 
   return (
@@ -241,7 +340,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   placeholder={`Enter title in ${lang.label}`}
                   ref={lang.code === "en-US" ? enUsTitleRef : undefined}
                 />
-                <span className={`text-xs w-16 text-right ${getNestedErrorMsg(errors.promotionTitle, lang.code)?.includes('at most') ? ERROR_TEXT_CLASS : 'text-gray-400'}`}>
+                <span className={`text-xs w-16 text-right ${getNestedErrorMsg(errors.promotionTitle, lang.code)?.includes('at most') ? ERROR_TEXT_CLASS : TEXT_GRAY_CLASS}`}>
                   {(promotionTitle?.[lang.code] || "").length}/50
                 </span>
               </div>
@@ -288,7 +387,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   placeholder={`Enter banner content in ${lang.label}`}
                   ref={lang.code === "en-US" ? enUsBannerRef : undefined}
                 />
-                <span className={`text-xs w-20 text-right pt-2 ${getNestedErrorMsg(errors.bannerContent, lang.code)?.includes('at most') ? ERROR_TEXT_CLASS : 'text-gray-400'}`}>
+                <span className={`text-xs w-20 text-right pt-2 ${getNestedErrorMsg(errors.bannerContent, lang.code)?.includes('at most') ? ERROR_TEXT_CLASS : TEXT_GRAY_CLASS}`}>
                   {(bannerContent?.[lang.code] || "").length}/150
                 </span>
               </div>
@@ -335,7 +434,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   placeholder={`Enter terms in ${lang.label}`}
                   ref={lang.code === "en-US" ? enUsTermsRef : undefined}
                 />
-                <span className={`text-xs w-24 text-right pt-2 ${getNestedErrorMsg(errors.termsAndConditions, lang.code)?.includes('at most') ? ERROR_TEXT_CLASS : 'text-gray-400'}`}>
+                <span className={`text-xs w-24 text-right pt-2 ${getNestedErrorMsg(errors.termsAndConditions, lang.code)?.includes('at most') ? ERROR_TEXT_CLASS : TEXT_GRAY_CLASS}`}>
                   {(termsAndConditions?.[lang.code] || "").length}/1500
                 </span>
               </div>
@@ -352,78 +451,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
       <div className="w-full max-w-3xl mx-auto flex justify-end">
         <button
           className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-2 rounded-lg font-semibold shadow transition"
-          onClick={() => {
-            const forbiddenChars = /[%$#]/;
-            let hasInvalid = false;
-            let firstErrorField: HTMLElement | null = null;
-
-            // Always check and set/clear errors for all fields
-            LANGS.forEach((lang) => {
-              const value = promotionTitle?.[lang.code] || "";
-              if (forbiddenChars.test(value)) {
-                setError(`promotionTitle.${lang.code}`, {
-                  type: "manual",
-                  message: `Title must not contain %, $, or #`,
-                });
-                hasInvalid = true;
-                if (!firstErrorField && lang.code === "en-US") firstErrorField = enUsTitleRef.current;
-              } else if (lang.code === "en-US" && !value) {
-                setError(`promotionTitle.${lang.code}`, {
-                  type: "manual",
-                  message: `English title cannot be left empty.`,
-                });
-                hasInvalid = true;
-                if (!firstErrorField) firstErrorField = enUsTitleRef.current;
-              } else {
-                clearErrors(`promotionTitle.${lang.code}`);
-              }
-
-              const bannerValue = bannerContent?.[lang.code] || "";
-              if (forbiddenChars.test(bannerValue)) {
-                setError(`bannerContent.${lang.code}`, {
-                  type: "manual",
-                  message: `Banner content must not contain %, $, or #`,
-                });
-                hasInvalid = true;
-                if (!firstErrorField && lang.code === "en-US") firstErrorField = enUsBannerRef.current;
-              } else if (lang.code === "en-US" && !bannerValue) {
-                setError(`bannerContent.${lang.code}`, {
-                  type: "manual",
-                  message: `English banner content cannot be left empty.`,
-                });
-                hasInvalid = true;
-                if (!firstErrorField) firstErrorField = enUsBannerRef.current;
-              } else {
-                clearErrors(`bannerContent.${lang.code}`);
-              }
-
-              const termsValue = termsAndConditions?.[lang.code] || "";
-              if (forbiddenChars.test(termsValue)) {
-                setError(`termsAndConditions.${lang.code}`, {
-                  type: "manual",
-                  message: `Terms & Conditions must not contain %, $, or #`,
-                });
-                hasInvalid = true;
-                if (!firstErrorField && lang.code === "en-US") firstErrorField = enUsTermsRef.current;
-              } else if (lang.code === "en-US" && !termsValue) {
-                setError(`termsAndConditions.${lang.code}`, {
-                  type: "manual",
-                  message: `English terms & conditions cannot be left empty.`,
-                });
-                hasInvalid = true;
-                if (!firstErrorField) firstErrorField = enUsTermsRef.current;
-              } else {
-                clearErrors(`termsAndConditions.${lang.code}`);
-              }
-            });
-
-            if (hasInvalid) {
-              (firstErrorField as HTMLElement | null)?.scrollIntoView({ behavior: "smooth", block: "center" });
-              (firstErrorField as HTMLElement | null)?.focus();
-              return;
-            }
-            onNext();
-          }}
+          onClick={handleNextClick}
           type="button"
         >
           Next →

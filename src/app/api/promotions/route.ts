@@ -4,7 +4,7 @@ import configs from "../../../../configs";
 import { PROMOTION_STATUS_MAP } from "@/constants/promotionStatusMap";
 import * as Sentry from "@sentry/nextjs";
 import { getUserFromCookie } from "@/lib/auth/cookie";
-import { cookies } from "next/headers";
+
 export async function POST(req: NextRequest) {
   const user = await getUserFromCookie();
   if (!user) {

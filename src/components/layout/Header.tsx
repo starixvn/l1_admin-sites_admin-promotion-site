@@ -4,12 +4,10 @@ import { useState, useRef, useEffect } from "react";
 import { useSidebar } from "@/context/SidebarContext";
 import ResponsiveLayout from "./ResponsiveLayout";
 import { useAuth } from '@/lib/auth/AuthContext';
-import { useRouter } from "next/navigation";
 
 const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
   const { isCollapsed, toggleSidebar } = useSidebar();
   const { logout, user } = useAuth();
   const displayName = user?.Username|| "User";
@@ -79,11 +77,13 @@ const Header = () => {
                       document.cookie.split(';').forEach(function(c) {
                         document.cookie = c
                           .replace(/^ +/, '')
-                          .replace(/=.*/, '=;expires=' + new Date().toUTCString() + ';path=/');
+                          .replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
                       });
                       if ('caches' in window) {
                         caches.keys().then(function(names) {
-                          for (let name of names) caches.delete(name);
+                          for (const name of names) {
+                            caches.delete(name);
+                          }
                         });
                       }
                       logout();

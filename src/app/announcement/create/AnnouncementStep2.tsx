@@ -7,7 +7,6 @@ import { usePromotions } from '@/hooks/usePromotions';
 import { PromotionMapping } from "@/types/announcement";
 import configs from "../../../../configs";
 import { ImageIcon } from "lucide-react";
-import { PROMOTION_STATUS_MAP } from "@/constants/promotionStatusMap";
 import { usePromotionsUnLink } from "@/hooks/usePromotionsUnLink";
 
 const countTemplate = 3;
