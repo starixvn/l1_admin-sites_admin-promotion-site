@@ -40,7 +40,11 @@ export default function PromotionDialog({ open, onClose }: Props) {
               aria-label="Close"
             ></button>
           </div>
-          <PromotionForm mode="create" onClose={() => onClose(true)} onSuccess={handleSuccess} />
+          <PromotionForm
+            mode="create"
+            onClose={() => onClose(true)}
+            onSuccess={handleSuccess}
+          />
         </DialogContent>
       </Dialog>
       <ConfirmDialog
@@ -50,7 +54,10 @@ export default function PromotionDialog({ open, onClose }: Props) {
         confirmText="Add Announcement"
         cancelText="OK"
         onConfirm={handleAddAnnouncement}
-        onCancel={() => setShowSuccessDialog(false)}
+        onCancel={() => {
+          setShowSuccessDialog(false);
+          onClose(true);
+        }}
       />
     </>
   );
