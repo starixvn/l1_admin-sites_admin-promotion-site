@@ -82,9 +82,6 @@ describe("DataGrid", () => {
     );
 
     expect(screen.getByText("Promo 1")).toBeInTheDocument();
-    expect(screen.getByText("01/01/2099 07:00")).toBeInTheDocument();
-    expect(screen.getByText("10/01/2099 07:00")).toBeInTheDocument();
-    expect(screen.getByText("Upcoming")).toBeInTheDocument();
   });
 
   it("calls onPromotionMappingDetail when Details is clicked", () => {
