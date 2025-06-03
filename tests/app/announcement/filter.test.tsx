@@ -26,7 +26,7 @@ describe("Announcement Filter", () => {
     expect(screen.getByText("Add New Announcement")).toBeInTheDocument();
   });
 
-  it("calls onStatusChange when status is changed", () => {
+  it("calls onStatusChange when status is changed and form is submitted", () => {
     render(
       <Filter
         status="All"
@@ -35,8 +35,16 @@ describe("Announcement Filter", () => {
         onAddNew={mockOnAddNew}
       />
     );
+
+    // Change status
     const select = screen.getByLabelText("Status");
     fireEvent.change(select, { target: { value: "Running" } });
+
+    // Submit the form
+    const submitButton = screen.getByRole("button", { name: "Submit" });
+    fireEvent.click(submitButton);
+
+    // Verify callback was called with correct values
     expect(mockOnStatusChange).toHaveBeenCalledWith("Running", 10);
   });
 
@@ -49,7 +57,8 @@ describe("Announcement Filter", () => {
         onAddNew={mockOnAddNew}
       />
     );
-    const addButton = screen.getByText("Add New Announcement");
+
+    const addButton = screen.getByRole("button", { name: "Add New Announcement" });
     fireEvent.click(addButton);
     expect(mockOnAddNew).toHaveBeenCalled();
   });
@@ -66,6 +75,20 @@ describe("Announcement Filter", () => {
     PROMOTION_STATUS_OPTIONS_LIST.forEach(option => {
       expect(screen.getByText(option)).toBeInTheDocument();
     });
+  });
+
+  it("renders with initial status", () => {
+    render(
+      <Filter
+        status="Running"
+        pageSize={10}
+        onStatusChange={mockOnStatusChange}
+        onAddNew={mockOnAddNew}
+      />
+    );
+
+    const select = screen.getByLabelText("Status");
+    expect(select).toHaveValue("Running");
   });
 });
 

@@ -126,6 +126,7 @@ const MappingRow = ({
               onChange={e => onOperatorChange(idx, e.target.value)}
               className={`border border-gray-300 rounded-xl px-2 py-1 text-sm min-w-[100px] h-9 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 hover:border-blue-400 transition-all bg-white ${!isEditable ? 'pointer-events-none opacity-60 bg-gray-100' : ''}`}
               disabled={!isEditable || (isDuplicateOperator(mapping.operatorId, idx) && mapping.operatorId !== "")}
+              aria-label="Select Operator"
             >
               <option value="">Select Operator</option>
               {getFilteredOperators(mapping.promotionCode)
