@@ -195,6 +195,7 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
   const [operators, setOperators] = useState<Operator[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [allOperators, setAllOperators] = useState<Operator[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const isEditable = mode === 'edit' && status !== "not_started";
 
@@ -297,13 +298,19 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
     await trigger("promotionMappings");
   };
   const handleSaveClick = async () => {
-    const isValid = await trigger(
-      isEditable
-        ? ["template"]
-        : ["template", "fromDate", "toDate", "promotionMappings"]
-    );
-    if (isValid) {
-      onSave();
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      const isValid = await trigger(
+        isEditable
+          ? ["template"]
+          : ["template", "fromDate", "toDate", "promotionMappings"]
+      );
+      if (isValid) {
+        await onSave();
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -389,7 +396,7 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
       <div className="w-full max-w-3xl mx-auto flex justify-between gap-2 pt-2 mt-auto pb-4">
         <button className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-1.5 rounded-lg font-semibold shadow transition text-sm" onClick={onBack} type="button">← Back</button>
         <div className="flex gap-1.5">
-          <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded-lg font-semibold shadow transition text-sm" onClick={handleSaveClick} type="button">Save</button>
+          <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded-lg font-semibold shadow transition text-sm" onClick={handleSaveClick} type="button" disabled={isSaving}>Save</button>
         </div>
       </div>
     </div>
