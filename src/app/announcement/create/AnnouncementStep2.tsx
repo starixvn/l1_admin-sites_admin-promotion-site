@@ -298,7 +298,9 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
     await trigger("promotionMappings");
   };
   const handleSaveClick = async () => {
-    if (isSaving) return;
+    if (isSaving) {
+      return;
+    }
     setIsSaving(true);
     try {
       const isValid = await trigger(
@@ -307,7 +309,7 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
           : ["template", "fromDate", "toDate", "promotionMappings"]
       );
       if (isValid) {
-        await onSave();
+        await Promise.resolve(onSave());
       }
     } finally {
       setIsSaving(false);
