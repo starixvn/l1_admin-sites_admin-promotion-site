@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import configs from "../../../../../configs";
+import * as Sentry from "@sentry/nextjs";
+import { getUserFromCookie } from "@/lib/auth/cookie";
 
 export async function GET(req: NextRequest) {
+  const user = await getUserFromCookie();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   const code = req.nextUrl.searchParams.get("code");
 
   if (!code) {
@@ -15,7 +21,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(res.data);
   } catch (error) {
-    console.error("Error checking promotion code:", error);
+    Sentry.captureException(error, {
+      extra: {
+        route: "/api/promotions/check-code",
+      },
+    });
     return NextResponse.json(
       { error: "Failed to check promotion code" },
       { status: 500 }

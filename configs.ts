@@ -1,4 +1,8 @@
 const configs = {
+  sentry: {
+    dsn: process.env.SENTRY_DSN!,
+    environment: process.env.NODE_ENV!,
+  },
   apiBaseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "",
   env: process.env.NODE_ENV || "development",
   identityUrl: process.env.IDENTITY_URL!,
@@ -7,6 +11,7 @@ const configs = {
   scope: process.env.SCOPE!,
   apiPromotionUrl: process.env.NEXT_PUBLIC_API_PROMOTION_URL || "",
   apiConfigurationUrl: process.env.NEXT_PUBLIC_API_CONFIGURATION_URL || "",
+  siteId: process.env.IDENTITY_SITE_ID!,
 };
 
 export default configs;

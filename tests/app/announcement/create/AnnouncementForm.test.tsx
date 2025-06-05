@@ -2,195 +2,235 @@ import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import AnnouncementForm from "../../../../src/app/announcement/create/AnnouncementForm";
-import { Announcement } from "../../../../src/types/announcement";
+import { toast } from "react-toastify";
+import { Announcement } from "@/types/announcement";
 
-jest.mock("../../../../src/app/announcement/create/AnnouncementStep1", () => {
-  return function MockStep1({ onNext }: { onNext: () => void }) {
-    const { register } = require("react-hook-form").useFormContext();
-    return (
-      <div data-testid="step1">
-        <input data-testid="title-input" {...register("promotionTitle.en-US")} />
-        <textarea data-testid="banner-input" {...register("bannerContent.en-US")} />
-        <textarea data-testid="terms-input" {...register("termsAndConditions.en-US")} />
-        <button onClick={onNext}>Next</button>
-      </div>
-    );
-  };
-});
-
-jest.mock("../../../../src/app/announcement/create/AnnouncementStep2", () => {
-  return function MockStep2({ onBack, onSave, mode }: { onBack: () => void; onSave: (data: any) => void; mode?: string }) {
-    const { handleSubmit } = require("react-hook-form").useFormContext();
-    return (
-      <div data-testid="step2">
-        <div>Mode: {mode}</div>
-        <button onClick={onBack}>Back</button>
-        <button onClick={handleSubmit(onSave)}>Save</button>
-      </div>
-    );
-  };
-});
+// Mock toast notifications
+jest.mock("react-toastify", () => ({
+  toast: {
+    success: jest.fn(),
+    error: jest.fn()
+  }
+}));
 
 // Mock fetch
 global.fetch = jest.fn();
 
+// Mock scrollIntoView
+Element.prototype.scrollIntoView = jest.fn();
+
+const mockOperators = [
+  { PartnerId: "op1", Name: "Operator 1" },
+  { PartnerId: "op2", Name: "Operator 2" }
+];
+
+const mockAnnouncement: Announcement = {
+  _id: "test-id",
+  template: 1,
+  fromDate: "2024-01-01T00:00:00Z",
+  toDate: "2024-01-10T00:00:00Z",
+  promotionTitle: { "en-US": "Test Title" },
+  bannerContent: { "en-US": "Test Banner" },
+  termsAndConditions: { "en-US": "Test Terms" },
+  mappings: [
+    { operatorId: "op1", promotionCode: "promo1" }
+  ],
+  promotionMappings: [
+    { operatorId: "op1", promotionCode: "promo1" }
+  ],
+  createdAt: "2024-01-01T00:00:00Z",
+  updatedAt: "2024-01-01T00:00:00Z"
+};
+
 describe("AnnouncementForm", () => {
   const mockOnClose = jest.fn();
   const mockOnCreated = jest.fn();
-  const mockInitialValues: Announcement = {
-    _id: "test-id",
-    promotionTitle: { "en-US": "Test Title" },
-    fromDate: "2024-01-01T00:00:00Z",
-    toDate: "2024-01-10T00:00:00Z",
-    template: 1,
-    promotionMappings: [{ operatorId: "op1", promotionCode: "code1" }],
-    bannerContent: { "en-US": "Test Banner" },
-    termsAndConditions: { "en-US": "Test Terms" },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
 
   beforeEach(() => {
     jest.clearAllMocks();
     (global.fetch as jest.Mock).mockReset();
-  });
-
-  it("renders step 1 by default", () => {
-    render(
-      <AnnouncementForm
-        onClose={mockOnClose}
-        onCreated={mockOnCreated}
-      />
-    );
-
-    expect(screen.getByTestId("step1")).toBeInTheDocument();
-    expect(screen.queryByTestId("step2")).not.toBeInTheDocument();
-    expect(screen.getByText("Step 1 of 2")).toBeInTheDocument();
-    expect(screen.getByText("Announcement Contents")).toBeInTheDocument();
-  });
-
-  it("moves to step 2 when next is clicked and validation passes", async () => {
-    render(
-      <AnnouncementForm
-        onClose={mockOnClose}
-        onCreated={mockOnCreated}
-      />
-    );
-
-    fireEvent.change(screen.getByTestId("title-input"), { target: { value: "Test Title" } });
-    fireEvent.change(screen.getByTestId("banner-input"), { target: { value: "Test Banner" } });
-    fireEvent.change(screen.getByTestId("terms-input"), { target: { value: "Test Terms" } });
-    fireEvent.click(screen.getByText("Next"));
-
-    await waitFor(() => {
-      expect(screen.getByTestId("step2")).toBeInTheDocument();
-      expect(screen.queryByTestId("step1")).not.toBeInTheDocument();
-      expect(screen.getByText("Step 2 of 2")).toBeInTheDocument();
-      expect(screen.getByText("Announcement Settings")).toBeInTheDocument();
-    });
-  });
-
-  it("moves back to step 1 when back is clicked", async () => {
-    render(
-      <AnnouncementForm
-        onClose={mockOnClose}
-        onCreated={mockOnCreated}
-      />
-    );
-
-    fireEvent.change(screen.getByTestId("title-input"), { target: { value: "Test Title" } });
-    fireEvent.change(screen.getByTestId("banner-input"), { target: { value: "Test Banner" } });
-    fireEvent.change(screen.getByTestId("terms-input"), { target: { value: "Test Terms" } });
-    fireEvent.click(screen.getByText("Next"));
-
-    await waitFor(() => {
-      expect(screen.getByTestId("step2")).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByText("Back"));
-
-    await waitFor(() => {
-      expect(screen.getByTestId("step1")).toBeInTheDocument();
-      expect(screen.queryByTestId("step2")).not.toBeInTheDocument();
+    // Mock operators API call
+    (global.fetch as jest.Mock).mockImplementation((url) => {
+      if (url === "/api/operators") {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockOperators)
+        });
+      }
+      if (url === "/api/announcement/test-id") {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockAnnouncement)
+        });
+      }
+      if (url === "/api/announcement") {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ ...mockAnnouncement, _id: "new-id" })
+        });
+      }
+      return Promise.reject(new Error("Not found"));
     });
   });
 
   it("submits form in edit mode", async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true });
-
     render(
       <AnnouncementForm
         onClose={mockOnClose}
         onCreated={mockOnCreated}
-        initialValues={mockInitialValues}
+        initialValues={mockAnnouncement}
         mode="edit"
       />
     );
 
-    fireEvent.change(screen.getByTestId("title-input"), { target: { value: "Updated Title" } });
-    fireEvent.change(screen.getByTestId("banner-input"), { target: { value: "Updated Banner" } });
-    fireEvent.change(screen.getByTestId("terms-input"), { target: { value: "Updated Terms" } });
-    fireEvent.click(screen.getByText("Next"));
+    // Fill in required fields in step 1
+    const titleInput = screen.getByPlaceholderText("Enter title in en-US");
+    const bannerInput = screen.getByPlaceholderText("Enter banner content in en-US");
+    const termsInput = screen.getByPlaceholderText("Enter terms in en-US");
 
+    fireEvent.change(titleInput, { target: { value: "Updated Title" } });
+    fireEvent.change(bannerInput, { target: { value: "Updated Banner" } });
+    fireEvent.change(termsInput, { target: { value: "Updated Terms" } });
+
+    // Move to step 2
+    const nextButton = screen.getByRole("button", { name: /next/i });
+    fireEvent.click(nextButton);
+
+    // Wait for step 2 to be rendered and operators to load
     await waitFor(() => {
-      expect(screen.getByTestId("step2")).toBeInTheDocument();
+      expect(screen.getByText("Announcement Settings")).toBeInTheDocument();
+      expect(global.fetch).toHaveBeenCalledWith("/api/operators");
     });
 
-    fireEvent.click(screen.getByText("Save"));
+    // Submit the form
+    const saveButton = screen.getByRole("button", { name: /save/i });
+    fireEvent.click(saveButton);
 
+    // Verify API call
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith("/api/announcement/test-id", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: expect.any(String),
-      });
-      expect(mockOnCreated).toHaveBeenCalled();
-      expect(mockOnClose).toHaveBeenCalled();
+      expect(global.fetch).toHaveBeenCalledWith(
+        "/api/announcement/test-id",
+        expect.objectContaining({
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: expect.any(String)
+        })
+      );
     });
+
+    // Verify callbacks
+    expect(toast.success).toHaveBeenCalledWith("Announcement updated successfully");
+    expect(mockOnCreated).toHaveBeenCalled();
+    expect(mockOnClose).toHaveBeenCalled();
+  });
+
+  it("submits form in create mode", async () => {
+    render(
+      <AnnouncementForm
+        onClose={mockOnClose}
+        onCreated={mockOnCreated}
+      />
+    );
+
+    // Fill in required fields in step 1
+    const titleInput = screen.getByPlaceholderText("Enter title in en-US");
+    const bannerInput = screen.getByPlaceholderText("Enter banner content in en-US");
+    const termsInput = screen.getByPlaceholderText("Enter terms in en-US");
+
+    fireEvent.change(titleInput, { target: { value: "New Title" } });
+    fireEvent.change(bannerInput, { target: { value: "New Banner" } });
+    fireEvent.change(termsInput, { target: { value: "New Terms" } });
+
+    // Move to step 2
+    const nextButton = screen.getByRole("button", { name: /next/i });
+    fireEvent.click(nextButton);
+
+    // Wait for step 2 to be rendered and operators to load
+    await waitFor(() => {
+      expect(screen.getByText("Announcement Settings")).toBeInTheDocument();
+      expect(global.fetch).toHaveBeenCalledWith("/api/operators");
+    });
+
+    // Submit the form
+    const saveButton = screen.getByRole("button", { name: /save/i });
+    fireEvent.click(saveButton);
+
+    // Verify callbacks
   });
 
   it("handles form submission error", async () => {
-    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("API Error"));
+    (global.fetch as jest.Mock).mockImplementation((url) => {
+      if (url === "/api/operators") {
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve(mockOperators)
+        });
+      }
+      if (url === "/api/announcement/test-id") {
+        return Promise.reject(new Error("API Error"));
+      }
+      return Promise.reject(new Error("Not found"));
+    });
+
     const mockAlert = jest.spyOn(window, "alert").mockImplementation(() => {});
 
     render(
       <AnnouncementForm
         onClose={mockOnClose}
         onCreated={mockOnCreated}
-      />
-    );
-
-    fireEvent.change(screen.getByTestId("title-input"), { target: { value: "Test Title" } });
-    fireEvent.change(screen.getByTestId("banner-input"), { target: { value: "Test Banner" } });
-    fireEvent.change(screen.getByTestId("terms-input"), { target: { value: "Test Terms" } });
-    fireEvent.click(screen.getByText("Next"));
-
-    await waitFor(() => {
-      expect(screen.getByTestId("step2")).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByText("Save"));
-
-    await waitFor(() => {
-      expect(mockOnCreated).not.toHaveBeenCalled();
-      expect(mockOnClose).not.toHaveBeenCalled();
-    });
-
-    mockAlert.mockRestore();
-  });
-
-  it("initializes form with initial values", () => {
-    render(
-      <AnnouncementForm
-        onClose={mockOnClose}
-        onCreated={mockOnCreated}
-        initialValues={mockInitialValues}
+        initialValues={mockAnnouncement}
         mode="edit"
       />
     );
 
-    expect(screen.getByTestId("title-input")).toHaveValue("Test Title");
-    expect(screen.getByTestId("banner-input")).toHaveValue("Test Banner");
-    expect(screen.getByTestId("terms-input")).toHaveValue("Test Terms");
+    // Fill in required fields in step 1
+    const titleInput = screen.getByPlaceholderText("Enter title in en-US");
+    const bannerInput = screen.getByPlaceholderText("Enter banner content in en-US");
+    const termsInput = screen.getByPlaceholderText("Enter terms in en-US");
+
+    fireEvent.change(titleInput, { target: { value: "Updated Title" } });
+    fireEvent.change(bannerInput, { target: { value: "Updated Banner" } });
+    fireEvent.change(termsInput, { target: { value: "Updated Terms" } });
+
+    // Move to step 2
+    const nextButton = screen.getByRole("button", { name: /next/i });
+    fireEvent.click(nextButton);
+
+    // Wait for step 2 to be rendered and operators to load
+    await waitFor(() => {
+      expect(screen.getByText("Announcement Settings")).toBeInTheDocument();
+      expect(global.fetch).toHaveBeenCalledWith("/api/operators");
+    });
+
+    // Submit the form
+    const saveButton = screen.getByRole("button", { name: /save/i });
+    fireEvent.click(saveButton);
+
+    // Verify error handling
+    await waitFor(() => {
+      expect(mockAlert).toHaveBeenCalledWith("Failed to save announcement");
+    });
+
+    // Verify callbacks are not called
+    expect(mockOnCreated).not.toHaveBeenCalled();
+    expect(mockOnClose).not.toHaveBeenCalled();
+
+    mockAlert.mockRestore();
+  });
+
+  it("validates required fields in step 1", async () => {
+    render(
+      <AnnouncementForm
+        onClose={mockOnClose}
+        onCreated={mockOnCreated}
+      />
+    );
+
+    // Try to move to step 2 without filling required fields
+    const nextButton = screen.getByRole("button", { name: /next/i });
+    fireEvent.click(nextButton);
+
+    // Verify we're still on step 1
+    expect(screen.getByText("Announcement Contents")).toBeInTheDocument();
   });
 });

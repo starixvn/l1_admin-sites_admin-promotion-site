@@ -34,6 +34,11 @@ export default function PromotionMappingDialog({ open, onClose, mappings, operat
         </div>
         <div className="px-8">
           <div className="flex flex-col">
+            {/* Header row */}
+            <div className="grid grid-cols-12 gap-3 px-4 py-3 font-semibold text-gray-800 text-base  rounded-t-2xl ">
+              <div className="col-span-3 flex items-center justify-center">Operator</div>
+              <div className="col-span-4 flex items-center justify-center">Promotion Code</div>
+            </div>
             {mappings.length === 0 && <div className="text-gray-400">No mapping</div>}
             {mappings.map((m, idx) => {
               const operator = operators.find(o => o.PartnerId === m.operatorId);
@@ -45,16 +50,14 @@ export default function PromotionMappingDialog({ open, onClose, mappings, operat
                   style={{ minWidth: 0 }}
                 >
                   {/* Operator badge */}
-                  <div className="col-span-2 flex items-center justify-center">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 min-w-[100px] max-w-full justify-center">
-                      <span className="w-2 h-2 bg-blue-400 rounded-full mr-1 inline-block"></span>
+                  <div className="col-span-3 flex items-center justify-center">
+                    <span className="inline-flex w-[200px] items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 min-w-[100px] max-w-full justify-center">
                       <span className="truncate">{operator ? operator.Name : m.operatorId}</span>
                     </span>
                   </div>
                   {/* Promotion code badge */}
-                  <div className="col-span-5 flex items-center justify-center">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-800 border border-green-200 min-w-[160px] max-w-full justify-center">
-                      <span className="w-2 h-2 bg-green-400 rounded-full mr-1 inline-block"></span>
+                  <div className="col-span-4 flex items-center justify-center">
+                    <span className="inline-flex w-[200px] items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-800 border border-green-200 min-w-[160px] max-w-full justify-center">
                       <span className="truncate">{promotion ? promotion.code : m.promotionCode}</span>
                     </span>
                   </div>

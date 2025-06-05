@@ -12,7 +12,7 @@ import {
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import PromotionPreviewDialog from "./create/PromotionPreviewDialog";
-import { useFilteredGames } from "@/hooks/useFilteredGames";
+import { useFilteredSelectedGames } from "@/hooks/useFilteredSelectedGames";
 import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 import { toGMTString } from "@/lib/date-time.utils";
 import { useOperators } from "@/hooks/useOperators";
@@ -110,7 +110,7 @@ export default function DataGrid({
     }
   );
 
-  const { data: gameList = [] } = useFilteredGames({
+  const { data: gameList = [] } = useFilteredSelectedGames({
     currencyGroups: viewPromotion?.currencyGroups || [],
     gameType: viewPromotion?.gameConfigType as GameType,
     gameIds: viewPromotion?.gameIds || [],
@@ -166,7 +166,7 @@ export default function DataGrid({
             <th className="px-4 py-3 text-center">No. of Free Spins</th>
             <th className="px-4 py-3 text-left">Start Date</th>
             <th className="px-4 py-3 text-left">End Date</th>
-            {/* <th className="px-4 py-3 text-left">Notice</th> */}
+            <th className="px-4 py-3 text-left">Announcement</th>
             <th className="px-4 py-3 text-center">Actions</th>
           </tr>
         </thead>
@@ -204,7 +204,13 @@ export default function DataGrid({
 
                   <Countdown endDate={new Date(p.endDate)} />
                 </td>
-                {/* <td className="px-4 py-4 text-green-500">Linked</td> */}
+                <td className="px-4 py-4">
+                  {p.announcementTitle
+                    ? <span className="text-green-500">Linked</span>
+                    : <span className="text-red-500">Unlinked</span>
+                  }
+                  {p.announcementTitle && <div>{p.announcementTitle}</div>}
+                </td>
                 <td className="px-4 py-4">
                   <div className="flex justify-center gap-3">
                     <button

@@ -6,6 +6,7 @@ import axios from "axios";
 import { ToastContainer } from "react-toastify";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GAME_TYPES } from "@/constants/gameTypes";
+import { useRouter } from "next/navigation";
 
 beforeAll(() => {
   jest.spyOn(console, "error").mockImplementation(() => {});
@@ -23,6 +24,16 @@ jest.mock("@/hooks/useUpdatePromotion", () => ({
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    refresh: jest.fn(),
+    back: jest.fn(),
+  }),
+}));
 
 const createTestQueryClient = () =>
   new QueryClient({

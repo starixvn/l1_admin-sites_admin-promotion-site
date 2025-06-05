@@ -46,15 +46,20 @@ function getAnnouncementStatus(fromDate: string, toDate: string): string {
 
 function formatDateTime(dateStr: string) {
   const d = new Date(dateStr);
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
 }
 
 // Add this component for template image
 const TemplateImage = ({ template }: { template: number }) => {
   if (!configs.apiConfigurationUrl) {
     return (
-      <div className="h-12 w-auto rounded bg-gray-100 flex items-center justify-center mx-auto" style={{ maxWidth: 100 }}>
+      <div
+        className="h-12 w-auto rounded bg-gray-100 flex items-center justify-center mx-auto"
+        style={{ maxWidth: 100 }}
+      >
         <ImageIcon className="w-6 h-6 text-gray-400" />
       </div>
     );
@@ -68,11 +73,12 @@ const TemplateImage = ({ template }: { template: number }) => {
       style={{ maxWidth: 100 }}
       onError={(e) => {
         const target = e.target as HTMLImageElement;
-        target.style.display = 'none';
-        target.parentElement?.classList.add('bg-gray-100');
-        const icon = document.createElement('div');
-        icon.className = 'h-12 w-auto rounded bg-gray-100 flex items-center justify-center mx-auto';
-        icon.style.maxWidth = '100px';
+        target.style.display = "none";
+        target.parentElement?.classList.add("bg-gray-100");
+        const icon = document.createElement("div");
+        icon.className =
+          "h-12 w-auto rounded bg-gray-100 flex items-center justify-center mx-auto";
+        icon.style.maxWidth = "100px";
         icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`;
         target.parentElement?.appendChild(icon);
       }}
@@ -80,20 +86,51 @@ const TemplateImage = ({ template }: { template: number }) => {
   );
 };
 
-export default function DataGrid({ announcements, currentPage, pageSize, totalItems, onPageChange, onPageSizeChange, onDelete, onEdit, onView, onPromotionMappingDetail }: DataGridProps) {
+export default function DataGrid({
+  announcements,
+  currentPage,
+  pageSize,
+  totalItems,
+  onPageChange,
+  onPageSizeChange,
+  onDelete,
+  onEdit,
+  onView,
+  onPromotionMappingDetail,
+}: DataGridProps) {
   const totalPages = Math.ceil(totalItems / pageSize);
+
+  if (!Array.isArray(announcements) || announcements.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-400">No results found</div>
+    );
+  }
   return (
     <div className="bg-white rounded-xl shadow overflow-x-auto">
       <table className="w-full text-sm">
         <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
           <tr>
-            <th className="w-[4%] min-w-[40px] px-4 py-3 text-center font-semibold">No.</th>
-            <th className="w-[22%] min-w-[200px] px-4 py-3 text-left font-semibold">Announcement Title</th>
-            <th className="w-[16%] min-w-[160px] px-4 py-3 text-center font-semibold">Display Date (GMT + 7)</th>
-            <th className="w-[12%] min-w-[120px] px-4 py-3 text-center font-semibold">Banner Template</th>
-            <th className="w-[16%] min-w-[140px] px-4 py-3 text-center font-semibold">Promotion Mapping</th>
-            <th className="w-[10%] min-w-[100px] px-4 py-3 text-center font-semibold">Status</th>
-            <th className="w-[8%] min-w-[80px] px-4 py-3 text-center font-semibold">Action</th>
+            <th className="w-[4%] min-w-[40px] px-4 py-3 text-center font-semibold">
+              No.
+            </th>
+            <th className="w-[22%] min-w-[200px] px-4 py-3 text-left font-semibold">
+              Announcement Title
+            </th>
+            <th className="w-[16%] min-w-[160px] px-4 py-3 text-center font-semibold">
+              Display Date (GMT + 7)
+            </th>
+            <th className="w-[12%] min-w-[120px] px-4 py-3 text-center font-semibold">
+              Banner Template
+            </th>
+            <th className="w-[16%] min-w-[140px] px-4 py-3 text-center font-semibold">
+              Promotion Mapping
+            </th>
+            <th className="w-[10%] min-w-[100px] px-4 py-3 text-center font-semibold">
+              Status
+            </th>
+            <th className="w-[8%] min-w-[80px] px-4 py-3 text-center font-semibold">
+              Action
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -101,39 +138,87 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
             const status = getAnnouncementStatus(a.fromDate, a.toDate);
             return (
               <tr key={a._id} className="hover:bg-green-50">
-                <td className="px-4 py-4 text-center">{(currentPage - 1) * pageSize + idx + 1}</td>
-                <td className="px-4 py-4 text-gray-800 truncate">{a.promotionTitle?.['en-US']}</td>
+                <td className="px-4 py-4 text-center">
+                  {(currentPage - 1) * pageSize + idx + 1}
+                </td>
+                <td className="px-4 py-4 text-gray-800 truncate">
+                  {a.promotionTitle?.["en-US"]}
+                </td>
                 <td className="px-4 py-4 text-center whitespace-nowrap">
                   <div className="inline-flex items-center bg-white border border-gray-200 rounded-xl px-3 py-1 gap-1 shadow-sm transition hover:border-blue-300">
-                    <svg className="w-4 h-4 text-blue-300 mr-1" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="5"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                    <span className="font-mono text-xs text-gray-900 font-semibold text-center">{formatDateTime(a.fromDate)}</span>
+                    <svg
+                      className="w-4 h-4 text-blue-300 mr-1"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <rect x="3" y="4" width="18" height="18" rx="5" />
+                      <path d="M16 2v4M8 2v4M3 10h18" />
+                    </svg>
+                    <span className="font-mono text-xs text-gray-900 font-semibold text-center">
+                      {formatDateTime(a.fromDate)}
+                    </span>
                     <span className="mx-1 text-gray-300 font-bold">-</span>
-                    <span className="font-mono text-xs text-gray-900 font-semibold text-center">{formatDateTime(a.toDate)}</span>
+                    <span className="font-mono text-xs text-gray-900 font-semibold text-center">
+                      {formatDateTime(a.toDate)}
+                    </span>
                   </div>
                 </td>
                 <td className="px-4 py-4 text-center">
                   <TemplateImage template={a.template} />
                 </td>
-                <td className="px-4 py-4 text-center text-blue-500 cursor-pointer truncate" onClick={() => onPromotionMappingDetail && onPromotionMappingDetail(a.promotionMappings)}>
-                  Detail
+                <td className="px-4 py-4 text-center text-blue-500 truncate">
+                  <span
+                    onClick={() =>
+                      onPromotionMappingDetail &&
+                      onPromotionMappingDetail(a.mappings)
+                    }
+                    className="cursor-pointer text-blue-500"
+                  >
+                    Details
+                  </span>
                 </td>
                 <td className="px-4 py-4 text-center">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(status)}`}>{status}</span>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
+                      status
+                    )}`}
+                  >
+                    {status}
+                  </span>
                 </td>
                 <td className="px-4 py-4 text-center">
                   <div className="flex justify-center gap-1">
-                    <button className="p-1 rounded-full transition-colors group" aria-label="view-announcement" onClick={() => onView && onView(a)}>
+                    <button
+                      className="p-1 rounded-full transition-colors group"
+                      title="View"
+                      aria-label="view-announcement"
+                      onClick={() => onView && onView(a)}
+                    >
                       <Eye className="w-4 h-4 text-gray-600 group-hover:text-black group-hover:bg-gray-200 rounded-full transition-colors" />
                     </button>
+                    {status !== PROMOTION_STATUS_OPTIONS.Completed && (
+                      <button
+                        className="p-1 rounded-full transition-colors group"
+                        title="Edit"
+                        aria-label="edit-announcement"
+                        onClick={() => onEdit && onEdit(a)}
+                      >
+                        <Pencil className="w-4 h-4 text-blue-600" />
+                      </button>
+                    )}
                     {status === PROMOTION_STATUS_OPTIONS.Upcoming && (
-                      <>
-                        <button className="p-1 rounded-full transition-colors group" aria-label="edit-announcement" onClick={() => onEdit && onEdit(a)}>
-                          <Pencil className="w-4 h-4 text-blue-600 group-hover:bg-gray-200 rounded-full transition-colors" />
-                        </button>
-                        <button className="p-1 rounded-full transition-colors group" aria-label="delete-announcement" onClick={() => onDelete(a._id, a.promotionTitle?.['en-US'] || '')}>
-                          <Trash2 className="w-4 h-4 text-red-500 group-hover:bg-gray-200 rounded-full transition-colors" />
-                        </button>
-                      </>
+                      <button
+                        className="p-1 rounded-full transition-colors group"
+                        title="Delete"
+                        aria-label="delete-announcement"
+                        onClick={() =>
+                          onDelete(a._id, a.promotionTitle?.["en-US"] || "")
+                        }
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500 group-hover:bg-gray-200 rounded-full transition-colors" />
+                      </button>
                     )}
                   </div>
                 </td>
@@ -146,11 +231,13 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
       <div className="flex flex-col md:flex-row md:items-center md:justify-between px-4 py-3 text-sm text-gray-500 gap-2">
         <div>
           <span>
-            Showing {announcements.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}
-            {" "}to{" "}
-            <span className="font-semibold">{Math.min(currentPage * pageSize, totalItems)}</span>
-            {" "}of{" "}
-            <span className="font-semibold">{totalItems}</span> results
+            Showing{" "}
+            {announcements.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}{" "}
+            to{" "}
+            <span className="font-semibold">
+              {Math.min(currentPage * pageSize, totalItems)}
+            </span>{" "}
+            of <span className="font-semibold">{totalItems}</span> results
           </span>
         </div>
         <div className="flex items-center gap-4">
@@ -230,11 +317,14 @@ export default function DataGrid({ announcements, currentPage, pageSize, totalIt
             <span>Rows per page:</span>
             <select
               value={pageSize}
-              onChange={e => onPageSizeChange(Number(e.target.value))}
+              onChange={(e) => onPageSizeChange(Number(e.target.value))}
               className="border rounded px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500"
+              aria-label="Page size"
             >
-              {PAGE_SIZE_OPTIONS.map(size => (
-                <option key={size} value={size}>{size}</option>
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
               ))}
             </select>
           </label>

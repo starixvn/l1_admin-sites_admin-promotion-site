@@ -9,7 +9,7 @@ interface UseFilteredGamesParams
   gameIds?: number[];
 }
 
-export const useFilteredGames = ({
+export const useFilteredSelectedGames = ({
   currencyGroups,
   gameType,
   gameIds = [],

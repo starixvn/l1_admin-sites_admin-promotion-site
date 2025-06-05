@@ -1,0 +1,15 @@
+{
+  "sentry": {
+    "dsn": "https://0c1c657767a7a07e50b8dbcc6509c07d@sentry-k8s.lumigame.com/18",
+    "environment": "LOCAL"
+  },
+  "apiBaseUrl": "http://l1-admin-api-local-service:5000/api",
+  "env": "LOCAL",
+  "identityUrl": "http://l1-auth-api-local-service:5000/connect/token",
+  "clientId": "admin-api",
+  "clientSecret": "adminapi@20luminet&",
+  "siteId": "admin-api",
+  "scope": "admin-api",
+  "apiPromotionUrl": "https://l1-proxy.lumigame.com/game-promotion-api",
+  "apiConfigurationUrl": "https://l1-proxy.lumigame.com/game/static/free-spins-promotion-template"
+}

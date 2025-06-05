@@ -19,14 +19,24 @@ const mockCurrencyGroups = [
 ];
 
 const mockGetCurrencyGroupGames = jest.fn().mockResolvedValue([]);
+const mockGetGameSettingsByType = jest.fn().mockResolvedValue([]);
 jest.mock("@/hooks/useCurrencyGroupGames", () => ({
   useCurrencyGroupGames: () => ({
     mutateAsync: mockGetCurrencyGroupGames,
   }),
 }));
 
+jest.mock("@/hooks/useGameSettingsByType", () => ({
+  useGameSettingsByType: () => ({
+    mutateAsync: mockGetGameSettingsByType,
+  }),
+}));
+
 jest.mock("@/lib/promotion/bet-settings.utils", () => ({
-  selectSuggestedBetLevel: jest.fn(() => 10),
+  selectSuggestedBetLevel: jest.fn(() => ({
+    game: { GameId: 999, GameName: "Mock Game" },
+    value: 10,
+  })),
   validateBetRows: jest.fn((rows) => {
     type Row = { enabled: boolean; betLevel: number; id: string };
     return new Set(
@@ -135,7 +145,11 @@ describe("BetSettingsDialog", () => {
     });
 
     expect(screen.getByText(/Cascading Slot/)).toBeInTheDocument();
-    expect(screen.getByText("The suggested Coin Value value is based on the default setting currently displayed in the game for each currency group.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "The suggested Coin Value value is based on the default setting currently displayed in the game for each currency group."
+      )
+    ).toBeInTheDocument();
   });
 
   it("does not crash if currencyGroups is empty", async () => {

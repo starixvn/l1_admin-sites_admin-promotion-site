@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { Promotion } from "@/types/promotion";
 import { Operator } from "@/types/operator";
 import { usePromotions } from '@/hooks/usePromotions';
-import ConfirmDialog from '@/components/ConfirmDialog';
 import { PromotionMapping } from "@/types/announcement";
 import configs from "../../../../configs";
 import { ImageIcon } from "lucide-react";
+import { usePromotionsUnLink } from "@/hooks/usePromotionsUnLink";
 
 const countTemplate = 3;
 
@@ -125,6 +125,7 @@ const MappingRow = ({
               onChange={e => onOperatorChange(idx, e.target.value)}
               className={`border border-gray-300 rounded-xl px-2 py-1 text-sm min-w-[100px] h-9 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 hover:border-blue-400 transition-all bg-white ${!isEditable ? 'pointer-events-none opacity-60 bg-gray-100' : ''}`}
               disabled={!isEditable || (isDuplicateOperator(mapping.operatorId, idx) && mapping.operatorId !== "")}
+              aria-label="Select Operator"
             >
               <option value="">Select Operator</option>
               {getFilteredOperators(mapping.promotionCode)
@@ -155,11 +156,11 @@ const MappingRow = ({
   );
 };
 
-// Add this component for template image
+// Update TemplateImage for full image display
 const TemplateImage = ({ template }: { template: number }) => {
   if (!configs.apiConfigurationUrl) {
     return (
-      <div className="w-32 h-20 rounded bg-gray-100 flex items-center justify-center">
+      <div className="w-[120px] h-[80px] rounded bg-gray-100 flex items-center justify-center">
         <ImageIcon className="w-8 h-8 text-gray-400" />
       </div>
     );
@@ -169,14 +170,15 @@ const TemplateImage = ({ template }: { template: number }) => {
     <img 
       src={`${configs.apiConfigurationUrl}/template-${template}/banner-1.png`} 
       alt={`Template ${template}`} 
-      className="w-32 h-20 rounded object-cover"
+      className="w-[120px] h-[80px] rounded object-contain bg-white"
+      style={{ display: 'block' }}
       onError={(e) => {
         const target = e.target as HTMLImageElement;
         target.style.display = 'none';
         target.parentElement?.classList.add('bg-gray-100');
         const icon = document.createElement('div');
-        icon.className = 'w-32 h-20 rounded bg-gray-100 flex items-center justify-center';
-        icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`;
+        icon.className = 'w-[120px] h-[80px] rounded bg-gray-100 flex items-center justify-center';
+        icon.innerHTML = `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"text-gray-400\"><rect width=\"18\" height=\"18\" x=\"3\" y=\"3\" rx=\"2\" ry=\"2\"/><circle cx=\"9\" cy=\"9\" r=\"2\"/><path d=\"m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21\"/></svg>`;
         target.parentElement?.appendChild(icon);
       }}
     />
@@ -193,9 +195,8 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
   const [operators, setOperators] = useState<Operator[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [allOperators, setAllOperators] = useState<Operator[]>([]);
-  const [showConfirm, setShowConfirm] = useState(false);
 
-  const isEditable = mode === 'create' || (mode === 'edit' && status !== 'Upcoming');
+  const isEditable = mode === 'edit' && status !== "not_started";
 
   // Fetch all operators once
   useEffect(() => {
@@ -217,18 +218,31 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
     operatorId: mode === 'create' && allOperators.length > 0 ? allOperators[0].PartnerId : undefined 
   });
 
+  const { promotions: unmappedPromotions } = usePromotionsUnLink();
+
   useEffect(() => {
     if (allPromotions.length > 0) {
-      // For edit mode, show all promotions
-      // For create mode, filter promotions with operators
-      const validPromotions = mode === 'create' 
-        ? allPromotions.filter((p: Promotion) => 
-            operators.some(op => op.PartnerId === p.operatorId)
-          )
-        : allPromotions;
+      // For edit mode, show unmapped + currently mapped promotions
+      let validPromotions: Promotion[] = [];
+      if (mode === 'create') {
+        validPromotions = unmappedPromotions.filter((p: Promotion) =>
+          operators.some(op => op.PartnerId === p.operatorId)
+        );
+      } else {
+        // Get all codes in current mappings
+        const mappedCodes = promotionMappings.map(m => m.promotionCode).filter(Boolean);
+        // Get all unmapped + mapped promotions (by code)
+        const allCodes = Array.from(new Set([
+          ...unmappedPromotions.map(p => p.code),
+          ...mappedCodes
+        ]));
+        validPromotions = allCodes
+          .map(code => allPromotions.find(p => p.code === code))
+          .filter((p): p is Promotion => !!p);
+      }
       setPromotions(validPromotions);
     }
-  }, [allPromotions, operators, mode]);
+  }, [allPromotions, operators, mode, unmappedPromotions, promotionMappings]);
 
   const getFilteredPromotions = (operatorId: string) => {
     if (!operatorId) {
@@ -283,24 +297,24 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
     await trigger("promotionMappings");
   };
   const handleSaveClick = async () => {
-    const isValid = await trigger(["template", "fromDate", "toDate", "promotionMappings"]);
+    const isValid = await trigger(
+      isEditable
+        ? ["template"]
+        : ["template", "fromDate", "toDate", "promotionMappings"]
+    );
     if (isValid) {
-      setShowConfirm(true);
+      onSave();
     }
-  };
-  const handleConfirmSave = () => {
-    setShowConfirm(false);
-    onSave();
   };
 
   return (
-    <div className="flex flex-col space-y-4 pb-0">
+    <div className="flex flex-col space-y-4 pb-0 max-h-[70vh] overflow-y-auto">
       {/* Banner Template */}
       <div className="w-full max-w-3xl mx-auto bg-white border border-gray-200 p-3 rounded-lg shadow-sm flex flex-col gap-1.5 mb-3">
         <div className="font-semibold text-gray-800 mb-1 text-sm">Banner Template <span className="text-red-500">*</span></div>
         <div className="flex justify-center gap-4">
           {Array.from({ length: countTemplate }, (_, i) => (
-            <div key={i + 1} className={`cursor-pointer border-2 rounded-lg p-1 ${template === i + 1 ? 'border-emerald-500' : 'border-transparent'}`} onClick={() => setValue("template", i + 1)}>
+            <div key={i + 1} className={`cursor-pointer border-2 rounded-lg p-1 flex flex-col items-center ${template === i + 1 ? 'border-emerald-500' : 'border-transparent'}`} onClick={() => setValue("template", i + 1)}>
               <TemplateImage template={i + 1} />
               <div className="text-center mt-1 text-sm font-medium">{`Template ${i + 1}`}</div>
             </div>
@@ -315,7 +329,7 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
           <div className="flex-1">
             <DateTimePicker
               value={fromDate}
-              disabled={!isEditable} 
+              disabled={isEditable} 
               onChange={val => setValue("fromDate", val)}
             />
           </div>
@@ -323,7 +337,7 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
           <div className="flex-1">
             <DateTimePicker
               value={toDate}
-              disabled={!isEditable}
+              disabled={isEditable}
               onChange={val => setValue("toDate", val)}
             />
           </div>
@@ -341,7 +355,7 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
               mapping={m}
               idx={idx}
               errors={errors}
-              isEditable={isEditable}
+              isEditable={!isEditable}
               promotions={promotions}
               promotionMappings={promotionMappings}
               onOperatorChange={(idx, value) => handleChange(idx, "operator", value)}
@@ -358,9 +372,9 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
         <button 
           type="button" 
           onClick={handleAdd} 
-          disabled={!isEditable}
+          disabled={isEditable}
           className={`flex items-center gap-1 mt-2 text-sm font-bold ${
-            !isEditable  
+            isEditable  
               ? 'text-gray-400 cursor-not-allowed' 
               : 'text-emerald-600 hover:underline'
           }`}
@@ -368,7 +382,7 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
           </svg>
-            Add new Operator
+            Add Promotion
         </button>
       </div>
       {/* Actions */}
@@ -378,16 +392,6 @@ export default function AnnouncementStep2({ onBack, onSave, status, mode }: { on
           <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded-lg font-semibold shadow transition text-sm" onClick={handleSaveClick} type="button">Save</button>
         </div>
       </div>
-      <ConfirmDialog
-        open={showConfirm}
-        title={<span style={{ color: 'red', fontWeight: 700 }}>Confirm Save</span>}
-        message={`<div>Are you sure you want to save this announcement?</div>
-          <div><strong>Reminder:</strong> Please double-check all information before saving.</div>`}
-        confirmText="Yes"
-        cancelText="No"
-        onCancel={() => setShowConfirm(false)}
-        onConfirm={handleConfirmSave}
-      />
     </div>
   );
 } 

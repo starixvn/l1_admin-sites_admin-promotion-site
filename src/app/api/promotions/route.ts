@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import axios, { AxiosError } from "axios";
 import configs from "../../../../configs";
 import { PROMOTION_STATUS_MAP } from "@/constants/promotionStatusMap";
+import * as Sentry from "@sentry/nextjs";
+import { getUserFromCookie } from "@/lib/auth/cookie";
 
 export async function POST(req: NextRequest) {
+  const user = await getUserFromCookie();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const body = await req.json();
 
@@ -23,6 +29,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  const user = await getUserFromCookie();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const { searchParams } = req.nextUrl;
     let status = searchParams.get("status");
@@ -61,7 +71,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(response.data);
   } catch (error) {
-    console.error("Error in GET /api/promotions:", error);
+    Sentry.captureException(error, {
+      extra: {
+        route: "/api/promotions",
+      },
+    });
     if (error instanceof AxiosError) {
       return NextResponse.json(
         { error: error.response?.data?.message || error.message },

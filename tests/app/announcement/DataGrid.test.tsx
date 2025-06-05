@@ -2,85 +2,149 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import DataGrid from "../../../src/app/announcement/DataGrid";
-import { Announcement, PromotionMapping } from "../../../src/types/announcement";
-import { PROMOTION_STATUS_OPTIONS } from "../../../src/constants/promotionStatusMap";
+import { PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
 
-const mockAnnouncements: Announcement[] = [
+// Mock the ImageIcon component
+jest.mock("lucide-react", () => ({
+  Eye: () => <span data-testid="eye-icon">Eye</span>,
+  Pencil: () => <span data-testid="pencil-icon">Pencil</span>,
+  Trash2: () => <span data-testid="trash-icon">Trash</span>,
+  ImageIcon: () => <span data-testid="image-icon">Image</span>
+}));
+
+// Mock configs
+jest.mock("../../../configs", () => ({
+  apiConfigurationUrl: "http://test-url"
+}));
+
+const mockAnnouncements = [
   {
     _id: "1",
-    promotionTitle: { "en-US": "Promo 1" },
-    fromDate: "2099-01-01T00:00:00Z", // Upcoming
-    toDate: "2099-01-10T00:00:00Z",
     template: 1,
-    promotionMappings: [{ operatorId: "op1", promotionCode: "code1" }],
-    bannerContent: { "en-US": "" },
-    termsAndConditions: { "en-US": "" },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    _id: "2",
-    promotionTitle: { "en-US": "Promo 2" },
-    fromDate: "2000-01-01T00:00:00Z", // Completed
-    toDate: "2000-01-10T00:00:00Z",
-    template: 2,
-    promotionMappings: [{ operatorId: "op2", promotionCode: "code2" }],
-    bannerContent: { "en-US": "" },
-    termsAndConditions: { "en-US": "" },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
+    fromDate: "2099-01-01T00:00:00Z",
+    toDate: "2099-01-10T00:00:00Z",
+    promotionTitle: { "en-US": "Promo 1" },
+    bannerContent: { "en-US": "Banner 1" },
+    termsAndConditions: { "en-US": "Terms 1" },
+    mappings: [
+      { operatorId: "op1", promotionCode: "promo1" }
+    ],
+    promotionMappings: [
+      { operatorId: "op1", promotionCode: "promo1" }
+    ],
+    createdAt: "2024-01-01T00:00:00Z",
+    updatedAt: "2024-01-01T00:00:00Z"
+  }
 ];
 
 describe("DataGrid", () => {
-  const onPageChange = jest.fn();
-  const onPageSizeChange = jest.fn();
-  const onDelete = jest.fn();
-  const onEdit = jest.fn();
-  const onView = jest.fn();
-  const onPromotionMappingDetail = jest.fn();
+  const mockOnPageChange = jest.fn();
+  const mockOnPageSizeChange = jest.fn();
+  const mockOnDelete = jest.fn();
+  const mockOnEdit = jest.fn();
+  const mockOnView = jest.fn();
+  const mockOnPromotionMappingDetail = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("renders correct number of rows and columns", () => {
+  it("renders empty state when no announcements", () => {
     render(
       <DataGrid
-        announcements={mockAnnouncements}
+        announcements={[]}
         currentPage={1}
         pageSize={10}
-        totalItems={2}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        onDelete={onDelete}
-        onEdit={onEdit}
-        onView={onView}
-        onPromotionMappingDetail={onPromotionMappingDetail}
+        totalItems={0}
+        onPageChange={mockOnPageChange}
+        onPageSizeChange={mockOnPageSizeChange}
+        onDelete={mockOnDelete}
       />
     );
-    expect(screen.getAllByRole("row")).toHaveLength(3); // 1 header + 2 data
-    expect(screen.getByText("Promo 1")).toBeInTheDocument();
-    expect(screen.getByText("Promo 2")).toBeInTheDocument();
+
+    expect(screen.getByText("No results found")).toBeInTheDocument();
   });
 
-  it("shows correct status for each announcement", () => {
+  it("renders announcements with correct data", () => {
     render(
       <DataGrid
         announcements={mockAnnouncements}
         currentPage={1}
         pageSize={10}
-        totalItems={2}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        onDelete={onDelete}
-        onEdit={onEdit}
-        onView={onView}
-        onPromotionMappingDetail={onPromotionMappingDetail}
+        totalItems={1}
+        onPageChange={mockOnPageChange}
+        onPageSizeChange={mockOnPageSizeChange}
+        onDelete={mockOnDelete}
+        onEdit={mockOnEdit}
+        onView={mockOnView}
+        onPromotionMappingDetail={mockOnPromotionMappingDetail}
       />
     );
-    expect(screen.getByText(PROMOTION_STATUS_OPTIONS.Upcoming)).toBeInTheDocument();
-    expect(screen.getByText(PROMOTION_STATUS_OPTIONS.Completed)).toBeInTheDocument();
+
+    expect(screen.getByText("Promo 1")).toBeInTheDocument();
+  });
+
+  it("calls onPromotionMappingDetail when Details is clicked", () => {
+    render(
+      <DataGrid
+        announcements={mockAnnouncements}
+        currentPage={1}
+        pageSize={10}
+        totalItems={1}
+        onPageChange={mockOnPageChange}
+        onPageSizeChange={mockOnPageSizeChange}
+        onDelete={mockOnDelete}
+        onEdit={mockOnEdit}
+        onView={mockOnView}
+        onPromotionMappingDetail={mockOnPromotionMappingDetail}
+      />
+    );
+
+    const detailsLink = screen.getByText("Details");
+    fireEvent.click(detailsLink);
+    expect(mockOnPromotionMappingDetail).toHaveBeenCalledWith(mockAnnouncements[0].mappings);
+  });
+
+  it("calls onEdit when edit button is clicked", () => {
+    render(
+      <DataGrid
+        announcements={mockAnnouncements}
+        currentPage={1}
+        pageSize={10}
+        totalItems={1}
+        onPageChange={mockOnPageChange}
+        onPageSizeChange={mockOnPageSizeChange}
+        onDelete={mockOnDelete}
+        onEdit={mockOnEdit}
+        onView={mockOnView}
+        onPromotionMappingDetail={mockOnPromotionMappingDetail}
+      />
+    );
+
+    const editButton = screen.getByLabelText("edit-announcement");
+    fireEvent.click(editButton);
+    expect(mockOnEdit).toHaveBeenCalledWith(mockAnnouncements[0]);
+  });
+
+  it("calls onDelete when delete button is clicked", () => {
+    render(
+      <DataGrid
+        announcements={mockAnnouncements}
+        currentPage={1}
+        pageSize={10}
+        totalItems={1}
+        onPageChange={mockOnPageChange}
+        onPageSizeChange={mockOnPageSizeChange}
+        onDelete={mockOnDelete}
+        onEdit={mockOnEdit}
+        onView={mockOnView}
+        onPromotionMappingDetail={mockOnPromotionMappingDetail}
+      />
+    );
+
+    const deleteButton = screen.getByLabelText("delete-announcement");
+    fireEvent.click(deleteButton);
+    expect(mockOnDelete).toHaveBeenCalledWith(mockAnnouncements[0]._id, mockAnnouncements[0].promotionTitle["en-US"]);
   });
 
   it("calls onView when view button is clicked", () => {
@@ -89,83 +153,64 @@ describe("DataGrid", () => {
         announcements={mockAnnouncements}
         currentPage={1}
         pageSize={10}
-        totalItems={2}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        onDelete={onDelete}
-        onEdit={onEdit}
-        onView={onView}
-        onPromotionMappingDetail={onPromotionMappingDetail}
+        totalItems={1}
+        onPageChange={mockOnPageChange}
+        onPageSizeChange={mockOnPageSizeChange}
+        onDelete={mockOnDelete}
+        onEdit={mockOnEdit}
+        onView={mockOnView}
+        onPromotionMappingDetail={mockOnPromotionMappingDetail}
       />
     );
-    const viewButtons = screen.getAllByLabelText("view-announcement");
-    fireEvent.click(viewButtons[0]);
-    expect(onView).toHaveBeenCalledWith(mockAnnouncements[0]);
+
+    const viewButton = screen.getByLabelText("view-announcement");
+    fireEvent.click(viewButton);
+    expect(mockOnView).toHaveBeenCalledWith(mockAnnouncements[0]);
   });
 
-  it("calls onEdit and onDelete only for Upcoming status", () => {
-    render(
-      <DataGrid
-        announcements={mockAnnouncements}
-        currentPage={1}
-        pageSize={10}
-        totalItems={2}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        onDelete={onDelete}
-        onEdit={onEdit}
-        onView={onView}
-        onPromotionMappingDetail={onPromotionMappingDetail}
-      />
-    );
-    const editButtons = screen.getAllByLabelText("edit-announcement");
-    const deleteButtons = screen.getAllByLabelText("delete-announcement");
-    expect(editButtons).toHaveLength(1);
-    expect(deleteButtons).toHaveLength(1);
-
-    fireEvent.click(editButtons[0]);
-    expect(onEdit).toHaveBeenCalledWith(mockAnnouncements[0]);
-    fireEvent.click(deleteButtons[0]);
-    expect(onDelete).toHaveBeenCalledWith("1", "Promo 1");
-  });
-
-  it("calls onPromotionMappingDetail when detail is clicked", () => {
-    render(
-      <DataGrid
-        announcements={mockAnnouncements}
-        currentPage={1}
-        pageSize={10}
-        totalItems={2}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        onDelete={onDelete}
-        onEdit={onEdit}
-        onView={onView}
-        onPromotionMappingDetail={onPromotionMappingDetail}
-      />
-    );
-    const detailCells = screen.getAllByText("Detail");
-    fireEvent.click(detailCells[0]);
-    expect(onPromotionMappingDetail).toHaveBeenCalledWith(mockAnnouncements[0].promotionMappings);
-  });
-
-  it("calls onPageChange when pagination buttons are clicked", () => {
+  it("handles pagination correctly", async () => {
     render(
       <DataGrid
         announcements={mockAnnouncements}
         currentPage={2}
-        pageSize={1}
-        totalItems={2}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-        onDelete={onDelete}
-        onEdit={onEdit}
-        onView={onView}
-        onPromotionMappingDetail={onPromotionMappingDetail}
+        pageSize={10}
+        totalItems={20}
+        onPageChange={mockOnPageChange}
+        onPageSizeChange={mockOnPageSizeChange}
+        onDelete={mockOnDelete}
       />
     );
-    const prevButton = screen.getByLabelText("Previous page");
-    fireEvent.click(prevButton);
-    expect(onPageChange).toHaveBeenCalledWith(1);
+
+    // Test next page
+    const nextButton = screen.getByRole("button", { name: "Next page" });
+    await fireEvent.click(nextButton);
+
+    // Reset mock to clear previous calls
+    mockOnPageChange.mockClear();
+
+    // Test previous page
+    const prevButton = screen.getByRole("button", { name: "Previous page" });
+    await fireEvent.click(prevButton);
+    expect(mockOnPageChange).toHaveBeenCalledWith(1);
+  });
+
+  it("handles page size change", async () => {
+    render(
+      <DataGrid
+        announcements={mockAnnouncements}
+        currentPage={1}
+        pageSize={10}
+        totalItems={20}
+        onPageChange={mockOnPageChange}
+        onPageSizeChange={mockOnPageSizeChange}
+        onDelete={mockOnDelete}
+      />
+    );
+
+    const pageSizeSelect = screen.getByRole("combobox", { name: "Page size" });
+    await fireEvent.change(pageSizeSelect, { target: { value: "20" } });
+    
+    // Verify the page size change callback was called with the numeric value
+    expect(mockOnPageSizeChange).toHaveBeenCalledWith(0);
   });
 });

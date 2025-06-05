@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useForm, useWatch, UseFormSetValue } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Step1 from "./Step1";
@@ -7,7 +7,6 @@ import Step2 from "./Step2";
 import { useCreatePromotion } from "@/hooks/useCreatePromotion";
 import { GAME_TYPES } from "@/constants/gameTypes";
 import { useOperators } from "@/hooks/useOperators";
-import { useFilteredGames } from "@/hooks/useFilteredGames";
 import { Promotion } from "@/types/promotion";
 import { getStatus } from "@/constants/promotionStatusMap";
 import { getTodayAtMidnightGMT7 } from "@/lib/date-time.utils";
@@ -15,6 +14,8 @@ import { checkPromotionCodeExists } from "@/lib/api/checkPromotionCodeExists";
 import { addDays } from "date-fns";
 import PromotionPreviewDialog from "./PromotionPreviewDialog";
 import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
+import { useResetOnChange } from "@/hooks/useResetOnChange";
+import { useFilteredSelectedGames } from "@/hooks/useFilteredSelectedGames";
 
 export const promotionSchema = z
   .object({
@@ -80,9 +81,11 @@ export const promotionSchema = z
   .refine(
     (data) => {
       // ✅ Validate tại đây
-      return data.allPlayers ||
+      return (
+        data.allPlayers ||
         (data.uploadedFile instanceof File && data.uploadedFile.size > 0) ||
-        (data.offeredPlayerIds && data.offeredPlayerIds.length > 0);
+        (data.offeredPlayerIds && data.offeredPlayerIds.length > 0)
+      );
     },
     {
       path: ["uploadedFile"],
@@ -104,6 +107,7 @@ interface PromotionFormProps {
   initialValues?: Promotion;
   onClose?: (shouldReload?: boolean) => void;
   onSubmit?: (values: Promotion) => Promise<void>;
+  onSuccess?: (promotionCode: string) => void;
 }
 
 const getDefaultValues = (initialValues?: Promotion) => {
@@ -116,7 +120,9 @@ const getDefaultValues = (initialValues?: Promotion) => {
       offeredSiteNames: initialValues.offeredSiteNames || [],
       offeredPlayerIds: initialValues.offeredPlayerIds || [],
       betLevels: initialValues.betLevels || [],
-      allPlayers: !initialValues.offeredPlayerIds || initialValues.offeredPlayerIds.length === 0,
+      allPlayers:
+        !initialValues.offeredPlayerIds ||
+        initialValues.offeredPlayerIds.length === 0,
     };
   }
   return {
@@ -135,43 +141,6 @@ const getDefaultValues = (initialValues?: Promotion) => {
     gameConfigType: GAME_TYPES.CLASSIC,
     betLevels: [],
   };
-};
-
-const handleOperatorChange = (
-  operatorId: string,
-  initialValues: Promotion | undefined,
-  mode: string,
-  setValue: UseFormSetValue<PromotionFormValues>,
-  setSiteInput: (value: string) => void
-) => {
-  if (!operatorId) {
-    return;
-  }
-
-  const isChanged = operatorId !== initialValues?.operatorId;
-
-  if (mode === "create") {
-    setValue("currencyGroups", []);
-    setValue("betLevels", []);
-    setValue("gameIds", []);
-    setSiteInput("");
-    return;
-  }
-
-  if (mode === "edit") {
-    if (isChanged) {
-      setValue("currencyGroups", []);
-      setValue("betLevels", []);
-      setValue("gameIds", []);
-      setSiteInput("");
-    } else {
-      setValue("currencyGroups", initialValues?.currencyGroups || []);
-      setValue("betLevels", initialValues?.betLevels || []);
-      setValue("gameIds", initialValues?.gameIds || []);
-      setValue("offeredPlayerIds", initialValues?.offeredPlayerIds || []);
-      setSiteInput(initialValues?.offeredSiteNames?.join(";") || "");
-    }
-  }
 };
 
 const StepProgress = ({ step }: { step: number }) => (
@@ -251,6 +220,7 @@ export default function PromotionForm({
   initialValues,
   onClose,
   onSubmit,
+  onSuccess,
 }: PromotionFormProps) {
   const status = initialValues ? getStatus(initialValues) : "";
   const {
@@ -273,22 +243,23 @@ export default function PromotionForm({
   const [openBetSettings, setOpenBetSettings] = useState(false);
   const [siteInput, setSiteInput] = useState("");
   const [lastCheckedCode, setLastCheckedCode] = useState("");
-  const [previewData, setPreviewData] = useState<PromotionFormValues | null>(null);
+  const [previewData, setPreviewData] = useState<PromotionFormValues | null>(
+    null
+  );
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
-
+  const [initialOfferedPlayerIds, setInitialOfferedPlayerIds] = useState(initialValues?.offeredPlayerIds || []);
   const currencyGroups = useWatch({ control, name: "currencyGroups" });
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
   const gameIds = useWatch({ control, name: "gameIds" });
   const operatorId = useWatch({ control, name: "operatorId" });
   const initialGameIds = initialValues?.gameIds ?? [];
-
   const { data: operators = [] } = useOperators();
   const shouldFetchGames = currencyGroups.length > 0 && !!gameConfigType;
   const {
     data: games = [],
     isLoading,
     error,
-  } = useFilteredGames({
+  } = useFilteredSelectedGames({
     currencyGroups: shouldFetchGames ? currencyGroups : [],
     gameType: shouldFetchGames ? gameConfigType : undefined,
     gameIds: shouldFetchGames ? initialGameIds : [],
@@ -303,9 +274,17 @@ export default function PromotionForm({
     }
   }, [initialValues]);
 
-  useEffect(() => {
-    handleOperatorChange(operatorId, initialValues, mode, setValue, setSiteInput);
-  }, [operatorId, initialValues, mode, setValue]);
+  useResetOnChange({
+    mode,
+    dependencies: [
+      [operatorId, initialValues?.operatorId],
+      [gameConfigType, initialValues?.gameConfigType],
+    ],
+    initialValues,
+    setValue,
+    setSiteInput,
+    setInitialOfferedPlayerIds,
+  });
 
   const handleNextStep = async () => {
     const isValid = await trigger([
@@ -365,7 +344,7 @@ export default function PromotionForm({
       createPromotion(payload, {
         onSuccess: () => {
           setShowPreviewDialog(false);
-          onClose?.(true);
+          onSuccess?.(payload.code);
         },
         onError: (err) => console.error("Failed to create promotion", err),
       });
@@ -408,7 +387,7 @@ export default function PromotionForm({
               games={games}
               currencyGroupsInfo={currencyGroupsInfo}
               operators={operators ?? []}
-              initialOfferedPlayerIds={initialValues?.offeredPlayerIds || []}
+              initialOfferedPlayerIds={initialOfferedPlayerIds}
               isLoadingCurrencyGroups={isLoadingCurrencyGroups}
               isLoading={isLoading}
               error={error || null}
@@ -441,7 +420,10 @@ export default function PromotionForm({
           open={showPreviewDialog}
           onClose={() => setShowPreviewDialog(false)}
           data={previewData}
-          operatorName={operators.find((op) => op.PartnerId === previewData?.operatorId)?.Name}
+          operatorName={
+            operators.find((op) => op.PartnerId === previewData?.operatorId)
+              ?.Name
+          }
           gameList={games}
           currencyGroupsInfo={currencyGroupsInfo}
           isSubmitting={isPending}

@@ -2,7 +2,7 @@ import React from "react";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import Page from "../../../src/app/announcement/page";
-import { Announcement, PromotionMapping } from "@/types/announcement";
+import { PromotionMapping } from "@/types/announcement";
 import { Operator } from "@/types/operator";
 import { Promotion } from "@/types/promotion";
 import { PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
@@ -19,7 +19,7 @@ const mockAnnouncements = Array.from({ length: 25 }, (_, i) => ({
   fromDate: "2024-03-20T00:00:00Z",
   toDate: "2024-03-25T00:00:00Z",
   template: 1,
-  promotionMappings: [],
+  mappings: [],
   createdAt: "2024-03-19T00:00:00Z",
   updatedAt: "2024-03-19T00:00:00Z"
 }));
@@ -140,9 +140,11 @@ describe("Announcement Page", () => {
     });
 
     const statusSelect = screen.getByLabelText("Status");
+    const submitButton = screen.getByText("Submit");
     
     await act(async () => {
       fireEvent.change(statusSelect, { target: { value: PROMOTION_STATUS_OPTIONS.Running } });
+      fireEvent.click(submitButton);
     });
 
     await waitFor(() => {
@@ -188,7 +190,7 @@ describe("Announcement Page", () => {
       ...mockApiResponses.announcements,
       items: [{
         ...mockAnnouncements[0],
-        promotionMappings: mockMappings
+        mappings: mockMappings
       }]
     };
 
@@ -210,7 +212,7 @@ describe("Announcement Page", () => {
       expect(screen.getByText("Test Announcement 1")).toBeInTheDocument();
     });
 
-    const detailLink = screen.getByText("Detail");
+    const detailLink = screen.getByText("Details");
     await act(async () => {
       fireEvent.click(detailLink);
     });
