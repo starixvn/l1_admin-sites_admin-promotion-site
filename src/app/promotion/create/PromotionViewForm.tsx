@@ -102,7 +102,7 @@ export default function PromotionViewForm({
                     {row.betLevel}
                   </td>
                   <td className=" text-center border px-4 py-2">
-                    {getTotalBet(row.betLevel, gameConfigType)}
+                    {getTotalBet(row.betLevel, gameConfigType).toFixed(2)}
                   </td>
                 </tr>
               );
