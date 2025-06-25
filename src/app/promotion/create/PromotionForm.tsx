@@ -16,6 +16,7 @@ import PromotionPreviewDialog from "./PromotionPreviewDialog";
 import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 import { useResetOnChange } from "@/hooks/useResetOnChange";
 import { useFilteredSelectedGames } from "@/hooks/useFilteredSelectedGames";
+import { FieldErrors } from "react-hook-form";
 
 export const promotionSchema = z
   .object({
@@ -69,6 +70,13 @@ export const promotionSchema = z
         })
       )
       .optional(),
+    isGiftCode: z.boolean(),
+    minTurnoverMultiplier: z.coerce
+      .number({
+        invalid_type_error: "Minimum turnover multiplier must be a number",
+        required_error: "Minimum turnover multiplier is required",
+      })
+      .min(2, "Minimum turnover multiplier must be at least 2"),
   })
   .refine((data) => data.endDate > data.startDate, {
     message: "Start Date must be earlier than the End Date",
@@ -80,9 +88,9 @@ export const promotionSchema = z
   })
   .refine(
     (data) => {
-      // ✅ Validate tại đây
+      // ✅ Validate file upload for other cases
       return (
-        data.allPlayers ||
+        data.allPlayers || data.isGiftCode ||
         (data.uploadedFile instanceof File && data.uploadedFile.size > 0) ||
         (data.offeredPlayerIds && data.offeredPlayerIds.length > 0)
       );
@@ -120,9 +128,9 @@ const getDefaultValues = (initialValues?: Promotion) => {
       offeredSiteNames: initialValues.offeredSiteNames || [],
       offeredPlayerIds: initialValues.offeredPlayerIds || [],
       betLevels: initialValues.betLevels || [],
-      allPlayers:
-        !initialValues.offeredPlayerIds ||
-        initialValues.offeredPlayerIds.length === 0,
+      isGiftCode: initialValues.isGiftCode || false,
+      minTurnoverMultiplier: initialValues.minTurnoverMultiplier || 2,
+      allPlayers:  initialValues.isGiftCode ? false : (!initialValues.offeredPlayerIds || initialValues.offeredPlayerIds.length === 0),
     };
   }
   return {
@@ -140,6 +148,8 @@ const getDefaultValues = (initialValues?: Promotion) => {
     uploadedFile: undefined,
     gameConfigType: GAME_TYPES.CLASSIC,
     betLevels: [],
+    isGiftCode: false,
+    minTurnoverMultiplier: 2,
   };
 };
 
@@ -167,6 +177,7 @@ const FormFooter = ({
   setPreviewData,
   setShowPreviewDialog,
   isPending,
+  errors,
 }: {
   step: number;
   setStep: (step: number) => void;
@@ -176,6 +187,7 @@ const FormFooter = ({
   setPreviewData: (data: PromotionFormValues) => void;
   setShowPreviewDialog: (show: boolean) => void;
   isPending: boolean;
+  errors: FieldErrors<PromotionFormValues>;
 }) => (
   <div className="form-footer relative px-6 py-4">
     <div className="absolute left-6 top-1/2 -translate-y-1/2">
@@ -200,9 +212,22 @@ const FormFooter = ({
           type="button"
           onClick={async () => {
             const isValid = await trigger();
+            console.log("Form validation result:", isValid);
+            console.log("Form errors:", errors);
+            console.log("Form values:", getValues());
+            
             if (isValid) {
               setPreviewData(getValues());
               setShowPreviewDialog(true);
+            } else {
+              console.log("Validation failed. Errors:", errors);
+              // Log specific field errors
+              Object.keys(errors).forEach(fieldName => {
+                const fieldError = errors[fieldName as keyof typeof errors];
+                if (fieldError) {
+                  console.log(`Field ${fieldName} error:`, fieldError.message);
+                }
+              });
             }
           }}
           disabled={isPending}
@@ -335,6 +360,8 @@ export default function PromotionForm({
       endDate: new Date(data.endDate).toISOString(),
       offeredSiteNames: data.offeredSiteNames || [],
       offeredPlayerIds: data.offeredPlayerIds || [],
+      isGiftCode: data.isGiftCode,
+      minTurnoverMultiplier: data.minTurnoverMultiplier,
       ...(initialValues ? { _id: initialValues._id } : {}),
     };
 
@@ -413,6 +440,7 @@ export default function PromotionForm({
         setPreviewData={setPreviewData}
         setShowPreviewDialog={setShowPreviewDialog}
         isPending={isPending}
+        errors={errors}
       />
 
       {previewData && (

@@ -166,6 +166,7 @@ export default function Step2({
   const operatorId = useWatch({ control, name: "operatorId" });
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
   const allPlayers = useWatch({ control, name: "allPlayers" });
+  const isGiftCode = useWatch({ control, name: "isGiftCode" });
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const betLevels = useWatch({ control, name: "betLevels" });
   const offeredPlayerIds =
@@ -261,17 +262,27 @@ export default function Step2({
         <div>
           <Label className="form-label">👥 Target Members</Label>
           <RadioGroup
-            value={allPlayers ? "true" : "false"}
+            value={
+              allPlayers 
+                ? "all" 
+                : (isGiftCode ? "gift-code" : "file")
+            }
             onValueChange={(val) => {
-              const isAll = val === "true";
-              setValue("allPlayers", isAll);
-
-              if (isAll) {
-                // ✅ Chuyển sang All Players → xóa dữ liệu player
+              if (val === "all") {
+                setValue("allPlayers", true);
+                setValue("isGiftCode", false);
                 setValue("offeredPlayerIds", []);
                 setValue("uploadedFile", undefined);
                 setUploadedFile(null);
-              } else {
+              } else if (val === "gift-code") {
+                setValue("allPlayers", false);
+                setValue("isGiftCode", true);
+                setValue("offeredPlayerIds", []);
+                setValue("uploadedFile", undefined);
+                setUploadedFile(null);
+              } else if (val === "file") {
+                setValue("allPlayers", false);
+                setValue("isGiftCode", false);
                 if (mode === "edit") {
                   const dummy = new File([], "", {
                     type: "text/csv",
@@ -280,7 +291,6 @@ export default function Step2({
                   setUploadedFile(dummy);
                   setValue("offeredPlayerIds", initialOfferedPlayerIds || []);
                 } else {
-                  // ✅ Add New → reset sạch
                   setValue("offeredPlayerIds", []);
                   setValue("uploadedFile", undefined);
                   setUploadedFile(null);
@@ -291,7 +301,7 @@ export default function Step2({
           >
             <div className="flex gap-4 items-center">
               <RadioGroupItem
-                value="true"
+                value="all"
                 id="all"
                 className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
                 disabled={isRunning}
@@ -302,7 +312,18 @@ export default function Step2({
             </div>
             <div className="flex gap-4 items-center">
               <RadioGroupItem
-                value="false"
+                value="gift-code"
+                id="gift-code"
+                className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
+                disabled={isRunning}
+              />
+              <label htmlFor="gift-code" className="text-sm">
+                Players have Gift Code
+              </label>
+            </div>
+            <div className="flex gap-4 items-center">
+              <RadioGroupItem
+                value="file"
                 id="file"
                 className="data-[state=checked]:bg-green-500 bg-white border-gray-300"
                 disabled={isRunning}
@@ -313,7 +334,7 @@ export default function Step2({
             </div>
           </RadioGroup>
 
-          {!allPlayers && (
+          {!allPlayers && !isGiftCode && (
             <>
               <PlayerFileUploader
                 operatorId={operatorId}
@@ -355,6 +376,9 @@ export default function Step2({
           <p>
             + FSB will be given to everybody who opens Promoted game during
             promo period.
+          </p>
+          <p>
+            + Only players with a valid code can redeem the PSB.
           </p>
           <p>
             + Only those players from the upload file will receive FSB during
