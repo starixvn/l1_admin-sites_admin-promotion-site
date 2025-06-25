@@ -163,10 +163,11 @@ export default function DataGrid({
             <th className="px-4 py-3 text-left">Status</th>
             <th className="px-4 py-3 text-left">Promotion</th>
             <th className="px-4 py-3 text-left">Operator</th>
-            <th className="px-4 py-3 text-center">No. of Free Spins</th>
+            <th className="px-4 py-3 text-center">Free Spins</th>
             <th className="px-4 py-3 text-left">Start Date</th>
             <th className="px-4 py-3 text-left">End Date</th>
             <th className="px-4 py-3 text-left">Announcement</th>
+            <th className="px-4 py-3 text-left">Required TO</th>
             <th className="px-4 py-3 text-center">Actions</th>
           </tr>
         </thead>
@@ -211,6 +212,7 @@ export default function DataGrid({
                   }
                   {p.announcementTitle && <div>{p.announcementTitle}</div>}
                 </td>
+                <td className="px-4 text-center py-4">{p.minTurnoverMultiplier ? `${p.minTurnoverMultiplier}x` : "-"}</td>
                 <td className="px-4 py-4">
                   <div className="flex justify-center gap-3">
                     <button

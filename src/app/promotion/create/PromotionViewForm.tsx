@@ -33,6 +33,8 @@ export default function PromotionViewForm({
     gameIds,
     allPlayers,
     betLevels,
+    isGiftCode,
+    minTurnoverMultiplier,
   } = data;
   const [showPlayerList, setShowPlayerList] = useState(false);
   return (
@@ -57,6 +59,10 @@ export default function PromotionViewForm({
           <ReadOnlyField
             label="No. of Free Spins"
             value={String(bonusItemCount)}
+          />
+          <ReadOnlyField
+            label="Minimum Turnover Multiplier"
+            value={String(minTurnoverMultiplier)}
           />
           <ReadOnlyField
             label="Start Date (GMT+7)"
@@ -148,8 +154,8 @@ export default function PromotionViewForm({
             "All Players"
           ) : (
             <>
-              Players from File
-              {readonly && (
+              {isGiftCode ? "Players have Gift Code" : "Players from File"}
+              {readonly && !isGiftCode && (
                 <button
                   className="btn-player-list ml-3"
                   onClick={() => setShowPlayerList(true)}
@@ -161,7 +167,7 @@ export default function PromotionViewForm({
           )}
         </p>
       </section>
-      {readonly && (
+      {readonly && !isGiftCode && (
         <PlayerListModal
           showPlayerList={showPlayerList}
           setShowPlayerList={setShowPlayerList}
