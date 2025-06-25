@@ -126,7 +126,7 @@ export default function Step1({
       <div>
         <div className="flex items-center gap-2">
           <Label className="form-label" htmlFor="promotion-code">
-            Promotion Code<span className="text-red-500">*</span>
+            Promotion Code (Gift Code)<span className="text-red-500">*</span>
           </Label>
           <div className="mb-3">
             <TooltipProvider>
@@ -170,7 +170,7 @@ export default function Step1({
           </p>
         )}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label className="form-label" htmlFor="game-type">
             Game Type<span className="text-red-500">*</span>
@@ -245,6 +245,45 @@ export default function Step1({
           {errors.bonusItemCount && (
             <p className="error-message" role="alert">
               {errors.bonusItemCount.message}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <Label className="form-label" htmlFor="min-turnover-multiplier">
+            Min Turnover Multiplier<span className="text-red-500">*</span>
+          </Label>
+          <Input
+            type="number"
+            step={1}
+            inputMode="numeric"
+            pattern="\d*"
+            onKeyDown={(e) => invalidKeys.includes(e.key) && e.preventDefault()}
+            id="min-turnover-multiplier"
+            aria-label="Min Turnover Multiplier"
+            aria-required="true"
+            {...register("minTurnoverMultiplier", {
+              required: "Min Turnover Multiplier is required",
+              min: { value: 2, message: "Min Turnover Multiplier must be greater than 2" },
+              valueAsNumber: true,
+            })}
+            onBlur={(e) => {
+              const raw = e.target.value.trim();
+              const parsed = parseInt(raw, 10);
+              if (isNaN(parsed) || parsed < 2) {
+                e.target.value = "2";
+                setValue("minTurnoverMultiplier", 2, { shouldValidate: true });
+              }
+            }}
+            className={cn(
+              FORM_INPUT_CLASS,
+              errors.minTurnoverMultiplier && BORDER_RED_CLASS
+            )}
+            disabled={isRunning}
+          />
+          {errors.minTurnoverMultiplier && (
+            <p className="error-message" role="alert">
+              {errors.minTurnoverMultiplier.message}
             </p>
           )}
         </div>

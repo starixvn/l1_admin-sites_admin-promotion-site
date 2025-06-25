@@ -41,8 +41,7 @@ export const useResetOnChange = ({
         setValue("offeredPlayerIds", initialValues.offeredPlayerIds || []);
         setValue(
           "allPlayers",
-          !initialValues.offeredPlayerIds ||
-            initialValues.offeredPlayerIds.length === 0
+          initialValues.isGiftCode ? false : (!initialValues.offeredPlayerIds || initialValues.offeredPlayerIds.length === 0)
         );
         setSiteInput(initialValues.offeredSiteNames?.join(";") || "");
       };

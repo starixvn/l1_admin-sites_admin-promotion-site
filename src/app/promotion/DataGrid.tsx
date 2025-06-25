@@ -372,8 +372,7 @@ export default function DataGrid({
             operatorId: viewPromotion.operatorId,
             startDate: new Date(viewPromotion.startDate),
             allPlayers:
-              !viewPromotion.offeredPlayerIds ||
-              viewPromotion.offeredPlayerIds.length === 0,
+              viewPromotion.isGiftCode ? false : (!viewPromotion.offeredPlayerIds || viewPromotion.offeredPlayerIds.length === 0),
             uploadedFile: undefined,
             betLevels: viewPromotion.betLevels,
           }}
