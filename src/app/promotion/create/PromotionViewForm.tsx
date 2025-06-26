@@ -50,23 +50,70 @@ export default function PromotionViewForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
           <InfoRow label="Promotion Name" value={name} />
           <InfoRow label="Promotion Code" value={code} />
-          <InfoRow label="Game Type" value={gameConfigType === GAME_TYPES.CLASSIC ? "Classic Slot" : "Cascading Slot"} />
+          <InfoRow
+            label="Game Type"
+            value={
+              gameConfigType === GAME_TYPES.CLASSIC
+                ? "Classic Slot"
+                : "Cascading Slot"
+            }
+          />
           <InfoRow label="No. of Free Spins" value={String(bonusItemCount)} />
-          <InfoRow label="Start Date" value={<><span className="font-semibold">{toGMTString(startDate.toISOString(), 0)} (UTC)</span></>} />
-          <InfoRow label="End Date" value={<><span className="font-semibold">{toGMTString(endDate.toISOString(), 0)} (UTC)</span></>} />
-          <InfoRow label="Operator" value={<span className="font-semibold">{operatorName || operatorId}</span>} />
+          <InfoRow
+            label="Start Date"
+            value={
+              <>
+                <span className="font-semibold">
+                  {toGMTString(startDate.toISOString(), 0)} (UTC)
+                </span>
+              </>
+            }
+          />
+          <InfoRow
+            label="End Date"
+            value={
+              <>
+                <span className="font-semibold">
+                  {toGMTString(endDate.toISOString(), 0)} (UTC)
+                </span>
+              </>
+            }
+          />
+          <InfoRow
+            label="Operator"
+            value={
+              <span className="font-semibold">
+                {operatorName || operatorId}
+              </span>
+            }
+          />
         </div>
       </section>
 
       {/* Configuration & Game Specifics */}
       <section className="bg-white rounded-xl shadow p-6 mb-2">
         <div className="flex items-center gap-2 mb-4 font-semibold text-gray-800 text-base">
-          <Settings className="w-5 h-5 text-gray-500" /> Configuration & Game Specifics
+          <Settings className="w-5 h-5 text-gray-500" /> Configuration & Game
+          Specifics
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-          <InfoRow label="Site Offering" value={offeredSiteNames?.join('; ') || 'All Sites'} />
-          <InfoRow label="Target Game" value={gameList?.filter((g) => gameIds.includes(g.GameId)).map((g) => g.DisplayName).join(', ') || '-'} />
-          <InfoRow label="Announcement" value={<LinkedBadge title={announcementTitle} />} />
+          <InfoRow
+            label="Site Offering"
+            value={offeredSiteNames?.join("; ") || "All Sites"}
+          />
+          <InfoRow
+            label="Target Game"
+            value={
+              gameList
+                ?.filter((g) => gameIds.includes(g.GameId))
+                .map((g) => g.DisplayName)
+                .join(", ") || "-"
+            }
+          />
+          <InfoRow
+            label="Announcement"
+            value={<LinkedBadge title={announcementTitle} />}
+          />
         </div>
       </section>
 
@@ -75,32 +122,40 @@ export default function PromotionViewForm({
         <div className="flex items-center gap-2 mb-4 font-semibold text-gray-800 text-base">
           <Gift className="w-5 h-5 text-gray-500" /> Bonus Redemption Details
         </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-          <InfoRow label="Minimum Turnover Requirement" value={minTurnoverMultiplier ? `${minTurnoverMultiplier}x` : '-'} />
-        </div>
-        <InfoRow
+          <InfoRow
+            label="Minimum Turnover Requirement"
+            value={minTurnoverMultiplier ? `${minTurnoverMultiplier}x` : "-"}
+          />
+          <InfoRow
             label="Expire Claimable Date"
             value={
-              expireClaimableDate
-                ? (() => {
-                    const dateObj =
-                      typeof expireClaimableDate === "string"
-                        ? new Date(expireClaimableDate)
-                        : expireClaimableDate;
-                    return isNaN(dateObj.getTime()) ? (
-                      <span className="text-gray-400">-</span>
-                    ) : (
-                      <span className="font-semibold">
-                        {toGMTString(dateObj.toISOString(), 0)} (UTC)
-                      </span>
-                    );
-                  })()
-                : <span className="text-gray-400">-</span>
+              expireClaimableDate ? (
+                (() => {
+                  const dateObj =
+                    typeof expireClaimableDate === "string"
+                      ? new Date(expireClaimableDate)
+                      : expireClaimableDate;
+                  return isNaN(dateObj.getTime()) ? (
+                    <span className="text-gray-400">-</span>
+                  ) : (
+                    <span className="font-semibold">
+                      {toGMTString(dateObj.toISOString(), 0)} (UTC)
+                    </span>
+                  );
+                })()
+              ) : (
+                <span className="text-gray-400">-</span>
+              )
             }
           />
+        </div>
+
         <div className="mt-4">
           <div className="text-xs text-gray-500 font-normal">
-            Turnover for this promotion is calculated only on real money wagers made in the selected game.
+            Turnover for this promotion is calculated only on real money wagers
+            made in the selected game.
           </div>
         </div>
       </section>
@@ -111,20 +166,26 @@ export default function PromotionViewForm({
           <Users className="w-5 h-5 text-gray-500" /> Targeting Information
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-          <InfoRow label="Target Members" value={
-            allPlayers ? (
-              <span className="font-semibold">All Players</span>
-            ) : isGiftCode ? (
-              <span className="font-semibold">Players have Gift Code</span>
-            ) : (
-              <span className="font-semibold">Players from File</span>
-            )
-          } />
+          <InfoRow
+            label="Target Members"
+            value={
+              allPlayers ? (
+                <span className="font-semibold">All Players</span>
+              ) : isGiftCode ? (
+                <span className="font-semibold">Players have Gift Code</span>
+              ) : (
+                <span className="font-semibold">Players from File</span>
+              )
+            }
+          />
         </div>
         <div className="text-xs text-gray-400 mt-2">
-          {allPlayers && 'FSB will be given to everybody who opens the promoted game during the promo period.'}
-          {isGiftCode && 'Only players with a valid code can redeem the PSB.'}
-          {!allPlayers && !isGiftCode && 'Only those players from the upload file will receive FSB during promo campaign.'}
+          {allPlayers &&
+            "FSB will be given to everybody who opens the promoted game during the promo period."}
+          {isGiftCode && "Only players with a valid code can redeem the PSB."}
+          {!allPlayers &&
+            !isGiftCode &&
+            "Only those players from the upload file will receive FSB during promo campaign."}
         </div>
         {readonly && !isGiftCode && (
           <div className="mt-2">
@@ -159,8 +220,11 @@ function LinkedBadge({ title }: { title?: string }) {
   if (title) {
     return (
       <>
-        <span title={title} className="inline-block bg-green-100 text-green-700 rounded px-2 py-0.5 text-xs font-medium flex items-center gap-1">
-          <Link2 className="w-3 h-3" /> Linked 
+        <span
+          title={title}
+          className="inline-block bg-green-100 text-green-700 rounded px-2 py-0.5 text-xs font-medium flex items-center gap-1"
+        >
+          <Link2 className="w-3 h-3" /> Linked
         </span>
       </>
     );
