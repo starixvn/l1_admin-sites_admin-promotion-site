@@ -52,29 +52,9 @@ export default function PromotionViewForm({
           <InfoRow label="Promotion Code" value={code} />
           <InfoRow label="Game Type" value={gameConfigType === GAME_TYPES.CLASSIC ? "Classic Slot" : "Cascading Slot"} />
           <InfoRow label="No. of Free Spins" value={String(bonusItemCount)} />
-          <InfoRow label="Operator" value={<span className="font-semibold">{operatorName || operatorId}</span>} />
           <InfoRow label="Start Date" value={<><span className="font-semibold">{toGMTString(startDate.toISOString(), 0)} (UTC)</span></>} />
           <InfoRow label="End Date" value={<><span className="font-semibold">{toGMTString(endDate.toISOString(), 0)} (UTC)</span></>} />
-          <InfoRow
-            label="Expire Claimable Date"
-            value={
-              expireClaimableDate
-                ? (() => {
-                    const dateObj =
-                      typeof expireClaimableDate === "string"
-                        ? new Date(expireClaimableDate)
-                        : expireClaimableDate;
-                    return isNaN(dateObj.getTime()) ? (
-                      <span className="text-gray-400">-</span>
-                    ) : (
-                      <span className="font-semibold">
-                        {toGMTString(dateObj.toISOString(), 0)} (UTC)
-                      </span>
-                    );
-                  })()
-                : <span className="text-gray-400">-</span>
-            }
-          />
+          <InfoRow label="Operator" value={<span className="font-semibold">{operatorName || operatorId}</span>} />
         </div>
       </section>
 
@@ -98,6 +78,26 @@ export default function PromotionViewForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
           <InfoRow label="Minimum Turnover Requirement" value={minTurnoverMultiplier ? `${minTurnoverMultiplier}x` : '-'} />
         </div>
+        <InfoRow
+            label="Expire Claimable Date"
+            value={
+              expireClaimableDate
+                ? (() => {
+                    const dateObj =
+                      typeof expireClaimableDate === "string"
+                        ? new Date(expireClaimableDate)
+                        : expireClaimableDate;
+                    return isNaN(dateObj.getTime()) ? (
+                      <span className="text-gray-400">-</span>
+                    ) : (
+                      <span className="font-semibold">
+                        {toGMTString(dateObj.toISOString(), 0)} (UTC)
+                      </span>
+                    );
+                  })()
+                : <span className="text-gray-400">-</span>
+            }
+          />
         <div className="mt-4">
           <div className="text-xs text-gray-500 font-normal">
             Turnover for this promotion is calculated only on real money wagers made in the selected game.
