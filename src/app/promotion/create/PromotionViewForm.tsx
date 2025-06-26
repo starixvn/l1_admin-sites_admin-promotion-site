@@ -55,7 +55,26 @@ export default function PromotionViewForm({
           <InfoRow label="Operator" value={<span className="font-semibold">{operatorName || operatorId}</span>} />
           <InfoRow label="Start Date" value={<><span className="font-semibold">{toGMTString(startDate.toISOString(), 0)} (UTC)</span></>} />
           <InfoRow label="End Date" value={<><span className="font-semibold">{toGMTString(endDate.toISOString(), 0)} (UTC)</span></>} />
-          <InfoRow label="Expire Claimable Date" value={<><span className="font-semibold">{toGMTString(expireClaimableDate.toISOString(), 0)} (UTC)</span></>} />
+          <InfoRow
+            label="Expire Claimable Date"
+            value={
+              expireClaimableDate
+                ? (() => {
+                    const dateObj =
+                      typeof expireClaimableDate === "string"
+                        ? new Date(expireClaimableDate)
+                        : expireClaimableDate;
+                    return isNaN(dateObj.getTime()) ? (
+                      <span className="text-gray-400">-</span>
+                    ) : (
+                      <span className="font-semibold">
+                        {toGMTString(dateObj.toISOString(), 0)} (UTC)
+                      </span>
+                    );
+                  })()
+                : <span className="text-gray-400">-</span>
+            }
+          />
         </div>
       </section>
 
