@@ -25,6 +25,7 @@ interface DateTimePickerProps {
   value?: Date;
   onChange: (val: Date) => void;
   error?: string;
+  dateOnly?: boolean;
 }
 
 export default function DateTimePicker({
@@ -33,28 +34,40 @@ export default function DateTimePicker({
   value,
   onChange,
   error,
+  dateOnly = false,
 }: DateTimePickerProps) {
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState<Date>(value ?? getTodayAtMidnightGMT7());
-  const [hour, setHour] = useState("00");
-  const [minute, setMinute] = useState("00");
+  const [hour, setHour] = useState(dateOnly ? "23" : "00");
+  const [minute, setMinute] = useState(dateOnly ? "59" : "00");
 
   useEffect(() => {
     if (value) {
       const dateObj = value instanceof Date ? value : new Date(value);
-      const hh = dateObj.getHours().toString().padStart(2, "0");
-      const mm = dateObj.getMinutes().toString().padStart(2, "0");
       setDate(dateObj);
-      setHour(hh);
-      setMinute(mm);
+      if (dateOnly) {
+        setHour("23");
+        setMinute("59");
+      } else {
+        const hh = dateObj.getHours().toString().padStart(2, "0");
+        const mm = dateObj.getMinutes().toString().padStart(2, "0");
+        setHour(hh);
+        setMinute(mm);
+      }
     }
-  }, [value]);
+  }, [value, dateOnly]);
 
   const handleDateChange = (selected?: Date) => {
     if (!selected) {
       return;
     }
-    const newDate = mergeDateAndTime(selected, hour, minute);
+    let newDate;
+    if (dateOnly) {
+      newDate = new Date(selected);
+      newDate.setHours(23, 59, 59, 0);
+    } else {
+      newDate = mergeDateAndTime(selected, hour, minute);
+    }
     setDate(newDate);
     onChange(newDate);
   };
@@ -97,8 +110,8 @@ export default function DateTimePicker({
           >
             <span>
               {date instanceof Date && !isNaN(date.getTime())
-                ? format(date, "dd-MM-yyyy HH:mm")
-                : "DD-MM-YYYY hh:mm"}
+                ? format(date, dateOnly ? "dd-MM-yyyy" : "dd-MM-yyyy HH:mm")
+                : (dateOnly ? "DD-MM-YYYY" : "DD-MM-YYYY hh:mm")}
             </span>
             <CalendarIcon className="h-5 w-5 text-blue-500" />
           </Button>
@@ -113,33 +126,35 @@ export default function DateTimePicker({
               className="custom-day-picker"
             />
 
-            <div className="flex items-center gap-3">
-              <select
-                value={hour}
-                onChange={(e) => handleTimeChange(e.target.value, minute)}
-                className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-300 focus:border-blue-300"
-                disabled={disabled}
-              >
-                {hourOptions.map((h) => (
-                  <option key={h} value={h}>
-                    {h}
-                  </option>
-                ))}
-              </select>
-              <span className="text-lg font-bold">:</span>
-              <select
-                value={minute}
-                onChange={(e) => handleTimeChange(hour, e.target.value)}
-                className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-300 focus:border-blue-300"
-                disabled={disabled}
-              >
-                {minuteOptions.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!dateOnly && (
+              <div className="flex items-center gap-3">
+                <select
+                  value={hour}
+                  onChange={(e) => handleTimeChange(e.target.value, minute)}
+                  className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-300 focus:border-blue-300"
+                  disabled={disabled}
+                >
+                  {hourOptions.map((h) => (
+                    <option key={h} value={h}>
+                      {h}
+                    </option>
+                  ))}
+                </select>
+                <span className="text-lg font-bold">:</span>
+                <select
+                  value={minute}
+                  onChange={(e) => handleTimeChange(hour, e.target.value)}
+                  className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-300 focus:border-blue-300"
+                  disabled={disabled}
+                >
+                  {minuteOptions.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="flex gap-3 pt-2">
               <Button

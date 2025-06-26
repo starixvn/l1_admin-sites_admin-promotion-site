@@ -26,6 +26,8 @@ import {
 } from "react-hook-form";
 import type { PromotionFormValues } from "./PromotionForm";
 import type { Operator } from "@/types/operator";
+import { useEffect } from "react";
+import { addDays } from "date-fns";
 
 interface Step1Props {
   mode: string;
@@ -58,6 +60,7 @@ export default function Step1({
   const name = useWatch({ control, name: "name" });
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
   const invalidKeys = [".", ",", "e", "+", "-", "E"];
+
   return (
     <div className="space-y-4">
       <div className="space-y-4">
@@ -263,7 +266,10 @@ export default function Step1({
         <DateTimePicker
           label="End Date"
           value={useWatch({ control, name: "endDate" })}
-          onChange={(val) => setValue("endDate", val)}
+          onChange={(val) => {
+            setValue("endDate", val);
+            setValue("claimExpirationDate", addDays(val, 30));
+          }}
           error={errors.endDate?.message}
           disabled={isRunning}
         />
@@ -321,11 +327,19 @@ export default function Step1({
         </div>
 
         <DateTimePicker
-          label="Expire Claimable Date"
-          value={useWatch({ control, name: "expireClaimableDate" })}
-          onChange={(val) => setValue("expireClaimableDate", val)}
-          error={errors.expireClaimableDate?.message}
+          label="Claim Expiration Date"
+          value={useWatch({ control, name: "claimExpirationDate" })}
+          onChange={(val) => {
+            if (val) {
+              const utc = new Date(Date.UTC(val.getFullYear(), val.getMonth(), val.getDate(), 23, 59, 59, 0));
+              setValue("claimExpirationDate", utc);
+            } else {
+              setValue("claimExpirationDate", val);
+            }
+          }}
+          error={errors.claimExpirationDate?.message}
           disabled={isRunning}
+          dateOnly={true}
         />
       </div>
 

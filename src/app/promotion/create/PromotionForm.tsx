@@ -11,7 +11,7 @@ import { Promotion } from "@/types/promotion";
 import { getStatus } from "@/constants/promotionStatusMap";
 import { getTodayAtMidnightGMT7 } from "@/lib/date-time.utils";
 import { checkPromotionCodeExists } from "@/lib/api/checkPromotionCodeExists";
-import { addDays } from "date-fns";
+import { addDays, addMonths } from "date-fns";
 import PromotionPreviewDialog from "./PromotionPreviewDialog";
 import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 import { useResetOnChange } from "@/hooks/useResetOnChange";
@@ -47,9 +47,9 @@ export const promotionSchema = z
       required_error: "End date is required",
       invalid_type_error: "Invalid end date",
     }),
-    expireClaimableDate: z.coerce.date({
-      required_error: "Expire Claimable Date is required",
-      invalid_type_error: "Invalid expire claimable date",
+    claimExpirationDate: z.coerce.date({
+      required_error: "Claim Expiration Date is required",
+      invalid_type_error: "Invalid claim expiration date",
     }),
     operatorId: z.coerce.string().min(1, { message: "Operator is required" }),
     offeredSiteNames: z.array(z.string()).optional(),
@@ -103,9 +103,9 @@ export const promotionSchema = z
       message: "Please upload a file before saving.",
     }
   )
-  .refine((data) => data.expireClaimableDate > data.endDate, {
-    message: "Expire Claimable Date must be greater than the End Date",
-    path: ["expireClaimableDate"],
+  .refine((data) => data.claimExpirationDate > data.endDate, {
+    message: "Claim Expiration Date must be greater than the End Date",
+    path: ["claimExpirationDate"],
   });
 
 export type PromotionFormValues = z.infer<typeof promotionSchema>;
@@ -131,7 +131,7 @@ const getDefaultValues = (initialValues?: Promotion) => {
       ...initialValues,
       startDate: new Date(initialValues.startDate),
       endDate: new Date(initialValues.endDate),
-      expireClaimableDate: (initialValues as any).expireClaimableDate ? new Date((initialValues as any).expireClaimableDate) : addDays(getTodayAtMidnightGMT7(), 1),
+      claimExpirationDate: initialValues.claimExpirationDate ? new Date(initialValues.claimExpirationDate) : addDays(getTodayAtMidnightGMT7(), 30),
       gameConfigType: initialValues.gameConfigType as 2 | 3,
       offeredSiteNames: initialValues.offeredSiteNames || [],
       offeredPlayerIds: initialValues.offeredPlayerIds || [],
@@ -141,13 +141,14 @@ const getDefaultValues = (initialValues?: Promotion) => {
       allPlayers:  initialValues.isGiftCode ? false : (!initialValues.offeredPlayerIds || initialValues.offeredPlayerIds.length === 0),
     };
   }
+  const date = addDays(getTodayAtMidnightGMT7(), 1);
   return {
     name: "",
     code: "",
     bonusItemCount: 0,
-    startDate: addDays(getTodayAtMidnightGMT7(), 1),
-    endDate: addDays(getTodayAtMidnightGMT7(), 1),
-    expireClaimableDate: addDays(getTodayAtMidnightGMT7(), 2),
+    startDate: date,
+    endDate: date,
+    claimExpirationDate: addMonths(date, 1),
     operatorId: "",
     offeredSiteNames: [],
     gameIds: [],
@@ -328,6 +329,7 @@ export default function PromotionForm({
       "startDate",
       "endDate",
       "operatorId",
+      "claimExpirationDate",
     ]);
 
     if (!isValid) {
@@ -353,7 +355,7 @@ export default function PromotionForm({
   const { mutate: createPromotion, isPending } = useCreatePromotion();
 
   const handleFormSubmit = (data: PromotionFormValues) => {
-    const payload: PromotionFormSubmission & { expireClaimableDate: string } = {
+    const payload: PromotionFormSubmission & { claimExpirationDate: string } = {
       betLevels: (data.betLevels || []).map(({ currencyGroup, betLevel }) => ({
         currencyGroup,
         betLevel,
@@ -371,7 +373,7 @@ export default function PromotionForm({
       offeredPlayerIds: data.offeredPlayerIds || [],
       isGiftCode: data.isGiftCode,
       minTurnoverMultiplier: data.minTurnoverMultiplier,
-      expireClaimableDate: new Date(data.expireClaimableDate).toISOString(),
+      claimExpirationDate: new Date(data.claimExpirationDate).toISOString(),
       ...(initialValues ? { _id: initialValues._id } : {}),
     };
 

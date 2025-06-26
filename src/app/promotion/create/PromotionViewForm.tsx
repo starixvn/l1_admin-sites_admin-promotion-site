@@ -37,7 +37,7 @@ export default function PromotionViewForm({
     allPlayers,
     isGiftCode,
     minTurnoverMultiplier,
-    expireClaimableDate,
+    claimExpirationDate,
   } = data;
   const [showPlayerList, setShowPlayerList] = useState(false);
   return (
@@ -129,25 +129,23 @@ export default function PromotionViewForm({
             value={minTurnoverMultiplier ? `${minTurnoverMultiplier}x` : "-"}
           />
           <InfoRow
-            label="Expire Claimable Date"
+            label="Claim Expiration Date"
             value={
-              expireClaimableDate ? (
-                (() => {
-                  const dateObj =
-                    typeof expireClaimableDate === "string"
-                      ? new Date(expireClaimableDate)
-                      : expireClaimableDate;
-                  return isNaN(dateObj.getTime()) ? (
-                    <span className="text-gray-400">-</span>
-                  ) : (
-                    <span className="font-semibold">
-                      {toGMTString(dateObj.toISOString(), 0)} (UTC)
-                    </span>
-                  );
-                })()
-              ) : (
-                <span className="text-gray-400">-</span>
-              )
+              claimExpirationDate
+                ? (() => {
+                    const dateObj =
+                      typeof claimExpirationDate === "string"
+                        ? new Date(claimExpirationDate)
+                        : claimExpirationDate;
+                    return isNaN(dateObj.getTime()) ? (
+                      <span className="text-gray-400">-</span>
+                    ) : (
+                      <span className="font-semibold">
+                        {toGMTString(dateObj.toISOString(), 0)} (UTC)
+                      </span>
+                    );
+                  })()
+                : <span className="text-gray-400">-</span>
             }
           />
         </div>

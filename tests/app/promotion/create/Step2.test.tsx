@@ -77,7 +77,7 @@ const TestWrapper = ({ children, defaultValues = {} }: TestWrapperProps) => {
       offeredPlayerIds: [],
       currencyGroups: [],
       betLevels: [],
-      expireClaimableDate: new Date("2025-05-14T08:04:27.000Z"),
+      claimExpirationDate: new Date("2025-05-14T08:04:27.000Z"),
       isGiftCode: false,
       minTurnoverMultiplier: 2,
       ...defaultValues,
