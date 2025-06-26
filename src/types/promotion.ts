@@ -26,6 +26,7 @@ export interface Promotion {
   status?: string;
   announcementTitle?: string;
   announcement?: string;
+  expireClaimableDate: string;
 }
 
 export type CreatePromotionResponse = {

@@ -39,6 +39,7 @@ export default function PromotionViewForm({
     betLevels,
     isGiftCode,
     minTurnoverMultiplier,
+    expireClaimableDate,
   } = data;
   const [showPlayerList, setShowPlayerList] = useState(false);
   return (
@@ -56,6 +57,7 @@ export default function PromotionViewForm({
           <InfoRow label="Operator" value={<span className="font-semibold">{operatorName || operatorId}</span>} />
           <InfoRow label="Start Date" value={<><span className="font-semibold">{toGMTString(startDate.toISOString(), 0)} (UTC)</span></>} />
           <InfoRow label="End Date" value={<><span className="font-semibold">{toGMTString(endDate.toISOString(), 0)} (UTC)</span></>} />
+          <InfoRow label="Expire Claimable Date" value={<><span className="font-semibold">{toGMTString(expireClaimableDate.toISOString(), 0)} (UTC)</span></>} />
         </div>
       </section>
 

@@ -48,6 +48,10 @@ export const promotionSchema = z
       required_error: "End date is required",
       invalid_type_error: "Invalid end date",
     }),
+    expireClaimableDate: z.coerce.date({
+      required_error: "Expire Claimable Date is required",
+      invalid_type_error: "Invalid expire claimable date",
+    }),
     operatorId: z.coerce.string().min(1, { message: "Operator is required" }),
     offeredSiteNames: z.array(z.string()).optional(),
     gameIds: z
@@ -99,7 +103,11 @@ export const promotionSchema = z
       path: ["uploadedFile"],
       message: "Please upload a file before saving.",
     }
-  );
+  )
+  .refine((data) => data.expireClaimableDate > data.endDate, {
+    message: "Expire Claimable Date must be greater than the End Date",
+    path: ["expireClaimableDate"],
+  });
 
 export type PromotionFormValues = z.infer<typeof promotionSchema>;
 
@@ -124,6 +132,7 @@ const getDefaultValues = (initialValues?: Promotion) => {
       ...initialValues,
       startDate: new Date(initialValues.startDate),
       endDate: new Date(initialValues.endDate),
+      expireClaimableDate: (initialValues as any).expireClaimableDate ? new Date((initialValues as any).expireClaimableDate) : addDays(getTodayAtMidnightGMT7(), 1),
       gameConfigType: initialValues.gameConfigType as 2 | 3,
       offeredSiteNames: initialValues.offeredSiteNames || [],
       offeredPlayerIds: initialValues.offeredPlayerIds || [],
@@ -139,6 +148,7 @@ const getDefaultValues = (initialValues?: Promotion) => {
     bonusItemCount: 0,
     startDate: addDays(getTodayAtMidnightGMT7(), 1),
     endDate: addDays(getTodayAtMidnightGMT7(), 1),
+    expireClaimableDate: addDays(getTodayAtMidnightGMT7(), 2),
     operatorId: "",
     offeredSiteNames: [],
     gameIds: [],
@@ -344,7 +354,7 @@ export default function PromotionForm({
   const { mutate: createPromotion, isPending } = useCreatePromotion();
 
   const handleFormSubmit = (data: PromotionFormValues) => {
-    const payload: PromotionFormSubmission = {
+    const payload: PromotionFormSubmission & { expireClaimableDate: string } = {
       betLevels: (data.betLevels || []).map(({ currencyGroup, betLevel }) => ({
         currencyGroup,
         betLevel,
@@ -362,11 +372,12 @@ export default function PromotionForm({
       offeredPlayerIds: data.offeredPlayerIds || [],
       isGiftCode: data.isGiftCode,
       minTurnoverMultiplier: data.minTurnoverMultiplier,
+      expireClaimableDate: new Date(data.expireClaimableDate).toISOString(),
       ...(initialValues ? { _id: initialValues._id } : {}),
     };
 
     if (onSubmit) {
-      onSubmit(payload as Promotion);
+      onSubmit(payload as unknown as Promotion);
     } else {
       createPromotion(payload, {
         onSuccess: () => {
@@ -380,7 +391,7 @@ export default function PromotionForm({
 
   return (
     <div className="flex flex-col h-full max-h-[80vh] bg-white rounded-xl shadow-md">
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+      <div className="flex-1 overflow-y-auto px-6 py-6">
         <form
           id="promotionForm"
           onSubmit={handleSubmit(handleFormSubmit)}
