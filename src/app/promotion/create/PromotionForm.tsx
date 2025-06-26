@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch, FieldErrors } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Step1 from "./Step1";
@@ -16,7 +16,6 @@ import PromotionPreviewDialog from "./PromotionPreviewDialog";
 import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 import { useResetOnChange } from "@/hooks/useResetOnChange";
 import { useFilteredSelectedGames } from "@/hooks/useFilteredSelectedGames";
-import { FieldErrors } from "react-hook-form";
 
 export const promotionSchema = z
   .object({

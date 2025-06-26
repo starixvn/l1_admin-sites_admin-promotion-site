@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/select";
 import { GAME_TYPES, type GameType } from "@/constants/gameTypes";
 import { cn } from "@/lib/utils";
-import { Info } from "lucide-react";
+import { Info, Calculator } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -26,7 +26,6 @@ import {
 } from "react-hook-form";
 import type { PromotionFormValues } from "./PromotionForm";
 import type { Operator } from "@/types/operator";
-import { Calculator } from "lucide-react";
 
 interface Step1Props {
   mode: string;
