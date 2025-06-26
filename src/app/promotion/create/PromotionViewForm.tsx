@@ -14,6 +14,7 @@ interface PromotionViewFormProps {
   gameList?: Game[];
   currencyGroupsInfo?: CurrencyGroup[];
   readonly?: boolean;
+  announcementTitle?: string;
 }
 
 export default function PromotionViewForm({
@@ -22,6 +23,7 @@ export default function PromotionViewForm({
   gameList,
   currencyGroupsInfo,
   readonly,
+  announcementTitle,
 }: PromotionViewFormProps) {
   const {
     name,
@@ -65,7 +67,7 @@ export default function PromotionViewForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
           <InfoRow label="Site Offering" value={offeredSiteNames?.join('; ') || 'All Sites'} />
           <InfoRow label="Target Game" value={gameList?.filter((g) => gameIds.includes(g.GameId)).map((g) => g.DisplayName).join(', ') || '-'} />
-          <InfoRow label="Announcement" value={<LinkedBadge />} />
+          <InfoRow label="Announcement" value={<LinkedBadge title={announcementTitle} />} />
         </div>
       </section>
 
@@ -134,21 +136,19 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function StatusBadge({ status }: { status?: string }) {
-  if (!status) return null;
-  let color = "bg-gray-100 text-gray-700";
-  if (status === "running") color = "bg-green-100 text-green-700";
-  if (status === "pending") color = "bg-yellow-100 text-yellow-700";
-  if (status === "ended") color = "bg-gray-200 text-gray-500";
+function LinkedBadge({ title }: { title?: string }) {
+  if (title) {
+    return (
+      <>
+        <span title={title} className="inline-block bg-green-100 text-green-700 rounded px-2 py-0.5 text-xs font-medium flex items-center gap-1">
+          <Link2 className="w-3 h-3" /> Linked 
+        </span>
+      </>
+    );
+  }
   return (
-    <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${color}`}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
-  );
-}
-
-function LinkedBadge() {
-  return (
-    <span className="inline-block bg-blue-100 text-blue-700 rounded px-2 py-0.5 text-xs font-medium flex items-center gap-1">
-      <Link2 className="w-3 h-3" /> Linked
+    <span className="inline-block bg-red-100 text-red-600 rounded px-2 py-0.5 text-xs font-medium flex items-center gap-1">
+      <Link2 className="w-3 h-3 line-through" /> Unlinked
     </span>
   );
 }
