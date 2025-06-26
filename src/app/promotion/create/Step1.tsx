@@ -26,7 +26,6 @@ import {
 } from "react-hook-form";
 import type { PromotionFormValues } from "./PromotionForm";
 import type { Operator } from "@/types/operator";
-import { useEffect } from "react";
 import { addDays } from "date-fns";
 
 interface Step1Props {
