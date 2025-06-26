@@ -61,6 +61,11 @@ function GameSelection({
   isRunning,
   toggleGame,
 }: GameSelectionProps) {
+  const selectedGameId = Array.isArray(gameIds) && gameIds.length > 0 ? gameIds[0] : undefined;
+  const [filter, setFilter] = useState("");
+  const filteredGames = games.filter((game) =>
+    game.DisplayName.toLowerCase().includes(filter.toLowerCase())
+  );
   if (!shouldShowGames) {
     return (
       <p className="text-sm text-gray-500 italic">
@@ -89,53 +94,47 @@ function GameSelection({
         + The list of slot games is based on the selected Operator, Game Type,
         and Currency Groups that have been enabled for the promotion.
       </p>
-      {/* Check all */}
-      <div className="flex items-center space-x-2 mb-4">
-        <Checkbox
-          id="game-check-all"
-          checked={gameIds.length === games.length}
-          onCheckedChange={(checked) => {
-            const allGameIds = games.map((g: { GameId: number }) => g.GameId);
-            setValue("gameIds", checked ? allGameIds : []);
-          }}
+      {/* Filter input */}
+      <div className="mb-3">
+        <input
+          type="text"
+          className="form-input w-full border rounded px-3 py-2 text-sm"
+          placeholder="Filter games by name"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
           disabled={isRunning}
         />
-
-        <label
-          htmlFor="game-check-all"
-          className="text-sm font-semibold text-gray-800"
-        >
-          Check All
-        </label>
       </div>
-      <div className="border-b mb-4" />
-      {/* Game list */}
+      {/* Game list - radio only */}
       <div className="grid gap-3 max-h-[15rem] overflow-y-auto pr-2">
-        {games.map((game) => {
-          const isChecked = gameIds.includes(game.GameId);
-          return (
+        {filteredGames.length === 0 ? (
+          <p className="text-sm text-gray-500 italic">No games match your filter.</p>
+        ) : (
+          filteredGames.map((game) => (
             <label
               key={game.GameId}
               htmlFor={`game-${game.GameId}`}
               className={cn(
                 "flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer",
-                isChecked
+                selectedGameId === game.GameId
                   ? "bg-green-50 border-green-200 text-green-800 font-small"
                   : "bg-white border-green-100 hover:bg-green-50"
               )}
             >
               <div className="flex items-center space-x-3">
-                <Checkbox
+                <input
+                  type="radio"
                   id={`game-${game.GameId}`}
-                  checked={isChecked}
-                  onCheckedChange={() => toggleGame(game.GameId)}
+                  name="gameId"
+                  checked={selectedGameId === game.GameId}
+                  onChange={() => setValue("gameIds", [game.GameId])}
                   disabled={isRunning}
                 />
                 <span className="text-sm">{game.DisplayName}</span>
               </div>
             </label>
-          );
-        })}
+          ))
+        )}
       </div>
     </>
   );
