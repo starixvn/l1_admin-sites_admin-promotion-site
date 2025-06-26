@@ -13,6 +13,7 @@ describe("PromotionViewForm", () => {
       bonusItemCount: 100,
       startDate: new Date("2024-01-01"),
       endDate: new Date("2024-01-31"),
+      expireClaimableDate: new Date("2024-02-01"),
       operatorId: "op1",
       offeredSiteNames: ["site1", "site2"],
       gameIds: [1, 2],
@@ -22,6 +23,8 @@ describe("PromotionViewForm", () => {
         { currencyGroup: "USD", betLevel: 1 },
         { currencyGroup: "EUR", betLevel: 2 },
       ],
+      isGiftCode: false,
+      minTurnoverMultiplier: 2,
     };
 
     const mockGameList: Game[] = [
@@ -44,7 +47,7 @@ describe("PromotionViewForm", () => {
     );
 
     // General Information section
-    expect(screen.getByText("📋 General Information")).toBeInTheDocument();
+    expect(screen.getByText("Basic Information")).toBeInTheDocument();
     expect(screen.getByText("Test Promotion")).toBeInTheDocument();
     expect(screen.getByText("TEST123")).toBeInTheDocument();
     expect(screen.getByText("Classic Slot")).toBeInTheDocument();
@@ -52,22 +55,17 @@ describe("PromotionViewForm", () => {
     expect(screen.getByText("Test Operator")).toBeInTheDocument();
 
     // Currency Group Settings section
-    expect(screen.getByText("🎰 Currency Group Settings")).toBeInTheDocument();
-    expect(screen.getByText("USD")).toBeInTheDocument();
-    expect(screen.getByText("EUR")).toBeInTheDocument();
-    expect(screen.getByText("1")).toBeInTheDocument();
-    expect(screen.getByText("2")).toBeInTheDocument();
+    expect(screen.getByText("Configuration & Game Specifics")).toBeInTheDocument();
+    expect(screen.getByText("site1; site2")).toBeInTheDocument();
 
     // Site Offering section
     expect(screen.getByText("site1; site2")).toBeInTheDocument();
 
     // Game List section
-    expect(screen.getByText("🎮 Selected Games")).toBeInTheDocument();
-    expect(screen.getByText("Game 1")).toBeInTheDocument();
-    expect(screen.getByText("Game 2")).toBeInTheDocument();
+    expect(screen.getByText("Game 1, Game 2")).toBeInTheDocument();
 
     // Members section
-    expect(screen.getByText("👥 Members")).toBeInTheDocument();
+    expect(screen.getByText("Targeting Information")).toBeInTheDocument();
     expect(screen.getByText("Players from File")).toBeInTheDocument();
   });
 
@@ -79,18 +77,21 @@ describe("PromotionViewForm", () => {
       bonusItemCount: 50,
       startDate: new Date("2025-05-13T08:04:27.000Z"),
       endDate: new Date("2025-05-13T08:04:27.000Z"),
+      expireClaimableDate: new Date("2025-05-14T08:04:27.000Z"),
       operatorId: "op1",
       offeredSiteNames: [],
       gameIds: [],
       currencyGroups: [],
       allPlayers: true,
       betLevels: [],
+      isGiftCode: false,
+      minTurnoverMultiplier: 2,
     };
 
     render(<PromotionViewForm data={mockData} />);
 
     // General Information section
-    expect(screen.getByText("📋 General Information")).toBeInTheDocument();
+    expect(screen.getByText("Basic Information")).toBeInTheDocument();
     expect(screen.getByText("Minimal Promotion")).toBeInTheDocument();
     expect(screen.getByText("MIN123")).toBeInTheDocument();
     expect(screen.getByText("Classic Slot")).toBeInTheDocument();
@@ -98,17 +99,16 @@ describe("PromotionViewForm", () => {
     expect(screen.getByText("op1")).toBeInTheDocument();
 
     // Currency Group Settings section
-    expect(screen.getByText("🎰 Currency Group Settings")).toBeInTheDocument();
+    expect(screen.getByText("Configuration & Game Specifics")).toBeInTheDocument();
 
     // Site Offering section
-    expect(screen.getByText("Site Offering")).toBeInTheDocument();
+    expect(screen.getByText("All Sites")).toBeInTheDocument();
 
     // Game List section
-    expect(screen.getByText("🎮 Selected Games")).toBeInTheDocument();
-    expect(screen.getByText("No games selected")).toBeInTheDocument();
+    expect(screen.getByText("-")).toBeInTheDocument();
 
     // Members section
-    expect(screen.getByText("👥 Members")).toBeInTheDocument();
+    expect(screen.getByText("Targeting Information")).toBeInTheDocument();
     expect(screen.getByText("All Players")).toBeInTheDocument();
   });
 
@@ -120,12 +120,15 @@ describe("PromotionViewForm", () => {
       bonusItemCount: 50,
       startDate: new Date("2025-05-13T08:04:27.000Z"),
       endDate: new Date("2025-05-13T08:04:27.000Z"),
+      expireClaimableDate: new Date("2025-05-14T08:04:27.000Z"),
       operatorId: "op1",
       offeredSiteNames: [],
       gameIds: [],
       currencyGroups: [],
       allPlayers: true,
       betLevels: [],
+      isGiftCode: false,
+      minTurnoverMultiplier: 2,
     };
 
     render(<PromotionViewForm data={mockData} />);
@@ -141,12 +144,15 @@ describe("PromotionViewForm", () => {
       bonusItemCount: 50,
       startDate: new Date("2025-05-13T08:04:27.000Z"),
       endDate: new Date("2025-05-13T08:04:27.000Z"),
+      expireClaimableDate: new Date("2025-05-14T08:04:27.000Z"),
       operatorId: "op1",
       offeredSiteNames: [],
       gameIds: [],
       currencyGroups: [],
       allPlayers: true,
       betLevels: [],
+      isGiftCode: false,
+      minTurnoverMultiplier: 2,
     };
 
     render(<PromotionViewForm data={mockData} />);
