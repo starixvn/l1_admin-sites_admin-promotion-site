@@ -2,11 +2,10 @@ import { GAME_TYPES } from "@/constants/gameTypes";
 import type { PromotionFormValues } from "./PromotionForm";
 import type { Game } from "@/types/game";
 import type { CurrencyGroup } from "@/types/currency-group";
-import { getTotalBet } from "@/lib/promotion/bet-settings.utils";
 import { useState } from "react";
 import { PlayerListModal } from "./PlayerListModal";
 import { toGMTString } from "@/lib/date-time.utils";
-import { Info, Settings, Gift, Users, Link2, Calendar, Gamepad2 } from "lucide-react";
+import { Info, Settings, Gift, Users, Link2 } from "lucide-react";
 
 interface PromotionViewFormProps {
   data: PromotionFormValues;
@@ -36,7 +35,6 @@ export default function PromotionViewForm({
     offeredSiteNames,
     gameIds,
     allPlayers,
-    betLevels,
     isGiftCode,
     minTurnoverMultiplier,
     expireClaimableDate,
