@@ -378,6 +378,7 @@ export default function DataGrid({
               viewPromotion.isGiftCode ? false : (!viewPromotion.offeredPlayerIds || viewPromotion.offeredPlayerIds.length === 0),
             uploadedFile: undefined,
             betLevels: viewPromotion.betLevels,
+            expireClaimableDate: new Date(viewPromotion.expireClaimableDate),
           }}
           operatorName={
             operatorMap.get(viewPromotion.operatorId) ||
