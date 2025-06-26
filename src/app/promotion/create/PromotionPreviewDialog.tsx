@@ -43,7 +43,7 @@ export default function PromotionPreviewDialog({
               : "📝 Review & Confirm Promotion"}
           </DialogTitle>
         </div>
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-1">
           <PromotionViewForm
             data={data}
             operatorName={operatorName}
