@@ -360,6 +360,7 @@ export default function DataGrid({
         <PromotionPreviewDialog
           open={!!viewPromotion}
           onClose={() => setViewPromotion(null)}
+          announcementTitle={viewPromotion.announcementTitle}
           data={{
             ...viewPromotion,
             gameConfigType: viewPromotion.gameConfigType as GameType,
