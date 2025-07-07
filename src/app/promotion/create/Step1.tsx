@@ -38,7 +38,9 @@ const createUTCDateAtEndOfDay = (date: Date): Date => {
 
 // Helper function to convert UTC date to local date for display
 const convertUTCToLocalForDisplay = (utcDate: Date): Date => {
-  if (!utcDate) return utcDate;
+  if (!utcDate){
+    return utcDate;
+  }
   const year = utcDate.getUTCFullYear();
   const month = utcDate.getUTCMonth();
   const day = utcDate.getUTCDate();
