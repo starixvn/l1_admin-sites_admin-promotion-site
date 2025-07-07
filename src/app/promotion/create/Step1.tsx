@@ -26,7 +26,24 @@ import {
 } from "react-hook-form";
 import type { PromotionFormValues } from "./PromotionForm";
 import type { Operator } from "@/types/operator";
-import { addDays } from "date-fns";
+import { addMonths } from "date-fns";
+
+// Helper function to create UTC date without timezone shift
+const createUTCDateAtEndOfDay = (date: Date): Date => {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+  return new Date(Date.UTC(year, month, day, 23, 59, 59, 0));
+};
+
+// Helper function to convert UTC date to local date for display
+const convertUTCToLocalForDisplay = (utcDate: Date): Date => {
+  if (!utcDate) return utcDate;
+  const year = utcDate.getUTCFullYear();
+  const month = utcDate.getUTCMonth();
+  const day = utcDate.getUTCDate();
+  return new Date(year, month, day);
+};
 
 interface Step1Props {
   mode: string;
@@ -267,7 +284,7 @@ export default function Step1({
           value={useWatch({ control, name: "endDate" })}
           onChange={(val) => {
             setValue("endDate", val);
-            setValue("claimExpirationDate", addDays(val, 30));
+            setValue("claimExpirationDate", createUTCDateAtEndOfDay(addMonths(val, 1)));
           }}
           error={errors.endDate?.message}
           disabled={isRunning}
@@ -327,10 +344,10 @@ export default function Step1({
 
         <DateTimePicker
           label="Claim Expiration Date"
-          value={useWatch({ control, name: "claimExpirationDate" })}
+          value={convertUTCToLocalForDisplay(useWatch({ control, name: "claimExpirationDate" }))}
           onChange={(val) => {
             if (val) {
-              const utc = new Date(Date.UTC(val.getFullYear(), val.getMonth(), val.getDate(), 23, 59, 59, 0));
+              const utc = createUTCDateAtEndOfDay(val);
               setValue("claimExpirationDate", utc);
             } else {
               setValue("claimExpirationDate", val);

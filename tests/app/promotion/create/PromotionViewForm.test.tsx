@@ -57,6 +57,7 @@ describe("PromotionViewForm", () => {
     // Currency Group Settings section
     expect(screen.getByText("Configuration & Game Specifics")).toBeInTheDocument();
     expect(screen.getByText("site1; site2")).toBeInTheDocument();
+    expect(screen.getByText("USD, EUR")).toBeInTheDocument();
 
     // Site Offering section
     expect(screen.getByText("site1; site2")).toBeInTheDocument();
@@ -105,7 +106,8 @@ describe("PromotionViewForm", () => {
     expect(screen.getByText("All Sites")).toBeInTheDocument();
 
     // Game List section
-    expect(screen.getByText("-")).toBeInTheDocument();
+    expect(screen.getByText("Target Game")).toBeInTheDocument();
+    expect(screen.getByText("Currency Groups")).toBeInTheDocument();
 
     // Members section
     expect(screen.getByText("Targeting Information")).toBeInTheDocument();
@@ -158,5 +160,69 @@ describe("PromotionViewForm", () => {
     render(<PromotionViewForm data={mockData} />);
 
     expect(screen.getByText("All Players")).toBeInTheDocument();
+  });
+
+  it("renders currency groups correctly", () => {
+    const mockData = {
+      name: "Currency Test Promotion",
+      code: "CUR123",
+      gameConfigType: GAME_TYPES.CLASSIC,
+      bonusItemCount: 50,
+      startDate: new Date("2025-05-13T08:04:27.000Z"),
+      endDate: new Date("2025-05-13T08:04:27.000Z"),
+      claimExpirationDate: new Date("2025-05-14T08:04:27.000Z"),
+      operatorId: "op1",
+      offeredSiteNames: [],
+      gameIds: [],
+      currencyGroups: ["USD", "EUR", "GBP"],
+      allPlayers: true,
+      betLevels: [],
+      isGiftCode: false,
+      minTurnoverMultiplier: 2,
+    };
+
+    const mockCurrencyGroups = [
+      { Id: "USD", Name: "USD" },
+      { Id: "EUR", Name: "EUR" },
+      { Id: "GBP", Name: "GBP" },
+    ];
+
+    render(
+      <PromotionViewForm
+        data={mockData}
+        currencyGroupsInfo={mockCurrencyGroups}
+      />
+    );
+
+    expect(screen.getByText("USD, EUR, GBP")).toBeInTheDocument();
+  });
+
+  it("renders dash when no currency groups", () => {
+    const mockData = {
+      name: "No Currency Promotion",
+      code: "NOCUR123",
+      gameConfigType: GAME_TYPES.CLASSIC,
+      bonusItemCount: 50,
+      startDate: new Date("2025-05-13T08:04:27.000Z"),
+      endDate: new Date("2025-05-13T08:04:27.000Z"),
+      claimExpirationDate: new Date("2025-05-14T08:04:27.000Z"),
+      operatorId: "op1",
+      offeredSiteNames: [],
+      gameIds: [],
+      currencyGroups: [],
+      allPlayers: true,
+      betLevels: [],
+      isGiftCode: false,
+      minTurnoverMultiplier: 2,
+    };
+
+    render(<PromotionViewForm data={mockData} />);
+
+    // Check that Currency Groups label exists
+    expect(screen.getByText("Currency Groups")).toBeInTheDocument();
+    
+    // Check that dash is displayed for empty currency groups
+    const currencyGroupsSection = screen.getByText("Currency Groups").closest("div");
+    expect(currencyGroupsSection).toHaveTextContent("-");
   });
 });

@@ -34,6 +34,7 @@ export default function PromotionViewForm({
     operatorId,
     offeredSiteNames,
     gameIds,
+    currencyGroups,
     allPlayers,
     isGiftCode,
     minTurnoverMultiplier,
@@ -64,7 +65,7 @@ export default function PromotionViewForm({
             value={
               <>
                 <span className="font-semibold">
-                  {toGMTString(startDate.toISOString(), 0)} (UTC)
+                  {toGMTString(startDate.toISOString(), 7)} (GMT+7)
                 </span>
               </>
             }
@@ -74,7 +75,7 @@ export default function PromotionViewForm({
             value={
               <>
                 <span className="font-semibold">
-                  {toGMTString(endDate.toISOString(), 0)} (UTC)
+                  {toGMTString(endDate.toISOString(), 7)} (GMT+7)
                 </span>
               </>
             }
@@ -85,6 +86,19 @@ export default function PromotionViewForm({
               <span className="font-semibold">
                 {operatorName || operatorId}
               </span>
+            }
+          />
+          <InfoRow
+            label="Currency Groups"
+            value={
+              currencyGroups && currencyGroups.length > 0
+                ? currencyGroups
+                    .map((currencyGroupId) => 
+                      currencyGroupsInfo?.find((cg) => cg.Id === currencyGroupId)?.Name
+                    )
+                    .filter(Boolean)
+                    .join(", ") || "-"
+                : "-"
             }
           />
         </div>
@@ -141,7 +155,7 @@ export default function PromotionViewForm({
                       <span className="text-gray-400">-</span>
                     ) : (
                       <span className="font-semibold">
-                        {toGMTString(dateObj.toISOString(), 0)} (UTC)
+                        {toGMTString(dateObj.toISOString(), 0)}
                       </span>
                     );
                   })()
@@ -180,12 +194,12 @@ export default function PromotionViewForm({
         <div className="text-xs text-gray-400 mt-2">
           {allPlayers &&
             "FSB will be given to everybody who opens the promoted game during the promo period."}
-          {isGiftCode && "Only players with a valid code can redeem the PSB."}
+          {isGiftCode && "Only players with a valid code can redeem the FSB."}
           {!allPlayers &&
             !isGiftCode &&
             "Only those players from the upload file will receive FSB during promo campaign."}
         </div>
-        {readonly && !isGiftCode && (
+        {!isGiftCode && !allPlayers && (
           <div className="mt-2">
             <button
               className="inline-block bg-blue-100 text-blue-700 rounded px-3 py-1 text-xs font-medium border border-blue-200 hover:bg-blue-200 transition"

@@ -376,7 +376,7 @@ export default function Step2({
             promo period.
           </p>
           <p>
-            + Only players with a valid code can redeem the PSB.
+            + Only players with a valid code can redeem the FSB.
           </p>
           <p>
             + Only those players from the upload file will receive FSB during
