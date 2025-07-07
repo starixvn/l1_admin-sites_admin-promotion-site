@@ -131,7 +131,7 @@ const getDefaultValues = (initialValues?: Promotion) => {
       ...initialValues,
       startDate: new Date(initialValues.startDate),
       endDate: new Date(initialValues.endDate),
-      claimExpirationDate: initialValues.claimExpirationDate ? new Date(initialValues.claimExpirationDate) : addDays(getTodayAtMidnightGMT7(), 30),
+      claimExpirationDate: new Date(initialValues.claimExpirationDate),
       gameConfigType: initialValues.gameConfigType as 2 | 3,
       offeredSiteNames: initialValues.offeredSiteNames || [],
       offeredPlayerIds: initialValues.offeredPlayerIds || [],
@@ -148,7 +148,10 @@ const getDefaultValues = (initialValues?: Promotion) => {
     bonusItemCount: 0,
     startDate: date,
     endDate: date,
-    claimExpirationDate: addMonths(date, 1),
+    claimExpirationDate: (() => {
+      const oneMonthLater = addMonths(date, 1);
+      return new Date(Date.UTC(oneMonthLater.getFullYear(), oneMonthLater.getMonth(), oneMonthLater.getDate(), 23, 59, 59, 0));
+    })(),
     operatorId: "",
     offeredSiteNames: [],
     gameIds: [],

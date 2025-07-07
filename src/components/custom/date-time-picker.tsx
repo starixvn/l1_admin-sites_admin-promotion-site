@@ -89,15 +89,20 @@ export default function DateTimePicker({
         <label className="form-label">
           {label}
           <span className="text-red-500">*</span>{" "}
-          <span className="text-gray-400 text-sm ml-1">(GMT+7)</span>
+          {!dateOnly && (
+            <span className="text-gray-400 text-sm ml-1">(GMT+7)</span>
+          )}
         </label>
       )}
 
-      <Popover open={open} onOpenChange={val => { 
-        if (!disabled) {
-          setOpen(val); 
-        }
-      }}>
+      <Popover
+        open={open}
+        onOpenChange={(val) => {
+          if (!disabled) {
+            setOpen(val);
+          }
+        }}
+      >
         <PopoverTrigger asChild className="bg-white mt-1">
           <Button
             variant="outline"
@@ -111,7 +116,9 @@ export default function DateTimePicker({
             <span>
               {date instanceof Date && !isNaN(date.getTime())
                 ? format(date, dateOnly ? "dd-MM-yyyy" : "dd-MM-yyyy HH:mm")
-                : (dateOnly ? "DD-MM-YYYY" : "DD-MM-YYYY hh:mm")}
+                : dateOnly
+                ? "DD-MM-YYYY"
+                : "DD-MM-YYYY hh:mm"}
             </span>
             <CalendarIcon className="h-5 w-5 text-blue-500" />
           </Button>
