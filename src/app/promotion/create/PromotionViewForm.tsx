@@ -155,7 +155,7 @@ export default function PromotionViewForm({
                       <span className="text-gray-400">-</span>
                     ) : (
                       <span className="font-semibold">
-                        {toGMTString(dateObj.toISOString(), 0)}
+                        {toGMTString(dateObj.toISOString(), 7)} (GMT+7)
                       </span>
                     );
                   })()
