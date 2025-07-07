@@ -150,7 +150,7 @@ const getDefaultValues = (initialValues?: Promotion) => {
     endDate: date,
     claimExpirationDate: (() => {
       const oneMonthLater = addMonths(date, 1);
-      return new Date(Date.UTC(oneMonthLater.getFullYear(), oneMonthLater.getMonth(), oneMonthLater.getDate(), 23, 59, 59, 0));
+      return new Date(oneMonthLater.getFullYear(), oneMonthLater.getMonth(), oneMonthLater.getDate(), 23, 59, 59, 0);
     })(),
     operatorId: "",
     offeredSiteNames: [],

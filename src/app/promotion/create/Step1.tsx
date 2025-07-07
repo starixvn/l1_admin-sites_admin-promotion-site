@@ -28,25 +28,6 @@ import type { PromotionFormValues } from "./PromotionForm";
 import type { Operator } from "@/types/operator";
 import { addMonths } from "date-fns";
 
-// Helper function to create UTC date without timezone shift
-const createUTCDateAtEndOfDay = (date: Date): Date => {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const day = date.getDate();
-  return new Date(Date.UTC(year, month, day, 23, 59, 59, 0));
-};
-
-// Helper function to convert UTC date to local date for display
-const convertUTCToLocalForDisplay = (utcDate: Date): Date => {
-  if (!utcDate){
-    return utcDate;
-  }
-  const year = utcDate.getUTCFullYear();
-  const month = utcDate.getUTCMonth();
-  const day = utcDate.getUTCDate();
-  return new Date(year, month, day);
-};
-
 interface Step1Props {
   mode: string;
   status: string;
@@ -286,7 +267,9 @@ export default function Step1({
           value={useWatch({ control, name: "endDate" })}
           onChange={(val) => {
             setValue("endDate", val);
-            setValue("claimExpirationDate", createUTCDateAtEndOfDay(addMonths(val, 1)));
+            const oneMonthLater = addMonths(val, 1);
+            const claimExpirationDate = new Date(oneMonthLater.getFullYear(), oneMonthLater.getMonth(), oneMonthLater.getDate(), 23, 59, 59, 0);
+            setValue("claimExpirationDate", claimExpirationDate);
           }}
           error={errors.endDate?.message}
           disabled={isRunning}
@@ -346,10 +329,10 @@ export default function Step1({
 
         <DateTimePicker
           label="Claim Expiration Date"
-          value={convertUTCToLocalForDisplay(useWatch({ control, name: "claimExpirationDate" }))}
+          value={useWatch({ control, name: "claimExpirationDate" })}
           onChange={(val) => {
             if (val) {
-              const utc = createUTCDateAtEndOfDay(val);
+              const utc = new Date(val.getFullYear(), val.getMonth(), val.getDate(), 23, 59, 59, 0);
               setValue("claimExpirationDate", utc);
             } else {
               setValue("claimExpirationDate", val);
