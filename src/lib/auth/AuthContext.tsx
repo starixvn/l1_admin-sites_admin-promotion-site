@@ -36,10 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (data: any) => {
     setUser(data);
     setIsAuthenticated(true);
-    // Set cookie with 5 minutes expiry
-    Cookies.set('user', JSON.stringify(data), { expires: 1/288 }); // 5 minutes = 1/288 days
     // Set cookie with 3 hours expiry
-    // Cookies.set('user', JSON.stringify(data), { expires: 1/8 }); // 3 hours = 1/8 days
+    Cookies.set('user', JSON.stringify(data), { expires: 1/8 }); // 3 hours = 1/8 days
   };
 
   const logout = () => {
