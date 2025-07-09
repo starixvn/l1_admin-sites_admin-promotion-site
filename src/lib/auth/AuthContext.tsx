@@ -18,6 +18,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any | null>(null);
 
+  // Check if cookie has expired
+  const isCookieExpired = () => {
+    try {
+      const userCookie = Cookies.get('user');
+      return !userCookie;
+    } catch (e) {
+      return true;
+    }
+  };
+
   useEffect(() => {
     // Check if user is logged in on mount
     const userCookie = Cookies.get('user');
@@ -31,7 +41,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         Cookies.remove('user');
       }
     }
-  }, []);
+
+    const interval = setInterval(() => {
+      if (isAuthenticated && isCookieExpired()) {
+        logout();
+      }
+    }, 60 * 1000); 
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [isAuthenticated]);
 
   const login = (data: any) => {
     setUser(data);
@@ -44,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     setIsAuthenticated(false);
     Cookies.remove('user');
+    window.location.href = '/';
   };
 
   return (
