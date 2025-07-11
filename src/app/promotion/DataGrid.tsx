@@ -65,8 +65,8 @@ const Countdown = ({ endDate }: { endDate: Date }) => {
 
   const diff = endDate.getTime() - now.getTime();
 
-  let text = "Expired";
-  let colorClass = "text-red-500";
+  let text = "";
+  let colorClass = "";
 
   if (diff > 0) {
     const daysLeft = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -164,9 +164,8 @@ export default function DataGrid({
             <th className="px-4 py-3 text-left">Promotion</th>
             <th className="px-4 py-3 text-left">Operator</th>
             <th className="px-4 py-3 text-center">Free Spins</th>
-            <th className="px-4 py-3 text-left">Start Date</th>
-            <th className="px-4 py-3 text-left">End Date</th>
-            <th className="px-4 py-3 text-left">Turnover (x) / Expiration</th>
+            <th className="px-4 py-3 text-left">Period</th>
+            <th className="px-4 py-3 text-left">Expiration / Turnover (x)</th>
             <th className="px-4 py-3 text-left">Announcement</th>
             <th className="px-4 py-3 text-center">Actions</th>
           </tr>
@@ -175,15 +174,18 @@ export default function DataGrid({
           {promotions.map((p) => {
             const status = getStatus(p);
             return (
-              <tr key={p._id} className="hover:bg-green-50">
+              <tr key={p._id} className="hover:bg-green-50 align-top">
                 <td className="px-4 py-4">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
-                      status
-                    )}`}
-                  >
-                    {status}
-                  </span>
+                  <div className="flex flex-col items-start gap-1">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(status)}`}
+                    >
+                      {status}
+                    </span>
+                    <span>
+                      <Countdown endDate={new Date(p.endDate)} />
+                    </span>
+                  </div>
                 </td>
                 <td className="px-4 py-4">
                   <div className="font-semibold text-gray-800">{p.name}</div>
@@ -199,22 +201,28 @@ export default function DataGrid({
                     {p.bonusItemCount}
                   </div>
                 </td>
-                <td className="px-4 py-4">{toGMTString(p.startDate, 7)}</td>
                 <td className="px-4 py-4">
-                  <div>{toGMTString(p.endDate, 7)}</div>
-
-                  <Countdown endDate={new Date(p.endDate)} />
+                  <div>
+                    <div>
+                      <span className="inline-block w-12">Start:</span>
+                      <span>{toGMTString(p.startDate, 7)}</span>
+                    </div>
+                    <div>
+                      <span className="inline-block w-12">End:</span>
+                      <span>{toGMTString(p.endDate, 7)}</span>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-4 py-4">
                   <div className="flex flex-col">
+                    {p.claimExpirationDate && (
+                      <div>
+                        {toGMTString(p.claimExpirationDate, 7)}
+                      </div>
+                    )}
                     <span className="font-semibold text-black">
                       {p.minTurnoverMultiplier ? `${p.minTurnoverMultiplier}x` : "-"}
                     </span>
-                    {p.claimExpirationDate && (
-                      <span className="text-xs text-black mt-1">
-                        Expiry: {toGMTString(p.claimExpirationDate, 7)}
-                      </span>
-                    )}
                   </div>
                 </td>
                 <td className="px-4 py-4">
