@@ -166,8 +166,8 @@ export default function DataGrid({
             <th className="px-4 py-3 text-center">Free Spins</th>
             <th className="px-4 py-3 text-left">Start Date</th>
             <th className="px-4 py-3 text-left">End Date</th>
+            <th className="px-4 py-3 text-left">Turnover (x) / Expiration</th>
             <th className="px-4 py-3 text-left">Announcement</th>
-            <th className="px-4 py-3 text-left">Required TO</th>
             <th className="px-4 py-3 text-center">Actions</th>
           </tr>
         </thead>
@@ -206,13 +206,24 @@ export default function DataGrid({
                   <Countdown endDate={new Date(p.endDate)} />
                 </td>
                 <td className="px-4 py-4">
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-black">
+                      {p.minTurnoverMultiplier ? `${p.minTurnoverMultiplier}x` : "-"}
+                    </span>
+                    {p.claimExpirationDate && (
+                      <span className="text-xs text-black mt-1">
+                        Expiry: {toGMTString(p.claimExpirationDate, 7)}
+                      </span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-4 py-4">
                   {p.announcementTitle
                     ? <span className="text-green-500">Linked</span>
                     : <span className="text-red-500">Unlinked</span>
                   }
                   {p.announcementTitle && <div>{p.announcementTitle}</div>}
                 </td>
-                <td className="px-4 text-center py-4">{p.minTurnoverMultiplier ? `${p.minTurnoverMultiplier}x` : "-"}</td>
                 <td className="px-4 py-4">
                   <div className="flex justify-center gap-3">
                     <button
