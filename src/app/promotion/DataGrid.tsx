@@ -182,9 +182,13 @@ export default function DataGrid({
                     >
                       {status}
                     </span>
-                    <span>
-                      <Countdown endDate={new Date(p.endDate)} />
-                    </span>
+                    <Countdown
+                      endDate={
+                        status === PROMOTION_STATUS_OPTIONS.Upcoming
+                          ? new Date(p.startDate)
+                          : new Date(p.endDate)
+                      }
+                    />
                   </div>
                 </td>
                 <td className="px-4 py-4">
