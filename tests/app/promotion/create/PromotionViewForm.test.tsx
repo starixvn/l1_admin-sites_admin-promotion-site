@@ -108,7 +108,7 @@ describe("PromotionViewForm", () => {
 
     // Game List section
     expect(screen.getByText("Target Game")).toBeInTheDocument();
-    expect(screen.getByText("Currency Groups")).toBeInTheDocument();
+    expect(screen.getByText("Currency Group Settings")).toBeInTheDocument();
 
     // Members section
     expect(screen.getByText("Targeting Information")).toBeInTheDocument();
@@ -221,11 +221,11 @@ describe("PromotionViewForm", () => {
 
     render(<PromotionViewForm data={mockData} />);
 
-    // Check that Currency Groups label exists
-    expect(screen.getByText("Currency Groups")).toBeInTheDocument();
+    // Check that Currency Group Settings section exists
+    expect(screen.getByText("Currency Group Settings")).toBeInTheDocument();
     
     // Check that dash is displayed for empty currency groups
-    const currencyGroupsSection = screen.getByText("Currency Groups").closest("div");
+    const currencyGroupsSection = screen.getByText("Currency Group Settings").closest("section");
     expect(currencyGroupsSection).toHaveTextContent("-");
   });
 });
