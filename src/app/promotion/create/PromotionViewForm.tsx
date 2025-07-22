@@ -81,24 +81,46 @@ export default function PromotionViewForm({
             }
           />
           <InfoRow
+            label="Currency Groups"
+            value={
+              currencyGroups && currencyGroups.length > 0 ? (
+                <div className="mt-2">
+                  <table className="w-full text-sm border-collapse border border-gray-200">
+                    <thead>
+                      <tr className="bg-gray-50 text-gray-700 border-b">
+                        <th className="px-3 py-2 text-left border-r border-gray-200">Currency Group</th>
+                        <th className="px-3 py-2 text-center border-r border-gray-200">Bet Level</th>
+                        <th className="px-3 py-2 text-center">Total Bet</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currencyGroups.map((currencyGroupId) => {
+                        const currencyGroup = currencyGroupsInfo?.find((cg) => cg.Id === currencyGroupId);
+                        const betLevel = data.betLevels?.find((bl) => bl.currencyGroup === currencyGroupId)?.betLevel || 0;
+                        const totalBet = gameConfigType === GAME_TYPES.CASCADING ? 1 * betLevel * 20 : betLevel * 25;
+                        
+                        return (
+                          <tr key={currencyGroupId} className="border-b border-gray-100">
+                            <td className="px-3 py-2 border-r border-gray-200">{currencyGroup?.Name || currencyGroupId}</td>
+                            <td className="px-3 py-2 text-center border-r border-gray-200">{betLevel}</td>
+                            <td className="px-3 py-2 text-center">{totalBet.toFixed(2)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                "-"
+              )
+            }
+          />
+          <InfoRow
             label="Operator"
             value={
               <span className="font-semibold">
                 {operatorName || operatorId}
               </span>
-            }
-          />
-          <InfoRow
-            label="Currency Groups"
-            value={
-              currencyGroups && currencyGroups.length > 0
-                ? currencyGroups
-                    .map((currencyGroupId) => 
-                      currencyGroupsInfo?.find((cg) => cg.Id === currencyGroupId)?.Name
-                    )
-                    .filter(Boolean)
-                    .join(", ") || "-"
-                : "-"
             }
           />
         </div>
