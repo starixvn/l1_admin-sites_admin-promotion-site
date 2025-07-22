@@ -81,29 +81,69 @@ export default function PromotionViewForm({
             }
           />
           <InfoRow
-            label="Currency Groups"
+            label="Operator"
+            value={
+              <span className="font-semibold">
+                {operatorName || operatorId}
+              </span>
+            }
+          />
+        </div>
+      </section>
+
+      {/* Currency Group Settings */}
+      <section className="bg-white rounded-xl shadow p-6 mb-2">
+        <div className="flex items-center gap-2 mb-4 font-semibold text-gray-800 text-base">
+          <Settings className="w-5 h-5 text-gray-500" /> Currency Group Settings
+        </div>
+        <div className="grid grid-cols-1 gap-x-8 gap-y-2">
+          <InfoRow
+            label=""
             value={
               currencyGroups && currencyGroups.length > 0 ? (
                 <div className="mt-2">
                   <table className="w-full text-sm border-collapse border border-gray-200">
                     <thead>
                       <tr className="bg-gray-50 text-gray-700 border-b">
-                        <th className="px-3 py-2 text-left border-r border-gray-200">Currency Group</th>
-                        <th className="px-3 py-2 text-center border-r border-gray-200">Bet Level</th>
+                        <th className="px-3 py-2 text-left border-r border-gray-200">
+                          Currency Group
+                        </th>
+                        <th className="px-3 py-2 text-center border-r border-gray-200">
+                          {gameConfigType === GAME_TYPES.CLASSIC
+                            ? "Bet Level"
+                            : "Coin Value"}
+                        </th>
                         <th className="px-3 py-2 text-center">Total Bet</th>
                       </tr>
                     </thead>
                     <tbody>
                       {currencyGroups.map((currencyGroupId) => {
-                        const currencyGroup = currencyGroupsInfo?.find((cg) => cg.Id === currencyGroupId);
-                        const betLevel = data.betLevels?.find((bl) => bl.currencyGroup === currencyGroupId)?.betLevel || 0;
-                        const totalBet = gameConfigType === GAME_TYPES.CASCADING ? 1 * betLevel * 20 : betLevel * 25;
-                        
+                        const currencyGroup = currencyGroupsInfo?.find(
+                          (cg) => cg.Id === currencyGroupId
+                        );
+                        const betLevel =
+                          data.betLevels?.find(
+                            (bl) => bl.currencyGroup === currencyGroupId
+                          )?.betLevel || 0;
+                        const totalBet =
+                          gameConfigType === GAME_TYPES.CASCADING
+                            ? 1 * betLevel * 20
+                            : betLevel * 25;
+
                         return (
-                          <tr key={currencyGroupId} className="border-b border-gray-100">
-                            <td className="px-3 py-2 border-r border-gray-200">{currencyGroup?.Name || currencyGroupId}</td>
-                            <td className="px-3 py-2 text-center border-r border-gray-200">{betLevel}</td>
-                            <td className="px-3 py-2 text-center">{totalBet.toFixed(2)}</td>
+                          <tr
+                            key={currencyGroupId}
+                            className="border-b border-gray-100"
+                          >
+                            <td className="px-3 py-2 border-r border-gray-200">
+                              {currencyGroup?.Name || currencyGroupId}
+                            </td>
+                            <td className="px-3 py-2 text-center border-r border-gray-200">
+                              {betLevel}
+                            </td>
+                            <td className="px-3 py-2 text-center">
+                              {totalBet.toFixed(2)}
+                            </td>
                           </tr>
                         );
                       })}
@@ -113,14 +153,6 @@ export default function PromotionViewForm({
               ) : (
                 "-"
               )
-            }
-          />
-          <InfoRow
-            label="Operator"
-            value={
-              <span className="font-semibold">
-                {operatorName || operatorId}
-              </span>
             }
           />
         </div>
@@ -167,21 +199,23 @@ export default function PromotionViewForm({
           <InfoRow
             label="Claim Expiration Date"
             value={
-              claimExpirationDate
-                ? (() => {
-                    const dateObj =
-                      typeof claimExpirationDate === "string"
-                        ? new Date(claimExpirationDate)
-                        : claimExpirationDate;
-                    return isNaN(dateObj.getTime()) ? (
-                      <span className="text-gray-400">-</span>
-                    ) : (
-                      <span className="font-semibold">
-                        {toGMTString(dateObj.toISOString(), 7)} (GMT+7)
-                      </span>
-                    );
-                  })()
-                : <span className="text-gray-400">-</span>
+              claimExpirationDate ? (
+                (() => {
+                  const dateObj =
+                    typeof claimExpirationDate === "string"
+                      ? new Date(claimExpirationDate)
+                      : claimExpirationDate;
+                  return isNaN(dateObj.getTime()) ? (
+                    <span className="text-gray-400">-</span>
+                  ) : (
+                    <span className="font-semibold">
+                      {toGMTString(dateObj.toISOString(), 7)} (GMT+7)
+                    </span>
+                  );
+                })()
+              ) : (
+                <span className="text-gray-400">-</span>
+              )
             }
           />
         </div>
