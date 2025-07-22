@@ -57,7 +57,8 @@ describe("PromotionViewForm", () => {
     // Currency Group Settings section
     expect(screen.getByText("Configuration & Game Specifics")).toBeInTheDocument();
     expect(screen.getByText("site1; site2")).toBeInTheDocument();
-    expect(screen.getByText("USD, EUR")).toBeInTheDocument();
+    expect(screen.getByText("USD")).toBeInTheDocument();
+    expect(screen.getByText("EUR")).toBeInTheDocument();
 
     // Site Offering section
     expect(screen.getByText("site1; site2")).toBeInTheDocument();
@@ -194,7 +195,9 @@ describe("PromotionViewForm", () => {
       />
     );
 
-    expect(screen.getByText("USD, EUR, GBP")).toBeInTheDocument();
+    expect(screen.getByText("USD")).toBeInTheDocument();
+    expect(screen.getByText("EUR")).toBeInTheDocument();
+    expect(screen.getByText("GBP")).toBeInTheDocument();
   });
 
   it("renders dash when no currency groups", () => {
