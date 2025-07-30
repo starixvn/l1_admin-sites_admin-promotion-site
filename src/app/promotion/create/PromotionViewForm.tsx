@@ -125,10 +125,20 @@ export default function PromotionViewForm({
                           data.betLevels?.find(
                             (bl) => bl.currencyGroup === currencyGroupId
                           )?.betLevel || 0;
+                        const coinValue =
+                          data.coinValues?.find(
+                            (cv) => cv.currencyGroup === currencyGroupId
+                          )?.coinValue || 0;
+
+                        const baseValue =
+                          gameConfigType === GAME_TYPES.CLASSIC
+                            ? betLevel
+                            : coinValue;
+
                         const totalBet =
                           gameConfigType === GAME_TYPES.CASCADING
-                            ? 1 * betLevel * 20
-                            : betLevel * 25;
+                            ? 1 * baseValue * 20
+                            : baseValue * 25;
 
                         return (
                           <tr
@@ -139,7 +149,7 @@ export default function PromotionViewForm({
                               {currencyGroup?.Name || currencyGroupId}
                             </td>
                             <td className="px-3 py-2 text-center border-r border-gray-200">
-                              {betLevel}
+                              {baseValue}
                             </td>
                             <td className="px-3 py-2 text-center">
                               {totalBet.toFixed(2)}

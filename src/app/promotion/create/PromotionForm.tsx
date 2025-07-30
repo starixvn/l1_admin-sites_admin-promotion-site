@@ -73,6 +73,16 @@ export const promotionSchema = z
         })
       )
       .optional(),
+    coinValues: z
+      .array(
+        z.object({
+          currencyGroup: z.string().min(1, "Currency Group is required"),
+          coinValue: z.coerce
+            .number()
+            .min(0.01, "Coin Value must be greater than 0"),
+        })
+      )
+      .optional(),
     isGiftCode: z.boolean(),
     minTurnoverMultiplier: z.coerce
       .number({
@@ -93,7 +103,8 @@ export const promotionSchema = z
     (data) => {
       // ✅ Validate file upload for other cases
       return (
-        data.allPlayers || data.isGiftCode ||
+        data.allPlayers ||
+        data.isGiftCode ||
         (data.uploadedFile instanceof File && data.uploadedFile.size > 0) ||
         (data.offeredPlayerIds && data.offeredPlayerIds.length > 0)
       );
@@ -112,9 +123,10 @@ export type PromotionFormValues = z.infer<typeof promotionSchema>;
 
 type PromotionFormSubmission = Omit<
   Promotion,
-  "_id" | "createdAt" | "updatedAt" | "__v" | "betLevels"
+  "_id" | "createdAt" | "updatedAt" | "__v" | "betLevels" | "coinValues"
 > & {
   betLevels: { currencyGroup: string; betLevel: number }[];
+  coinValues: { currencyGroup: string; coinValue: number }[];
 };
 
 interface PromotionFormProps {
@@ -136,9 +148,13 @@ const getDefaultValues = (initialValues?: Promotion) => {
       offeredSiteNames: initialValues.offeredSiteNames || [],
       offeredPlayerIds: initialValues.offeredPlayerIds || [],
       betLevels: initialValues.betLevels || [],
+      coinValues: initialValues.coinValues || [],
       isGiftCode: initialValues.isGiftCode || false,
       minTurnoverMultiplier: initialValues.minTurnoverMultiplier || 2,
-      allPlayers:  initialValues.isGiftCode ? false : (!initialValues.offeredPlayerIds || initialValues.offeredPlayerIds.length === 0),
+      allPlayers: initialValues.isGiftCode
+        ? false
+        : !initialValues.offeredPlayerIds ||
+          initialValues.offeredPlayerIds.length === 0,
     };
   }
   const date = addDays(getTodayAtMidnightGMT7(), 1);
@@ -150,7 +166,15 @@ const getDefaultValues = (initialValues?: Promotion) => {
     endDate: date,
     claimExpirationDate: (() => {
       const oneMonthLater = addMonths(date, 1);
-      return new Date(oneMonthLater.getFullYear(), oneMonthLater.getMonth(), oneMonthLater.getDate(), 23, 59, 59, 0);
+      return new Date(
+        oneMonthLater.getFullYear(),
+        oneMonthLater.getMonth(),
+        oneMonthLater.getDate(),
+        23,
+        59,
+        59,
+        0
+      );
     })(),
     operatorId: "",
     offeredSiteNames: [],
@@ -161,6 +185,7 @@ const getDefaultValues = (initialValues?: Promotion) => {
     uploadedFile: undefined,
     gameConfigType: GAME_TYPES.CLASSIC,
     betLevels: [],
+    coinValues: [],
     isGiftCode: false,
     minTurnoverMultiplier: 2,
   };
@@ -228,14 +253,14 @@ const FormFooter = ({
             console.log("Form validation result:", isValid);
             console.log("Form errors:", errors);
             console.log("Form values:", getValues());
-            
+
             if (isValid) {
               setPreviewData(getValues());
               setShowPreviewDialog(true);
             } else {
               console.log("Validation failed. Errors:", errors);
               // Log specific field errors
-              Object.keys(errors).forEach(fieldName => {
+              Object.keys(errors).forEach((fieldName) => {
                 const fieldError = errors[fieldName as keyof typeof errors];
                 if (fieldError) {
                   console.log(`Field ${fieldName} error:`, fieldError.message);
@@ -285,7 +310,9 @@ export default function PromotionForm({
     null
   );
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
-  const [initialOfferedPlayerIds, setInitialOfferedPlayerIds] = useState(initialValues?.offeredPlayerIds || []);
+  const [initialOfferedPlayerIds, setInitialOfferedPlayerIds] = useState(
+    initialValues?.offeredPlayerIds || []
+  );
   const currencyGroups = useWatch({ control, name: "currencyGroups" });
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
   const gameIds = useWatch({ control, name: "gameIds" });
@@ -359,10 +386,6 @@ export default function PromotionForm({
 
   const handleFormSubmit = (data: PromotionFormValues) => {
     const payload: PromotionFormSubmission & { claimExpirationDate: string } = {
-      betLevels: (data.betLevels || []).map(({ currencyGroup, betLevel }) => ({
-        currencyGroup,
-        betLevel,
-      })),
       bonusItemCount: data.bonusItemCount,
       code: data.code.toLowerCase(),
       currencyGroups: data.currencyGroups,
@@ -377,6 +400,20 @@ export default function PromotionForm({
       isGiftCode: data.isGiftCode,
       minTurnoverMultiplier: data.minTurnoverMultiplier,
       claimExpirationDate: new Date(data.claimExpirationDate).toISOString(),
+      betLevels:
+        data.gameConfigType === 2
+          ? (data.betLevels || []).map(({ currencyGroup, betLevel }) => ({
+              currencyGroup,
+              betLevel,
+            }))
+          : [],
+      coinValues:
+        data.gameConfigType === 3
+          ? (data.coinValues || []).map(({ currencyGroup, coinValue }) => ({
+              currencyGroup,
+              coinValue,
+            }))
+          : [],
       ...(initialValues ? { _id: initialValues._id } : {}),
     };
 

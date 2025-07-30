@@ -37,12 +37,12 @@ export const validateBetRows = (
   rows: {
     id: string;
     enabled: boolean;
-    betLevel: number;
+    baseValue: number;
   }[]
 ): Set<string> => {
   const invalid = new Set<string>();
   rows.forEach((r) => {
-    if (r.enabled && r.betLevel === 0) {
+    if (r.enabled && r.baseValue === 0) {
       invalid.add(r.id);
     }
   });

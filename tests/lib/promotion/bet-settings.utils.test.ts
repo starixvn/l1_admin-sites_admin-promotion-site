@@ -66,27 +66,27 @@ describe("selectSuggestedBetLevel", () => {
 
 describe("validateBetRows", () => {
   it("returns empty set if all rows are valid", () => {
-    const rows = [{ id: "1", enabled: true, betLevel: 1 }];
+    const rows = [{ id: "1", enabled: true, baseValue: 1 }];
     expect(validateBetRows(rows).size).toBe(0);
   });
 
   it("detects invalid row with zero betLevel", () => {
-    const rows = [{ id: "1", enabled: true, betLevel: 0 }];
+    const rows = [{ id: "1", enabled: true, baseValue: 0 }];
     expect(validateBetRows(rows)).toEqual(new Set(["1"]));
   });
   it("ignores disabled rows even if betLevel is 0", () => {
     const rows = [
-      { id: "1", enabled: false, betLevel: 0 },
-      { id: "2", enabled: false, betLevel: 0 },
+      { id: "1", enabled: false, baseValue: 0 },
+      { id: "2", enabled: false, baseValue: 0 },
     ];
     expect(validateBetRows(rows)).toEqual(new Set());
   });
 
   it("returns multiple invalid row ids if more than one enabled has 0", () => {
     const rows = [
-      { id: "1", enabled: true, betLevel: 0 },
-      { id: "2", enabled: true, betLevel: 0 },
-      { id: "3", enabled: true, betLevel: 1 },
+      { id: "1", enabled: true, baseValue: 0 },
+      { id: "2", enabled: true, baseValue: 0 },
+      { id: "3", enabled: true, baseValue: 1 },
     ];
     expect(validateBetRows(rows)).toEqual(new Set(["1", "2"]));
   });

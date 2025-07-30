@@ -18,6 +18,7 @@ import { CurrencyGroup } from "@/types/currency-group";
 import { PlayerListModal } from "./PlayerListModal";
 import { Operator } from "@/types/operator";
 import { parseSiteInput } from "@/lib/promotion/promotion.utils";
+import { GAME_TYPES } from "@/constants/gameTypes";
 
 interface Step2Props {
   mode: string;
@@ -60,7 +61,8 @@ function GameSelection({
   isRunning,
   toggleGame,
 }: GameSelectionProps) {
-  const selectedGameId = Array.isArray(gameIds) && gameIds.length > 0 ? gameIds[0] : undefined;
+  const selectedGameId =
+    Array.isArray(gameIds) && gameIds.length > 0 ? gameIds[0] : undefined;
   const [filter, setFilter] = useState("");
   const filteredGames = games.filter((game) =>
     game.DisplayName.toLowerCase().includes(filter.toLowerCase())
@@ -107,7 +109,9 @@ function GameSelection({
       {/* Game list - radio only */}
       <div className="grid gap-3 max-h-[15rem] overflow-y-auto pr-2">
         {filteredGames.length === 0 ? (
-          <p className="text-sm text-gray-500 italic">No games match your filter.</p>
+          <p className="text-sm text-gray-500 italic">
+            No games match your filter.
+          </p>
         ) : (
           filteredGames.map((game) => (
             <label
@@ -166,7 +170,8 @@ export default function Step2({
   const allPlayers = useWatch({ control, name: "allPlayers" });
   const isGiftCode = useWatch({ control, name: "isGiftCode" });
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
-  const betLevels = useWatch({ control, name: "betLevels" });
+  const betLevels = useWatch({ control, name: "betLevels" }) ?? [];
+  const coinValues = useWatch({ control, name: "coinValues" }) ?? [];
   const offeredPlayerIds =
     useWatch({ control, name: "offeredPlayerIds" }) ?? [];
   const currencyGroups = useWatch({ control, name: "currencyGroups" }) || [];
@@ -260,11 +265,7 @@ export default function Step2({
         <div>
           <Label className="form-label">👥 Target Members</Label>
           <RadioGroup
-            value={
-              allPlayers 
-                ? "all" 
-                : (isGiftCode ? "gift-code" : "file")
-            }
+            value={allPlayers ? "all" : isGiftCode ? "gift-code" : "file"}
             onValueChange={(val) => {
               if (val === "all") {
                 setValue("allPlayers", true);
@@ -375,9 +376,7 @@ export default function Step2({
             + FSB will be given to everybody who opens Promoted game during
             promo period.
           </p>
-          <p>
-            + Only players with a valid code can redeem the FSB.
-          </p>
+          <p>+ Only players with a valid code can redeem the FSB.</p>
           <p>
             + Only those players from the upload file will receive FSB during
             promo campaign.
@@ -396,12 +395,28 @@ export default function Step2({
         gameType={gameConfigType}
         currencyGroupsInfo={currencyGroupsInfo}
         readonly={isRunning}
-        onSave={({ currencyGroups, betLevels }) => {
+        onSave={({ currencyGroups, betLevels, coinValues }) => {
           setValue("currencyGroups", currencyGroups);
-          setValue("betLevels", betLevels);
+          if (gameConfigType === GAME_TYPES.CLASSIC) {
+            setValue("betLevels", betLevels);
+            setValue("coinValues", []); // reset
+          } else if (gameConfigType === GAME_TYPES.CASCADING) {
+            setValue("coinValues", coinValues);
+            setValue("betLevels", []); // reset
+          }
         }}
         games={games}
-        initialValues={betLevels}
+        initialValues={
+          gameConfigType === GAME_TYPES.CLASSIC
+            ? betLevels.map(({ currencyGroup, betLevel }) => ({
+                currencyGroup,
+                baseValue: betLevel,
+              }))
+            : coinValues.map(({ currencyGroup, coinValue }) => ({
+                currencyGroup,
+                baseValue: coinValue,
+              }))
+        }
         operators={operators}
       />
     </div>
