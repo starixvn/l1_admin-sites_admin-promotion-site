@@ -1,0 +1,15 @@
+{
+  "sentry": {
+    "dsn": "https://2fbd4b237424e3600ef305d002bd5404@sentry-k8s.sgamesuat.com/18",
+    "environment": "SIT1"
+  },
+  "apiBaseUrl": "http://l1-admin-api-sit1-service:5000/api",
+  "env": "SIT1",
+  "identityUrl": "http://l1-auth-api-sit1-service:5000/connect/token",
+  "clientId": "admin-api",
+  "clientSecret": "adminapi@20luminet&",
+  "siteId": "admin-api",
+  "scope": "admin-api",
+  "apiPromotionUrl": "http://l1-sc1-game-promotion-api-sit1-service:5000",
+  "apiConfigurationUrl": "https://l1client.playonesit.com/sit/game/static/free-spins-promotion-template"
+}
