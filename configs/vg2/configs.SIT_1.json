@@ -10,6 +10,6 @@
   "clientSecret": "adminapi@20luminet&",
   "siteId": "admin-api",
   "scope": "admin-api",
-  "apiPromotionUrl": "http://l2-sc2-game-promotion-api-sit1-service:5000",
+  "apiPromotionUrl": "http://l2-game-promotion-api-sit1-service:5000",
   "apiConfigurationUrl": "https://l2client.playonesit.com/sit/game/static/free-spins-promotion-template"
 }
