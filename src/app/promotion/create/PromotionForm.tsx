@@ -55,7 +55,7 @@ export const promotionSchema = z
     offeredSiteNames: z.array(z.string()).optional(),
     gameIds: z
       .array(z.coerce.number())
-      .min(1, "At least one game must be selected for the promotion."),
+      .min(1, "Please select a game for the promotion."),
     currencyGroups: z
       .array(z.string().nonempty("Currency group cannot be empty"))
       .min(1, "At least one currency group is required"),
