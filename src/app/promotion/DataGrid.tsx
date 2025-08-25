@@ -9,7 +9,7 @@ import {
   getStatus,
   PROMOTION_STATUS_OPTIONS,
 } from "@/constants/promotionStatusMap";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Eye, Pencil, Trash2, BarChart3 } from "lucide-react";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import PromotionPreviewDialog from "./create/PromotionPreviewDialog";
 import { useFilteredSelectedGames } from "@/hooks/useFilteredSelectedGames";
@@ -17,6 +17,8 @@ import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 import { toGMTString } from "@/lib/date-time.utils";
 import { useOperators } from "@/hooks/useOperators";
 import { createOperatorMap } from "@/lib/promotion/bet-settings.utils";
+import { useRouter } from "next/navigation";
+import { getStatusStyle } from "@/helper/common";
 
 interface DataGridProps {
   promotions: Promotion[];
@@ -41,19 +43,6 @@ export const getGameTypeName = (gameConfigType: number) => {
       return "";
   }
 };
-
-export function getStatusStyle(status: string) {
-  switch (status) {
-    case PROMOTION_STATUS_OPTIONS.Running:
-      return "bg-green-100 text-green-800";
-    case PROMOTION_STATUS_OPTIONS.Upcoming:
-      return "bg-yellow-100 text-yellow-800";
-    case PROMOTION_STATUS_OPTIONS.Completed:
-      return "bg-gray-100 text-gray-600";
-    default:
-      return "bg-gray-100 text-gray-500";
-  }
-}
 
 const Countdown = ({ endDate }: { endDate: Date }) => {
   const [now, setNow] = useState(new Date());
@@ -100,6 +89,7 @@ export default function DataGrid({
   onPageChange,
   onPageSizeChange,
 }: DataGridProps) {
+  const router = useRouter();
   const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
   const [viewPromotion, setViewPromotion] = useState<Promotion | null>(null);
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -126,6 +116,10 @@ export default function DataGrid({
   };
 
   const handleEdit = (promotion: Promotion) => setEditPromotion(promotion);
+
+  const handlePerformanceClick = (promotionId: string) => {
+    router.push(`/promotion/performance/${promotionId}`);
+  };
 
   const handleSaveEdit = async (updatedPromotion: Promotion) => {
     try {
@@ -245,6 +239,14 @@ export default function DataGrid({
                       title="View"
                     >
                       <Eye className="w-4 h-4 text-gray-600 hover:text-black" />
+                    </button>
+                    <button
+                      onClick={() => handlePerformanceClick(p._id)}
+                      aria-label="performance"
+                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                      title="Performance Details"
+                    >
+                      <BarChart3 className="w-4 h-4 text-purple-600 hover:text-purple-800" />
                     </button>
                     {status === PROMOTION_STATUS_OPTIONS.Upcoming && (
                       <button onClick={() => handleEdit(p)} title="Edit">

@@ -47,3 +47,18 @@ export function toGMTString(dateStr: string, gmtOffset: number): string {
     })
     .replace(",", "");
 }
+
+export function convertToGMTDate(isoDateString: string, gmtOffset: number = 7): string {
+  if (!isoDateString) {
+    return "";
+  }
+  
+  const date = new Date(isoDateString);
+  if (isNaN(date.getTime())) {
+    return "";
+  }
+  
+  const gmtDate = new Date(date.getTime() + (gmtOffset * 60 * 60 * 1000));
+  
+  return gmtDate.toISOString().split('T')[0];
+}

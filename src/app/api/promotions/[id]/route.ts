@@ -41,6 +41,31 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   }
 }
 
+export async function GET(request: NextRequest, context: RouteContext) {
+  try {
+    const { id } = await context.params;
+
+    const response = await axios.get(
+      `${configs.apiPromotionUrl}/promotions/${id}`
+    );
+    return NextResponse.json(response.data, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching promotion:", error);
+    if (error instanceof AxiosError) {
+      return NextResponse.json(
+        {
+          error: error.response?.data?.message || "Failed to fetch promotion",
+        },
+        { status: error.response?.status || 500 }
+      );
+    }
+    return NextResponse.json(
+      { error: "Failed to fetch promotion" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     const { id } = await context.params;
