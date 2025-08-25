@@ -77,6 +77,9 @@ const TestWrapper = ({ children, defaultValues = {} }: TestWrapperProps) => {
       offeredPlayerIds: [],
       currencyGroups: [],
       betLevels: [],
+      claimExpirationDate: new Date("2025-05-14T08:04:27.000Z"),
+      isGiftCode: false,
+      minTurnoverMultiplier: 2,
       ...defaultValues,
     },
   });
@@ -131,7 +134,7 @@ describe("Step2 Component", () => {
   });
 
   it("handles game selection correctly", async () => {
-    const toggleGame = jest.fn();
+    const mockSetValue = jest.fn();
     render(
       <TestWrapper
         defaultValues={{
@@ -143,18 +146,17 @@ describe("Step2 Component", () => {
           <Step2
             {...defaultProps}
             control={control}
-            setValue={setValue}
+            setValue={mockSetValue}
             errors={errors}
-            toggleGame={toggleGame}
           />
         )}
       </TestWrapper>
     );
 
-    const gameCheckboxes = screen.getAllByRole("checkbox");
-    await userEvent.click(gameCheckboxes[1]); // Click first game checkbox
+    const gameRadios = screen.getAllByRole("radio");
+    await userEvent.click(gameRadios[0]); // Click first game radio
 
-    expect(toggleGame).toHaveBeenCalledWith(1);
+    expect(mockSetValue).toHaveBeenCalledWith("gameIds", [1]);
   });
 
   it("handles target members selection correctly", async () => {

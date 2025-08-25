@@ -18,12 +18,22 @@ export interface Promotion {
     createdAt: string;
     updatedAt: string;
   }[];
+  coinValues: {
+    currencyGroup: string;
+    coinValue: number;
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
+  }[];
+  isGiftCode: boolean;
+  minTurnoverMultiplier: number;
   createdAt: string;
   updatedAt: string;
   __v: number;
   status?: string;
   announcementTitle?: string;
   announcement?: string;
+  claimExpirationDate: string;
 }
 
 export type CreatePromotionResponse = {
@@ -42,6 +52,8 @@ export type CreatePromotionResponse = {
     currencyGroup: string;
     betLevel: number;
   }[];
+  isGiftCode: boolean;
+  minTurnoverMultiplier: number;
 };
 
 export type PromotionPayload = {
@@ -57,4 +69,6 @@ export type PromotionPayload = {
   gameConfigType: number;
   gameIds: number[];
   betLevels: { currencyGroup: string; betLevel: number }[];
+  isGiftCode: boolean;
+  minTurnoverMultiplier: number;
 };

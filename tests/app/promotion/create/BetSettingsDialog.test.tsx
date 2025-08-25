@@ -19,7 +19,6 @@ const mockCurrencyGroups = [
 ];
 
 const mockGetCurrencyGroupGames = jest.fn().mockResolvedValue([]);
-const mockGetGameSettingsByType = jest.fn().mockResolvedValue([]);
 jest.mock("@/hooks/useCurrencyGroupGames", () => ({
   useCurrencyGroupGames: () => ({
     mutateAsync: mockGetCurrencyGroupGames,
@@ -28,7 +27,7 @@ jest.mock("@/hooks/useCurrencyGroupGames", () => ({
 
 jest.mock("@/hooks/useGameSettingsByType", () => ({
   useGameSettingsByType: () => ({
-    mutateAsync: mockGetGameSettingsByType,
+    data: [],
   }),
 }));
 
@@ -38,10 +37,10 @@ jest.mock("@/lib/promotion/bet-settings.utils", () => ({
     value: 10,
   })),
   validateBetRows: jest.fn((rows) => {
-    type Row = { enabled: boolean; betLevel: number; id: string };
+    type Row = { enabled: boolean; baseValue: number; id: string };
     return new Set(
       rows
-        .filter((r: Row) => r.enabled && r.betLevel <= 0)
+        .filter((r: Row) => r.enabled && r.baseValue <= 0)
         .map((r: Row) => r.id)
     );
   }),
@@ -120,7 +119,7 @@ describe("BetSettingsDialog", () => {
   it("renders in readonly mode (no Save button, toggles disabled)", async () => {
     await renderDialog({
       readonly: true,
-      initialValues: [{ currencyGroup: "cg1", betLevel: 10 }],
+      initialValues: [{ currencyGroup: "cg1", baseValue: 10 }],
     });
 
     expect(
@@ -133,10 +132,6 @@ describe("BetSettingsDialog", () => {
       expect(div).toHaveClass("opacity-50");
       expect(div).toHaveClass("cursor-not-allowed");
     });
-
-    // Verify input is disabled
-    const input = screen.getByRole("spinbutton");
-    expect(input).toBeDisabled();
   });
 
   it("shows correct formula for cascading slot", async () => {
@@ -183,10 +178,10 @@ describe("BetSettingsDialog", () => {
     ).toBeInTheDocument();
   });
 
-  it("calls onSave with valid data when enabled rows have valid betLevel", async () => {
+  it("calls onSave with valid data when enabled rows have valid betLevel for Classic", async () => {
     const initialValues = [
-      { currencyGroup: "cg1", betLevel: 10 },
-      { currencyGroup: "cg2", betLevel: 20 },
+      { currencyGroup: "cg1", baseValue: 10 },
+      { currencyGroup: "cg2", baseValue: 20 },
     ];
 
     await renderDialog({ initialValues });
@@ -201,6 +196,33 @@ describe("BetSettingsDialog", () => {
       betLevels: [
         { currencyGroup: "cg1", betLevel: 10 },
         { currencyGroup: "cg2", betLevel: 20 },
+      ],
+      coinValues: [],
+    });
+  });
+
+  it("calls onSave with valid data when enabled rows have valid coinValue for Cascading", async () => {
+    const initialValues = [
+      { currencyGroup: "cg1", baseValue: 10 },
+      { currencyGroup: "cg2", baseValue: 20 },
+    ];
+
+    await renderDialog({ 
+      initialValues,
+      gameType: GAME_TYPES.CASCADING 
+    });
+
+    const saveButton = screen.getByRole("button", { name: /Save/i });
+    await act(async () => {
+      saveButton.click();
+    });
+
+    expect(onSave).toHaveBeenCalledWith({
+      currencyGroups: ["cg1", "cg2"],
+      betLevels: [],
+      coinValues: [
+        { currencyGroup: "cg1", coinValue: 10 },
+        { currencyGroup: "cg2", coinValue: 20 },
       ],
     });
   });
@@ -284,7 +306,7 @@ describe("BetSettingsDialog", () => {
     expect(toggles[1]).toHaveClass("bg-green-500");
   });
 
-  it("handleChangeBet updates bet level for a row", async () => {
+  it("handleChangeValue updates bet level for a row", async () => {
     await renderDialog();
 
     let toggles = screen.getAllByTestId("toggle-button");

@@ -2,16 +2,18 @@ import { GAME_TYPES } from "@/constants/gameTypes";
 import type { PromotionFormValues } from "./PromotionForm";
 import type { Game } from "@/types/game";
 import type { CurrencyGroup } from "@/types/currency-group";
-import { getTotalBet } from "@/lib/promotion/bet-settings.utils";
 import { useState } from "react";
 import { PlayerListModal } from "./PlayerListModal";
 import { toGMTString } from "@/lib/date-time.utils";
+import { Info, Settings, Gift, Users, Link2 } from "lucide-react";
+
 interface PromotionViewFormProps {
   data: PromotionFormValues;
   operatorName?: string;
   gameList?: Game[];
   currencyGroupsInfo?: CurrencyGroup[];
   readonly?: boolean;
+  announcementTitle?: string;
 }
 
 export default function PromotionViewForm({
@@ -20,6 +22,7 @@ export default function PromotionViewForm({
   gameList,
   currencyGroupsInfo,
   readonly,
+  announcementTitle,
 }: PromotionViewFormProps) {
   const {
     name,
@@ -31,166 +34,282 @@ export default function PromotionViewForm({
     operatorId,
     offeredSiteNames,
     gameIds,
+    currencyGroups,
     allPlayers,
-    betLevels,
+    isGiftCode,
+    minTurnoverMultiplier,
+    claimExpirationDate,
   } = data;
   const [showPlayerList, setShowPlayerList] = useState(false);
   return (
-    <div className="space-y-4 p-0 text-sm text-gray-800">
-      {/* Section 1: General Info */}
-      <section>
-        <h2 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-3">
-          📋 General Information
-        </h2>
-        <div className="space-y-3 text-sm text-gray-800">
-          <ReadOnlyField label="Promotion Name" value={name} />
-          <ReadOnlyField label="Promotion Code" value={code} />
-          <ReadOnlyField
+    <div className="space-y-6 p-0 md:p-2">
+      {/* Basic Information */}
+      <section className="bg-white rounded-xl shadow p-6 mb-2">
+        <div className="flex items-center gap-2 mb-4 font-semibold text-gray-800 text-base">
+          <Info className="w-5 h-5 text-gray-500" /> Basic Information
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+          <InfoRow label="Promotion Name" value={name} />
+          <InfoRow label="Promotion Code" value={code} />
+          <InfoRow
             label="Game Type"
             value={
               gameConfigType === GAME_TYPES.CLASSIC
                 ? "Classic Slot"
                 : "Cascading Slot"
             }
-            require={false}
           />
-          <ReadOnlyField
-            label="No. of Free Spins"
-            value={String(bonusItemCount)}
+          <InfoRow label="No. of Free Spins" value={String(bonusItemCount)} />
+          <InfoRow
+            label="Start Date"
+            value={
+              <>
+                <span className="font-semibold">
+                  {toGMTString(startDate.toISOString(), 7)} (GMT+7)
+                </span>
+              </>
+            }
           />
-          <ReadOnlyField
-            label="Start Date (GMT+7)"
-            value={toGMTString(startDate.toISOString(), 7)}
+          <InfoRow
+            label="End Date"
+            value={
+              <>
+                <span className="font-semibold">
+                  {toGMTString(endDate.toISOString(), 7)} (GMT+7)
+                </span>
+              </>
+            }
           />
-          <ReadOnlyField
-            label="End Date (GMT+7)"
-            value={toGMTString(endDate.toISOString(), 7)}
-          />
-          <ReadOnlyField
-            label="Operator Name"
-            value={operatorName || operatorId}
+          <InfoRow
+            label="Operator"
+            value={
+              <span className="font-semibold">
+                {operatorName || operatorId}
+              </span>
+            }
           />
         </div>
       </section>
-      {/* Section 2: Bet Settings */}
-      <section>
-        <h2 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-3">
-          🎰 Currency Group Settings <span className="text-red-500">*</span>
-        </h2>
-        <table className="w-full border border-gray-300 rounded-md text-sm shadow-sm">
-          <thead>
-            <tr className="bg-gray-100 text-left">
-              <th className=" text-center border px-4 py-2">Currency Group</th>
-              <th className=" text-center border px-4 py-2">
-                {gameConfigType === GAME_TYPES.CLASSIC
-                  ? "Bet Level"
-                  : "Coin Value"}
-              </th>
-              <th className=" text-center border px-4 py-2">Total Bet</th>
-            </tr>
-          </thead>
-          <tbody>
-            {betLevels?.map((row, idx) => {
-              const groupName =
-                currencyGroupsInfo?.find((cg) => cg.Id === row.currencyGroup)
-                  ?.Name ?? row.currencyGroup;
 
-              return (
-                <tr key={idx}>
-                  <td className=" text-center border px-4 py-2">{groupName}</td>
-                  <td className=" text-center border px-4 py-2">
-                    {row.betLevel}
-                  </td>
-                  <td className=" text-center border px-4 py-2">
-                    {getTotalBet(row.betLevel, gameConfigType)}
-                  </td>
-                </tr>
-              );
-            }) || (
-              <tr>
-                <td colSpan={2} className="text-center py-4 text-gray-500">
-                  No bet settings configured.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </section>
-      <ReadOnlyField
-        label="Site Offering"
-        value={offeredSiteNames?.join("; ") || "All Sites"}
-        require={false}
-      />
+      {/* Currency Group Settings */}
+      <section className="bg-white rounded-xl shadow p-6 mb-2">
+        <div className="flex items-center gap-2 mb-4 font-semibold text-gray-800 text-base">
+          <Settings className="w-5 h-5 text-gray-500" /> Currency Group Settings
+        </div>
+        <div className="grid grid-cols-1 gap-x-8 gap-y-2">
+          <InfoRow
+            label=""
+            value={
+              currencyGroups && currencyGroups.length > 0 ? (
+                <div className="mt-2">
+                  <table className="w-full text-sm border-collapse border border-gray-200">
+                    <thead>
+                      <tr className="bg-gray-50 text-gray-700 border-b">
+                        <th className="px-3 py-2 text-left border-r border-gray-200">
+                          Currency Group
+                        </th>
+                        <th className="px-3 py-2 text-center border-r border-gray-200">
+                          {gameConfigType === GAME_TYPES.CLASSIC
+                            ? "Bet Level"
+                            : "Coin Value"}
+                        </th>
+                        <th className="px-3 py-2 text-center">Total Bet</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currencyGroups.map((currencyGroupId) => {
+                        const currencyGroup = currencyGroupsInfo?.find(
+                          (cg) => cg.Id === currencyGroupId
+                        );
+                        const betLevel =
+                          data.betLevels?.find(
+                            (bl) => bl.currencyGroup === currencyGroupId
+                          )?.betLevel || 0;
+                        const coinValue =
+                          data.coinValues?.find(
+                            (cv) => cv.currencyGroup === currencyGroupId
+                          )?.coinValue || 0;
 
-      {/* Section 4: Game List */}
-      <section>
-        <h2 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-3">
-          🎮 Selected Games <span className="text-red-500">*</span>
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pl-10">
-          {gameList
-            ?.filter((g) => gameIds.includes(g.GameId))
-            .map((g) => (
-              <div key={g.GameId} className="before:content-['•_'] before:mr-1">
-                {g.DisplayName}
-              </div>
-            )) || <div className="text-gray-500">No games selected</div>}
+                        const baseValue =
+                          gameConfigType === GAME_TYPES.CLASSIC
+                            ? betLevel
+                            : coinValue;
+
+                        const totalBet =
+                          gameConfigType === GAME_TYPES.CASCADING
+                            ? 1 * baseValue * 20
+                            : baseValue * 25;
+
+                        return (
+                          <tr
+                            key={currencyGroupId}
+                            className="border-b border-gray-100"
+                          >
+                            <td className="px-3 py-2 border-r border-gray-200">
+                              {currencyGroup?.Name || currencyGroupId}
+                            </td>
+                            <td className="px-3 py-2 text-center border-r border-gray-200">
+                              {baseValue}
+                            </td>
+                            <td className="px-3 py-2 text-center">
+                              {totalBet.toFixed(2)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                "-"
+              )
+            }
+          />
         </div>
       </section>
 
-      {/* Section 5: Target Members */}
-      <section>
-        <h2 className="text-lg font-bold text-gray-800 mb-4 border-l-4 border-blue-500 pl-3">
-          👥 Members
-        </h2>
-        <p className="text-sm before:content-['•_'] before:mr-1 pl-10">
-          {allPlayers ? (
-            "All Players"
-          ) : (
-            <>
-              Players from File
-              {readonly && (
-                <button
-                  className="btn-player-list ml-3"
-                  onClick={() => setShowPlayerList(true)}
-                >
-                  Player List
-                </button>
-              )}
-            </>
-          )}
-        </p>
+      {/* Configuration & Game Specifics */}
+      <section className="bg-white rounded-xl shadow p-6 mb-2">
+        <div className="flex items-center gap-2 mb-4 font-semibold text-gray-800 text-base">
+          <Settings className="w-5 h-5 text-gray-500" /> Configuration & Game
+          Specifics
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+          <InfoRow
+            label="Site Offering"
+            value={offeredSiteNames?.join("; ") || "All Sites"}
+          />
+          <InfoRow
+            label="Target Game"
+            value={
+              gameList
+                ?.filter((g) => gameIds.includes(g.GameId))
+                .map((g) => g.DisplayName)
+                .join(", ") || "-"
+            }
+          />
+          <InfoRow
+            label="Announcement"
+            value={<LinkedBadge title={announcementTitle} />}
+          />
+        </div>
       </section>
-      {readonly && (
-        <PlayerListModal
-          showPlayerList={showPlayerList}
-          setShowPlayerList={setShowPlayerList}
-          offeredPlayerIds={data.offeredPlayerIds}
-        />
-      )}
+
+      {/* Bonus Redemption Details */}
+      <section className="bg-white rounded-xl shadow p-6 mb-2">
+        <div className="flex items-center gap-2 mb-4 font-semibold text-gray-800 text-base">
+          <Gift className="w-5 h-5 text-gray-500" /> Bonus Redemption Details
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+          <InfoRow
+            label="Minimum Turnover Requirement"
+            value={minTurnoverMultiplier ? `${minTurnoverMultiplier}x` : "-"}
+          />
+          <InfoRow
+            label="Claim Expiration Date"
+            value={
+              claimExpirationDate ? (
+                (() => {
+                  const dateObj =
+                    typeof claimExpirationDate === "string"
+                      ? new Date(claimExpirationDate)
+                      : claimExpirationDate;
+                  return isNaN(dateObj.getTime()) ? (
+                    <span className="text-gray-400">-</span>
+                  ) : (
+                    <span className="font-semibold">
+                      {toGMTString(dateObj.toISOString(), 7)} (GMT+7)
+                    </span>
+                  );
+                })()
+              ) : (
+                <span className="text-gray-400">-</span>
+              )
+            }
+          />
+        </div>
+
+        <div className="mt-4">
+          <div className="text-xs text-gray-500 font-normal">
+            Turnover for this promotion is calculated only on real money wagers
+            made in the selected game.
+          </div>
+        </div>
+      </section>
+
+      {/* Targeting Information */}
+      <section className="bg-white rounded-xl shadow p-6 mb-2">
+        <div className="flex items-center gap-2 mb-4 font-semibold text-gray-800 text-base">
+          <Users className="w-5 h-5 text-gray-500" /> Targeting Information
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+          <InfoRow
+            label="Target Members"
+            value={
+              allPlayers ? (
+                <span className="font-semibold">All Players</span>
+              ) : isGiftCode ? (
+                <span className="font-semibold">Players have Gift Code</span>
+              ) : (
+                <span className="font-semibold">Players from File</span>
+              )
+            }
+          />
+        </div>
+        <div className="text-xs text-gray-400 mt-2">
+          {allPlayers &&
+            "FSB will be given to everybody who opens the promoted game during the promo period."}
+          {isGiftCode && "Only players with a valid code can redeem the FSB."}
+          {!allPlayers &&
+            !isGiftCode &&
+            "Only those players from the upload file will receive FSB during promo campaign."}
+        </div>
+        {!isGiftCode && !allPlayers && (
+          <div className="mt-2">
+            <button
+              className="inline-block bg-blue-100 text-blue-700 rounded px-3 py-1 text-xs font-medium border border-blue-200 hover:bg-blue-200 transition"
+              onClick={() => setShowPlayerList(true)}
+            >
+              Player List
+            </button>
+            <PlayerListModal
+              showPlayerList={showPlayerList}
+              setShowPlayerList={setShowPlayerList}
+              offeredPlayerIds={data.offeredPlayerIds}
+            />
+          </div>
+        )}
+      </section>
     </div>
   );
 }
-function ReadOnlyField({
-  label,
-  value,
-  require = true,
-  alignRight = false,
-}: {
-  label: string;
-  value: string;
-  require?: boolean;
-  alignRight?: boolean;
-}) {
+
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[220px_1fr] gap-2 text-sm items-start pl-10">
-      <label className="flex items-center font-medium text-gray-700">
-        {label}
-        {require && <span className="text-red-500 ml-1">*</span>}
-      </label>
-      <div className={`text-gray-900 ${alignRight ? "text-right" : ""}`}>
-        {value}
-      </div>
+    <div className="flex flex-col mb-2">
+      <span className="text-gray-500 text-xs mb-0.5">{label}</span>
+      <span className="text-gray-900 font-medium text-sm">{value}</span>
     </div>
+  );
+}
+
+function LinkedBadge({ title }: { title?: string }) {
+  if (title) {
+    return (
+      <>
+        <span
+          title={title}
+          className="inline-block bg-green-100 text-green-700 rounded px-2 py-0.5 text-xs font-medium flex items-center gap-1"
+        >
+          <Link2 className="w-3 h-3" /> Linked
+        </span>
+      </>
+    );
+  }
+  return (
+    <span className="inline-block bg-red-100 text-red-600 rounded px-2 py-0.5 text-xs font-medium flex items-center gap-1">
+      <Link2 className="w-3 h-3 line-through" /> Unlinked
+    </span>
   );
 }

@@ -17,6 +17,7 @@ interface PromotionPreviewDialogProps {
   mode?: "create" | "edit";
   initialId?: string;
   readonly?: boolean;
+  announcementTitle?: string;
 }
 
 export default function PromotionPreviewDialog({
@@ -29,11 +30,12 @@ export default function PromotionPreviewDialog({
   onConfirm,
   isSubmitting,
   readonly,
+  announcementTitle,
 }: PromotionPreviewDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="w-[70vw] !max-w-[800px] max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-2xl p-0 flex flex-col"
+        className="w-[70vw] !max-w-[800px] max-h-[90vh] overflow-hidden bg-white rounded-2xl shadow-2xl p-0 flex flex-col gap-0"
         aria-describedby={!readonly ? "promotion-preview-desc" : undefined}
       >
         <div className="sticky px-6 py-4 border-b bg-white rounded-t-2xl">
@@ -43,9 +45,10 @@ export default function PromotionPreviewDialog({
               : "📝 Review & Confirm Promotion"}
           </DialogTitle>
         </div>
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-1">
           <PromotionViewForm
             data={data}
+            announcementTitle={announcementTitle}
             operatorName={operatorName}
             gameList={gameList}
             currencyGroupsInfo={currencyGroupsInfo}

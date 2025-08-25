@@ -34,13 +34,14 @@ type Props = {
   onSave: (data: {
     currencyGroups: string[];
     betLevels: { currencyGroup: string; betLevel: number }[];
+    coinValues: { currencyGroup: string; coinValue: number }[];
   }) => void;
   games?: Game[];
   operators?: Operator[];
   readonly?: boolean;
   initialValues?: {
     currencyGroup: string;
-    betLevel: number;
+    baseValue: number;
   }[];
 };
 
@@ -48,7 +49,7 @@ type RowState = {
   id: string;
   name: string;
   enabled: boolean;
-  betLevel: number;
+  baseValue: number;
   suggestedGameName?: string;
 };
 
@@ -103,7 +104,7 @@ export default function BetSettingsDialog({
       id: cg.Id,
       name: cg.Name,
       enabled: existingBetLevel !== undefined,
-      betLevel,
+      baseValue: betLevel,
       suggestedGameName,
     };
   };
@@ -121,7 +122,7 @@ export default function BetSettingsDialog({
 
       const initialBetMap = new Map<string, number>();
       initialValues?.forEach((b) =>
-        initialBetMap.set(b.currencyGroup, b.betLevel)
+        initialBetMap.set(b.currencyGroup, b.baseValue)
       );
 
       try {
@@ -175,7 +176,7 @@ export default function BetSettingsDialog({
         return {
           ...row,
           enabled,
-          betLevel: enabled ? suggestedBet : 0,
+          baseValue: enabled ? suggestedBet : 0,
           suggestedGameName: enabled ? suggestedGameName : undefined,
         };
       })
@@ -204,7 +205,7 @@ export default function BetSettingsDialog({
       updated[index] = {
         ...updated[index],
         enabled,
-        betLevel: enabled ? suggestedBet : 0,
+        baseValue: enabled ? suggestedBet : 0,
         suggestedGameName: enabled ? suggestedGameName : undefined,
       };
 
@@ -216,7 +217,7 @@ export default function BetSettingsDialog({
     });
   };
 
-  const handleChangeBet = (index: number, value: string) => {
+  const handleChangeValue = (index: number, value: string) => {
     if (readonly) {
       return;
     }
@@ -224,7 +225,7 @@ export default function BetSettingsDialog({
 
     setRows((prev) => {
       const updated = [...prev];
-      updated[index].betLevel = isNaN(num) ? 0 : num;
+      updated[index].baseValue = isNaN(num) ? 0 : num;
       return updated;
     });
   };
@@ -254,10 +255,20 @@ export default function BetSettingsDialog({
 
     onSave({
       currencyGroups: enabledRows.map((r) => r.id),
-      betLevels: enabledRows.map((r) => ({
-        currencyGroup: r.id,
-        betLevel: r.betLevel,
-      })),
+      betLevels:
+        gameType === GAME_TYPES.CLASSIC
+          ? enabledRows.map((r) => ({
+              currencyGroup: r.id,
+              betLevel: r.baseValue,
+            }))
+          : [],
+      coinValues:
+        gameType === GAME_TYPES.CASCADING
+          ? enabledRows.map((r) => ({
+              currencyGroup: r.id,
+              coinValue: r.baseValue,
+            }))
+          : [],
     });
 
     onClose();
@@ -386,9 +397,9 @@ export default function BetSettingsDialog({
                               type="number"
                               min="0"
                               step="0.01"
-                              value={row.betLevel}
+                              value={row.baseValue}
                               onChange={(e) =>
-                                handleChangeBet(index, e.target.value)
+                                handleChangeValue(index, e.target.value)
                               }
                               onKeyDown={(e) => {
                                 if (e.key === "-" || e.key === "e") {
@@ -423,7 +434,7 @@ export default function BetSettingsDialog({
                       </td>
                       <td className="text-center font-semibold">
                         {row.enabled
-                          ? getTotalBet(row.betLevel, gameType).toFixed(2)
+                          ? getTotalBet(row.baseValue, gameType).toFixed(2)
                           : "-"}
                       </td>
                     </tr>

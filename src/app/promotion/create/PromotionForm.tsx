@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch, FieldErrors } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Step1 from "./Step1";
@@ -11,7 +11,7 @@ import { Promotion } from "@/types/promotion";
 import { getStatus } from "@/constants/promotionStatusMap";
 import { getTodayAtMidnightGMT7 } from "@/lib/date-time.utils";
 import { checkPromotionCodeExists } from "@/lib/api/checkPromotionCodeExists";
-import { addDays } from "date-fns";
+import { addDays, addMonths } from "date-fns";
 import PromotionPreviewDialog from "./PromotionPreviewDialog";
 import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 import { useResetOnChange } from "@/hooks/useResetOnChange";
@@ -47,11 +47,15 @@ export const promotionSchema = z
       required_error: "End date is required",
       invalid_type_error: "Invalid end date",
     }),
+    claimExpirationDate: z.coerce.date({
+      required_error: "Claim Expiration Date is required",
+      invalid_type_error: "Invalid claim expiration date",
+    }),
     operatorId: z.coerce.string().min(1, { message: "Operator is required" }),
     offeredSiteNames: z.array(z.string()).optional(),
     gameIds: z
       .array(z.coerce.number())
-      .min(1, "At least one game must be selected for the promotion."),
+      .min(1, "Please select a game for the promotion."),
     currencyGroups: z
       .array(z.string().nonempty("Currency group cannot be empty"))
       .min(1, "At least one currency group is required"),
@@ -69,6 +73,23 @@ export const promotionSchema = z
         })
       )
       .optional(),
+    coinValues: z
+      .array(
+        z.object({
+          currencyGroup: z.string().min(1, "Currency Group is required"),
+          coinValue: z.coerce
+            .number()
+            .min(0.01, "Coin Value must be greater than 0"),
+        })
+      )
+      .optional(),
+    isGiftCode: z.boolean(),
+    minTurnoverMultiplier: z.coerce
+      .number({
+        invalid_type_error: "Minimum turnover multiplier must be a number",
+        required_error: "Minimum turnover multiplier is required",
+      })
+      .min(2, "Minimum turnover multiplier must be at least 2"),
   })
   .refine((data) => data.endDate > data.startDate, {
     message: "Start Date must be earlier than the End Date",
@@ -80,9 +101,10 @@ export const promotionSchema = z
   })
   .refine(
     (data) => {
-      // ✅ Validate tại đây
+      // ✅ Validate file upload for other cases
       return (
         data.allPlayers ||
+        data.isGiftCode ||
         (data.uploadedFile instanceof File && data.uploadedFile.size > 0) ||
         (data.offeredPlayerIds && data.offeredPlayerIds.length > 0)
       );
@@ -91,15 +113,20 @@ export const promotionSchema = z
       path: ["uploadedFile"],
       message: "Please upload a file before saving.",
     }
-  );
+  )
+  .refine((data) => data.claimExpirationDate > data.endDate, {
+    message: "Claim Expiration Date must be greater than the End Date",
+    path: ["claimExpirationDate"],
+  });
 
 export type PromotionFormValues = z.infer<typeof promotionSchema>;
 
 type PromotionFormSubmission = Omit<
   Promotion,
-  "_id" | "createdAt" | "updatedAt" | "__v" | "betLevels"
+  "_id" | "createdAt" | "updatedAt" | "__v" | "betLevels" | "coinValues"
 > & {
   betLevels: { currencyGroup: string; betLevel: number }[];
+  coinValues: { currencyGroup: string; coinValue: number }[];
 };
 
 interface PromotionFormProps {
@@ -116,21 +143,39 @@ const getDefaultValues = (initialValues?: Promotion) => {
       ...initialValues,
       startDate: new Date(initialValues.startDate),
       endDate: new Date(initialValues.endDate),
+      claimExpirationDate: new Date(initialValues.claimExpirationDate),
       gameConfigType: initialValues.gameConfigType as 2 | 3,
       offeredSiteNames: initialValues.offeredSiteNames || [],
       offeredPlayerIds: initialValues.offeredPlayerIds || [],
       betLevels: initialValues.betLevels || [],
-      allPlayers:
-        !initialValues.offeredPlayerIds ||
-        initialValues.offeredPlayerIds.length === 0,
+      coinValues: initialValues.coinValues || [],
+      isGiftCode: initialValues.isGiftCode || false,
+      minTurnoverMultiplier: initialValues.minTurnoverMultiplier || 2,
+      allPlayers: initialValues.isGiftCode
+        ? false
+        : !initialValues.offeredPlayerIds ||
+          initialValues.offeredPlayerIds.length === 0,
     };
   }
+  const date = addDays(getTodayAtMidnightGMT7(), 1);
   return {
     name: "",
     code: "",
     bonusItemCount: 0,
-    startDate: addDays(getTodayAtMidnightGMT7(), 1),
-    endDate: addDays(getTodayAtMidnightGMT7(), 1),
+    startDate: date,
+    endDate: date,
+    claimExpirationDate: (() => {
+      const oneMonthLater = addMonths(date, 1);
+      return new Date(
+        oneMonthLater.getFullYear(),
+        oneMonthLater.getMonth(),
+        oneMonthLater.getDate(),
+        23,
+        59,
+        59,
+        0
+      );
+    })(),
     operatorId: "",
     offeredSiteNames: [],
     gameIds: [],
@@ -140,6 +185,9 @@ const getDefaultValues = (initialValues?: Promotion) => {
     uploadedFile: undefined,
     gameConfigType: GAME_TYPES.CLASSIC,
     betLevels: [],
+    coinValues: [],
+    isGiftCode: false,
+    minTurnoverMultiplier: 2,
   };
 };
 
@@ -167,6 +215,7 @@ const FormFooter = ({
   setPreviewData,
   setShowPreviewDialog,
   isPending,
+  errors,
 }: {
   step: number;
   setStep: (step: number) => void;
@@ -176,6 +225,7 @@ const FormFooter = ({
   setPreviewData: (data: PromotionFormValues) => void;
   setShowPreviewDialog: (show: boolean) => void;
   isPending: boolean;
+  errors: FieldErrors<PromotionFormValues>;
 }) => (
   <div className="form-footer relative px-6 py-4">
     <div className="absolute left-6 top-1/2 -translate-y-1/2">
@@ -200,9 +250,22 @@ const FormFooter = ({
           type="button"
           onClick={async () => {
             const isValid = await trigger();
+            console.log("Form validation result:", isValid);
+            console.log("Form errors:", errors);
+            console.log("Form values:", getValues());
+
             if (isValid) {
               setPreviewData(getValues());
               setShowPreviewDialog(true);
+            } else {
+              console.log("Validation failed. Errors:", errors);
+              // Log specific field errors
+              Object.keys(errors).forEach((fieldName) => {
+                const fieldError = errors[fieldName as keyof typeof errors];
+                if (fieldError) {
+                  console.log(`Field ${fieldName} error:`, fieldError.message);
+                }
+              });
             }
           }}
           disabled={isPending}
@@ -247,7 +310,9 @@ export default function PromotionForm({
     null
   );
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
-  const [initialOfferedPlayerIds, setInitialOfferedPlayerIds] = useState(initialValues?.offeredPlayerIds || []);
+  const [initialOfferedPlayerIds, setInitialOfferedPlayerIds] = useState(
+    initialValues?.offeredPlayerIds || []
+  );
   const currencyGroups = useWatch({ control, name: "currencyGroups" });
   const gameConfigType = useWatch({ control, name: "gameConfigType" });
   const gameIds = useWatch({ control, name: "gameIds" });
@@ -294,6 +359,7 @@ export default function PromotionForm({
       "startDate",
       "endDate",
       "operatorId",
+      "claimExpirationDate",
     ]);
 
     if (!isValid) {
@@ -319,11 +385,7 @@ export default function PromotionForm({
   const { mutate: createPromotion, isPending } = useCreatePromotion();
 
   const handleFormSubmit = (data: PromotionFormValues) => {
-    const payload: PromotionFormSubmission = {
-      betLevels: (data.betLevels || []).map(({ currencyGroup, betLevel }) => ({
-        currencyGroup,
-        betLevel,
-      })),
+    const payload: PromotionFormSubmission & { claimExpirationDate: string } = {
       bonusItemCount: data.bonusItemCount,
       code: data.code.toLowerCase(),
       currencyGroups: data.currencyGroups,
@@ -335,11 +397,28 @@ export default function PromotionForm({
       endDate: new Date(data.endDate).toISOString(),
       offeredSiteNames: data.offeredSiteNames || [],
       offeredPlayerIds: data.offeredPlayerIds || [],
+      isGiftCode: data.isGiftCode,
+      minTurnoverMultiplier: data.minTurnoverMultiplier,
+      claimExpirationDate: new Date(data.claimExpirationDate).toISOString(),
+      betLevels:
+        data.gameConfigType === 2
+          ? (data.betLevels || []).map(({ currencyGroup, betLevel }) => ({
+              currencyGroup,
+              betLevel,
+            }))
+          : [],
+      coinValues:
+        data.gameConfigType === 3
+          ? (data.coinValues || []).map(({ currencyGroup, coinValue }) => ({
+              currencyGroup,
+              coinValue,
+            }))
+          : [],
       ...(initialValues ? { _id: initialValues._id } : {}),
     };
 
     if (onSubmit) {
-      onSubmit(payload as Promotion);
+      onSubmit(payload as unknown as Promotion);
     } else {
       createPromotion(payload, {
         onSuccess: () => {
@@ -353,7 +432,7 @@ export default function PromotionForm({
 
   return (
     <div className="flex flex-col h-full max-h-[80vh] bg-white rounded-xl shadow-md">
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+      <div className="flex-1 overflow-y-auto px-6 py-6">
         <form
           id="promotionForm"
           onSubmit={handleSubmit(handleFormSubmit)}
@@ -413,6 +492,7 @@ export default function PromotionForm({
         setPreviewData={setPreviewData}
         setShowPreviewDialog={setShowPreviewDialog}
         isPending={isPending}
+        errors={errors}
       />
 
       {previewData && (
