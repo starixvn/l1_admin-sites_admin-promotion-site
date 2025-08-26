@@ -48,7 +48,7 @@ export function toGMTString(dateStr: string, gmtOffset: number): string {
     .replace(",", "");
 }
 
-export function convertToGMTDate(isoDateString: string, gmtOffset: number = 7): string {
+export function convertToGMTDate(isoDateString: string, gmtOffset: number): string {
   if (!isoDateString) {
     return "";
   }
@@ -61,4 +61,9 @@ export function convertToGMTDate(isoDateString: string, gmtOffset: number = 7): 
   const gmtDate = new Date(date.getTime() + (gmtOffset * 60 * 60 * 1000));
   
   return gmtDate.toISOString().split('T')[0];
+}
+
+export function convertToUTCForAPI(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0];
 }

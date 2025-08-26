@@ -4,8 +4,22 @@ import "@testing-library/jest-dom";
 import DataGrid from "../../../src/app/promotion/DataGrid";
 import { GAME_TYPES } from "../../../src/constants/gameTypes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import * as DataGridUtils from '../../../src/app/promotion/DataGrid';
 import { toGMTString } from "../../../src/lib/date-time.utils";
+import { getGameTypeName } from "../../../src/app/promotion/DataGrid";
+import { getStatusStyle } from "../../../src/helper/common";
+
+jest.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+  }),
+  usePathname: () => "/test",
+  useSearchParams: () => new URLSearchParams(),
+}));
 
 jest.mock("react-toastify", () => ({
   toast: {
@@ -50,6 +64,10 @@ const mockPromotions = Array.from({ length: 15 }).map((_, i) => ({
   offeredSiteNames: [],
   currencyGroups: [],
   offeredPlayerIds: [],
+  coinValues: [],
+  isGiftCode: false,
+  minTurnoverMultiplier: 1,
+  claimExpirationDate: "2024-03-30T00:00:00Z",
   createdAt: new Date(Date.now() - i * 86400000).toISOString(),
   updatedAt: new Date(Date.now() - i * 86400000).toISOString(),
   status: "ACTIVE",
@@ -118,27 +136,27 @@ describe('toGMTString', () => {
 
 describe('getGameTypeName', () => {
   it('returns Classic Slots for GAME_TYPES.CLASSIC', () => {
-    expect(DataGridUtils.getGameTypeName(GAME_TYPES.CLASSIC)).toBe('Classic Slots');
+    expect(getGameTypeName(GAME_TYPES.CLASSIC)).toBe('Classic Slots');
   });
   it('returns Cascading Slots for GAME_TYPES.CASCADING', () => {
-    expect(DataGridUtils.getGameTypeName(GAME_TYPES.CASCADING)).toBe('Cascading Slots');
+    expect(getGameTypeName(GAME_TYPES.CASCADING)).toBe('Cascading Slots');
   });
   it('returns empty string for unknown type', () => {
-    expect(DataGridUtils.getGameTypeName(999)).toBe('');
+    expect(getGameTypeName(999)).toBe('');
   });
 });
 
 describe('getStatusStyle', () => {
   it('returns green for running', () => {
-    expect(DataGridUtils.getStatusStyle('running')).toBe('bg-gray-100 text-gray-500');
+    expect(getStatusStyle('running')).toBe('bg-gray-100 text-gray-500');
   });
   it('returns yellow for upcoming', () => {
-    expect(DataGridUtils.getStatusStyle('upcoming')).toBe('bg-gray-100 text-gray-500');
+    expect(getStatusStyle('upcoming')).toBe('bg-gray-100 text-gray-500');
   });
   it('returns gray for completed', () => {
-    expect(DataGridUtils.getStatusStyle('completed')).toBe('bg-gray-100 text-gray-500');
+    expect(getStatusStyle('completed')).toBe('bg-gray-100 text-gray-500');
   });
   it('returns default for unknown', () => {
-    expect(DataGridUtils.getStatusStyle('other')).toBe('bg-gray-100 text-gray-500');
+    expect(getStatusStyle('other')).toBe('bg-gray-100 text-gray-500');
   });
 });

@@ -1,4 +1,4 @@
-import { PROMOTION_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
+import { PROMOTION_STATUS_OPTIONS, promotionStatusMap } from "@/constants/promotionStatusMap";
 
 export const getStatusStyle = (status: string) => {
   switch (status) {
@@ -23,42 +23,20 @@ export const formatCurrency = (amount: number) => {
   };
 
 export const getStatusColor = (status: string) => {
-    switch (status) {
-        case "Active":
-        return "text-green-500";
-        case "Turnover Met":
-        return "text-blue-500";
-        case "Bonus Redeemed":
-        return "text-purple-500";
-        case "Ineligible":
-        return "text-red-500";
-        case "Opted Out":
-        return "text-gray-500";
-        default:
-        return "text-gray-500";
-    }
+    return promotionStatusMap[status as keyof typeof promotionStatusMap]?.color || "text-gray-500";
 };
 
 export const getStatusDot = (status: string) => {
-    switch (status) {
-        case "Active":
-        return "bg-green-500";
-        case "Turnover Met":
-        return "bg-blue-500";
-        case "Bonus Redeemed":
-        return "bg-purple-500";
-        case "Ineligible":
-        return "bg-red-500";
-        case "Opted Out":
-        return "bg-gray-500";
-        default:
-        return "bg-gray-500";
-    }
+    return promotionStatusMap[status as keyof typeof promotionStatusMap]?.dotColor || "bg-gray-500";
 };
 
 export const getProgressColor = (current: number, required: number) => {
     const ratio = current / required;
-    if (ratio >= 1) return "bg-green-500";
-    if (ratio >= 0.5) return "bg-purple-500";
+    if (ratio >= 1) {
+        return "bg-green-500";
+    }
+    if (ratio >= 0.5) {
+        return "bg-purple-500";
+    }
     return "bg-red-500";
 };

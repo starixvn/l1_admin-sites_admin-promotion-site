@@ -2,8 +2,9 @@ import { BarChart } from '@mui/x-charts/BarChart';
 
 interface DailyBonusData {
   date: string;
-  issued: number;
-  redeemed: number;
+  bonusIssued: number;
+  bonusRedeemed: number;
+  redemptionRate: number;
   [key: string]: string | number;
 }
 
@@ -24,19 +25,19 @@ export default function DailyBonusChart({ data }: DailyBonusChartProps) {
           }]}
           series={[
             {
-              dataKey: 'issued',
+              dataKey: 'bonusIssued',
               label: 'Bonus Issued',
               color: '#33CCCC',
             },
             {
-              dataKey: 'redeemed',
+              dataKey: 'bonusRedeemed',
               label: 'Bonus Redeemed',
               color: '#00CC66',
             }
           ]}
           yAxis={[{
             min: 0,
-            max: Math.max(...data.map(item => Math.max(item.issued, item.redeemed))) * 1.1,
+            max: Math.max(...data.map(item => Math.max(Number(item.bonusIssued), Number(item.bonusRedeemed)))) * 1.1,
           }]}
           height={256}
           grid={{ vertical: true, horizontal: true }}

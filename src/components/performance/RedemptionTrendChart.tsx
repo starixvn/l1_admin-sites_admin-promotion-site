@@ -1,13 +1,15 @@
 import { LineChart } from '@mui/x-charts/LineChart';
 
-interface RedemptionTrendData {
+interface DailyBonusData {
   date: string;
-  rate: number;
+  bonusIssued: number;
+  bonusRedeemed: number;
+  redemptionRate: number;
   [key: string]: string | number;
 }
 
 interface RedemptionTrendChartProps {
-  data: RedemptionTrendData[];
+  data: DailyBonusData[];
 }
 
 export default function RedemptionTrendChart({ data }: RedemptionTrendChartProps) {
@@ -22,15 +24,15 @@ export default function RedemptionTrendChart({ data }: RedemptionTrendChartProps
             scaleType: 'point',
           }]}
           series={[{
-            dataKey: 'rate',
+            dataKey: 'redemptionRate',
             label: 'Redemption Rate (%)',
             color: '#8b5cf6',
             curve: 'linear',
             showMark: true,
           }]}
           yAxis={[{
-            min: Math.floor(Math.min(...data.map(item => item.rate)) / 10) * 10,
-            max: Math.ceil(Math.max(...data.map(item => item.rate)) / 10) * 10,
+            min: Math.floor(Math.min(...data.map(item => item.redemptionRate)) / 10) * 10,
+            max: Math.ceil(Math.max(...data.map(item => item.redemptionRate)) / 10) * 10,
           }]}
           height={256}
           grid={{ vertical: true, horizontal: true }}

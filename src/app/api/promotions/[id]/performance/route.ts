@@ -1,4 +1,6 @@
+import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
+import configs from "../../../../../../configs";
 
 export async function GET(
   request: NextRequest,
@@ -6,34 +8,22 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
 
-    // In a real application, you would fetch this data from your database
-    // For now, we'll return mock data
-    const mockPerformanceData = {
-      bonusIssued: 24030,
-      bonusRedeemed: 15940,
-      redemptionRate: 66.3,
-      totalTurnover: 103410,
-      uniquePlayers: 705,
-      avgBonusPerPlayer: 34.09,
-      avgTurnoverPerPlayer: 146.72,
-      redemptionTrend: [
-        { date: "Jan 15", rate: 64 },
-        { date: "Jan 18", rate: 50 },
-        { date: "Jan 21", rate: 67.5 },
-        { date: "Jan 24", rate: 60 },
-        { date: "Jan 27", rate: 66.5 }
-      ],
-      dailyBonus: [
-        { date: "Jan 21", issued: 1250, redeemed: 800 },
-        { date: "Jan 22", issued: 1100, redeemed: 700 },
-        { date: "Jan 23", issued: 1300, redeemed: 900 },
-        { date: "Jan 24", issued: 1150, redeemed: 750 },
-        { date: "Jan 25", issued: 1200, redeemed: 750 }
-      ]
-    };
+    // Construct the API URL with date range parameters (UTC dates)
+    let apiUrl = `${configs.apiPromotionUrl}/promotions/performance?promotionId=${id}`;
+    if (startDate) {
+      apiUrl += `&startDate=${startDate}`; // startDate is already in UTC format
+    }
+    if (endDate) {
+      apiUrl += `&endDate=${endDate}`; // endDate is already in UTC format
+    }
+    
+    const response = await axios.get(apiUrl);
 
-    return NextResponse.json(mockPerformanceData);
+    return NextResponse.json(response.data);
   } catch (error) {
     console.error("Error fetching performance data:", error);
     return NextResponse.json(
