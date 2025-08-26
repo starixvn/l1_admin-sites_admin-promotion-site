@@ -10,6 +10,6 @@
   "clientSecret": "adminapi@20luminet&",
   "siteId": "admin-api",
     "scope": "admin-api",
-    "apiPromotionUrl": "http://l1-sc1-game-promotion-api-klprod-service:5000",
+    "apiPromotionUrl": "http://l1-game-promotion-api-klprod-service:5000",
     "apiConfigurationUrl": "https://client.sabagaming.com/game/static/free-spins-promotion-template"
   }
