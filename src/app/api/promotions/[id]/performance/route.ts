@@ -8,17 +8,12 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const { searchParams } = new URL(request.url);
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
+    const { searchParams } = new URL(request.url);  
+    const isBaseCurrency = searchParams.get('isBaseCurrency');
 
-    // Construct the API URL with date range parameters (UTC dates)
     let apiUrl = `${configs.apiPromotionUrl}/promotions/performance?promotionId=${id}`;
-    if (startDate) {
-      apiUrl += `&startDate=${startDate}`; // startDate is already in UTC format
-    }
-    if (endDate) {
-      apiUrl += `&endDate=${endDate}`; // endDate is already in UTC format
+    if (isBaseCurrency) {
+      apiUrl += `&isBaseCurrency=${isBaseCurrency}`;
     }
     
     const response = await axios.get(apiUrl);

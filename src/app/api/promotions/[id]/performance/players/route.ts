@@ -13,6 +13,7 @@ export async function GET(
     const endDate = searchParams.get('endDate');
     const status = searchParams.get('status');
     const player = searchParams.get('player');
+    const isBaseCurrency = searchParams.get('isBaseCurrency');
     const pageIndex = searchParams.get('pageIndex') || '1';
     const pageSize = searchParams.get('pageSize') || '10';
 
@@ -25,11 +26,13 @@ export async function GET(
       apiUrl += `&endDate=${endDate}`;
     }
     if (status && status !== 'All Status') {
-      console.log('status', status);
       apiUrl += `&status=${status}`;
     }
     if (player && player.length > 0 && player.trim() !== '') {
       apiUrl += `&player=${encodeURIComponent(player)}`;
+    }
+    if (isBaseCurrency) {
+      apiUrl += `&isBaseCurrency=${isBaseCurrency}`;
     }
     apiUrl += `&pageIndex=${pageIndex}&pageSize=${pageSize}`;
 

@@ -1,6 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { Promotion } from "@/types/promotion";
-import { getStatus } from "@/constants/promotionStatusMap";
+import { getPromotionStatus } from "@/constants/promotionStatusMap";
 import { getStatusStyle } from "@/helper/common";
 
 interface PerformanceHeaderProps {
@@ -16,7 +16,7 @@ export default function PerformanceHeader({
   title,
   backTitle,
 }: PerformanceHeaderProps) {
-  const status = getStatus(promotion);
+  const status = getPromotionStatus(promotion);
   return (
     <div className="w-full px-6 py-4 flex-shrink-0">
       <div className="flex items-center justify-between mb-4">
@@ -28,6 +28,10 @@ export default function PerformanceHeader({
             <span className="text-sm text-gray-600">
               Promotion Code:{" "}
               <span className="font-mono font-semibold">{promotion.code}</span>
+            </span>
+             <span className="text-sm text-gray-600">
+              Operator:{" "}
+              <span className="font-mono font-semibold">{promotion.operatorId}</span>
             </span>
             <span
               className={`px-3 py-1.5 rounded-full text-sm font-medium ${getStatusStyle(

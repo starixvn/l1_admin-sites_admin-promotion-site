@@ -1,13 +1,15 @@
-import { PROMOTION_STATUS_OPTIONS, promotionStatusMap } from "@/constants/promotionStatusMap";
+import { PROMOTION_REPORT_STATUS, promotionStatusMap } from "@/constants/promotionStatusMap";
 
 export const getStatusStyle = (status: string) => {
   switch (status) {
-    case PROMOTION_STATUS_OPTIONS.Running:
+    case PROMOTION_REPORT_STATUS.Running:
       return "bg-green-100 text-green-800";
-    case PROMOTION_STATUS_OPTIONS.Upcoming:
+    case PROMOTION_REPORT_STATUS.Upcoming:
       return "bg-yellow-100 text-yellow-800";
-    case PROMOTION_STATUS_OPTIONS.Completed:
+    case PROMOTION_REPORT_STATUS.Completed:
       return "bg-gray-100 text-gray-600";
+    case PROMOTION_REPORT_STATUS.Claiming:
+      return "bg-blue-100 text-blue-800";
     default:
       return "bg-gray-100 text-gray-500";
   }
@@ -18,7 +20,7 @@ export const formatCurrency = (amount: number) => {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      maximumFractionDigits: 2
     }).format(amount);
   };
 

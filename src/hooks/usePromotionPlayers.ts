@@ -1,0 +1,24 @@
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+
+export const useQueryPromotionPlayers = (promotionId: string, pageIndex = 1, pageSize = 10, filters?: any) => {
+  const queryParams = new URLSearchParams({
+    pageIndex: pageIndex.toString(),
+    pageSize: pageSize.toString(),
+  });
+
+  // Add filters to query params if they exist
+  if (filters) {
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        queryParams.append(key, value.toString());
+      }
+    });
+  }
+
+  return useQuery({
+    queryKey: ["promotionPlayers", promotionId, pageIndex, pageSize, filters],
+    queryFn: () => fetch(`/api/promotions/${promotionId}/performance/players?${queryParams}`).then(res => res.json()),
+    placeholderData: keepPreviousData,
+  });
+};
+
