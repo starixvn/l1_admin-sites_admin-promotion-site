@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
-  FilterFn,
   SortingFn,
   flexRender,
   getCoreRowModel,
@@ -17,7 +16,6 @@ import {
 } from "@tanstack/react-table";
 import {
   RankingInfo,
-  rankItem,
   compareItems,
 } from "@tanstack/match-sorter-utils";
 import {
@@ -30,18 +28,7 @@ import {
 import { formatCurrency, getProgressColor, getStatusColor, getStatusDot } from "@/helper/common";
 import { toGMTString } from "@/lib/date-time.utils";
 import { GMT_OFFSET, PAGE_SIZE_OPTIONS } from "@/constants/constants";
-
-interface Player {
-  id: string;
-  username: string;
-  status: string;
-  dateJoined: string;
-  bonusReceived: number;
-  turnoverContributed: number;
-  progress: { current: number; required: number };
-  bonusRedeemed: number;
-  lastActivity: string;
-}
+import { Player } from "@/types/performance-report";
 
 interface PlayersTableProps {
   data: Player[];
@@ -60,19 +47,7 @@ interface PlayersTableProps {
   isLoading?: boolean;
 }
 
-const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
-  // Rank the item
-  const itemRank = rankItem(row.getValue(columnId), value);
-
-  // Store the ranking info
-  addMeta(itemRank);
-
-  // Return if the item should be filtered in/out
-  return itemRank.passed;
-};
-
 const fuzzySort: SortingFn<any> = (rowA, rowB, columnId) => {
-  const dir = 0;
 
   // Only sort by rank if the column has ranking data
   const aRank = rowA.columnFiltersMeta[columnId] as RankingInfo;
@@ -105,8 +80,6 @@ export default function PlayersTable({
         cell: ({ row }) => (
           <div className="font-medium">{row.getValue("id")}</div>
         ),
-        sortingFn: "basic",
-        filterFn: fuzzyFilter,
       },
       {
         accessorKey: "username",
@@ -114,8 +87,6 @@ export default function PlayersTable({
         cell: ({ row }) => (
           <div className="font-medium">{row.getValue("username")}</div>
         ),
-        sortingFn: "basic",
-        filterFn: fuzzyFilter,
       },
       {
         accessorKey: "status",
@@ -131,8 +102,6 @@ export default function PlayersTable({
             </div>
           );
         },
-        sortingFn: "basic",
-        filterFn: fuzzyFilter,
       },
       {
         accessorKey: "siteName",
@@ -140,8 +109,6 @@ export default function PlayersTable({
         cell: ({ row }) => (
           <div className="font-medium">{row.getValue("siteName")}</div>
         ),
-        sortingFn: "basic",
-        filterFn: fuzzyFilter,
       },
       {
         accessorKey: "currency",
@@ -149,8 +116,6 @@ export default function PlayersTable({
         cell: ({ row }) => (
           <div className="font-medium">{row.getValue("currency")}</div>
         ),
-        sortingFn: "basic",
-        filterFn: fuzzyFilter,
       },
       {
         accessorKey: "dateJoined",
@@ -176,10 +141,11 @@ export default function PlayersTable({
         ),
       },
       {
-        accessorKey: "progress",
+        id: "progress",
         header: "Progress",
+        accessorFn: (row) => row.progress.current,
         cell: ({ row }) => {
-          const progress = row.getValue("progress") as {
+          const progress = row.original.progress as {
             current: number;
             required: number;
           };
@@ -228,9 +194,6 @@ export default function PlayersTable({
   const table = useReactTable({
     data: data || [],
     columns,
-    filterFns: {
-      fuzzy: fuzzyFilter,
-    },
     sortingFns: {
       fuzzy: fuzzySort,
     },

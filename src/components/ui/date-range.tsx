@@ -4,14 +4,12 @@ import { useState, useEffect } from "react";
 import DatePicker from "./date-picker";
 import {
   getTodayAtMidnightGMT7,
-  mergeDateAndTime,
 } from "@/lib/date-time.utils";
 
 interface DateRangeProps {
   startDate: string;
   endDate: string;
   onDateChange: (startDate: string, endDate: string) => void;
-  className?: string;
   disabled?: boolean;
   minDate?: string;
   maxDate?: string;
@@ -21,17 +19,16 @@ export default function DateRange({
   startDate,
   endDate,
   onDateChange,
-  className = "",
   disabled = false,
   minDate,
   maxDate,
 }: DateRangeProps) {
   const [startOpen, setStartOpen] = useState(false);
   const [endOpen, setEndOpen] = useState(false);
-  
   // Convert string dates to Date objects
   const startDateObj = startDate ? new Date(startDate) : getTodayAtMidnightGMT7();
   const endDateObj = endDate ? new Date(endDate) : getTodayAtMidnightGMT7();
+
   const minDateObj = minDate ? new Date(minDate) : undefined;
   const maxDateObj = maxDate ? new Date(maxDate) : undefined;
 
@@ -39,89 +36,72 @@ export default function DateRange({
   const startDateMax = endDateObj ? endDateObj : maxDateObj;
   const endDateMin = startDateObj ? startDateObj : minDateObj;
 
-  // Time states
-  const [startHour, setStartHour] = useState("00");
-  const [startMinute, setStartMinute] = useState("00");
-  const [endHour, setEndHour] = useState("23");
-  const [endMinute, setEndMinute] = useState("59");
+  const [tempStartDate, setTempStartDate] = useState<Date>(startDateObj);
+  const [tempEndDate, setTempEndDate] = useState<Date>(endDateObj);
 
-  // Temporary states for editing
-  const [tempStartDate, setTempStartDate] = useState<Date | undefined>(startDateObj);
-  const [tempEndDate, setTempEndDate] = useState<Date | undefined>(endDateObj);
-  const [tempStartHour, setTempStartHour] = useState(startHour);
-  const [tempStartMinute, setTempStartMinute] = useState(startMinute);
-  const [tempEndHour, setTempEndHour] = useState(endHour);
-  const [tempEndMinute, setTempEndMinute] = useState(endMinute);
-
-  // Initialize time from existing dates
+  // Update temp dates when props change
   useEffect(() => {
     if (startDate) {
-      const date = new Date(startDate);
-      const hour = date.getHours().toString().padStart(2, "0");
-      const minute = date.getMinutes().toString().padStart(2, "0");
-      setStartHour(hour);
-      setStartMinute(minute);
-      setTempStartHour(hour);
-      setTempStartMinute(minute);
+      setTempStartDate(new Date(startDate));
     }
     if (endDate) {
-      const date = new Date(endDate);
-      const hour = date.getHours().toString().padStart(2, "0");
-      const minute = date.getMinutes().toString().padStart(2, "0");
-      setEndHour(hour);
-      setEndMinute(minute);
-      setTempEndHour(hour);
-      setTempEndMinute(minute);
+      setTempEndDate(new Date(endDate));
     }
   }, [startDate, endDate]);
 
   const handleStartConfirm = () => {
     if (tempStartDate) {
-      const newDate = mergeDateAndTime(tempStartDate, tempStartHour, tempStartMinute);
-      onDateChange(newDate.toISOString(), endDate);
-      setStartHour(tempStartHour);
-      setStartMinute(tempStartMinute);
+      onDateChange(tempStartDate.toISOString(), endDate);
     }
     setStartOpen(false);
   };
 
   const handleEndConfirm = () => {
     if (tempEndDate) {
-      const newDate = mergeDateAndTime(tempEndDate, tempEndHour, tempEndMinute);
-      onDateChange(startDate, newDate.toISOString());
-      setEndHour(tempEndHour);
-      setEndMinute(tempEndMinute);
+      onDateChange(startDate, tempEndDate.toISOString());
     }
     setEndOpen(false);
   };
 
   const handleStartCancel = () => {
     setTempStartDate(startDateObj);
-    setTempStartHour(startHour);
-    setTempStartMinute(startMinute);
     setStartOpen(false);
   };
 
   const handleEndCancel = () => {
     setTempEndDate(endDateObj);
-    setTempEndHour(endHour);
-    setTempEndMinute(endMinute);
     setEndOpen(false);
   };
 
+  // Helper function to update date with time
+  const handleStartDateTimeChange = (date: Date | undefined, hour?: string, minute?: string) => {
+    if (date) {
+      const newDate = new Date(date);
+      if (hour !== undefined && minute !== undefined) {
+        newDate.setHours(parseInt(hour), parseInt(minute), 0, 0);
+      }
+      setTempStartDate(newDate);
+    }
+  };
+
+  const handleEndDateTimeChange = (date: Date | undefined, hour?: string, minute?: string) => {
+    if (date) {
+      const newDate = new Date(date);
+      if (hour !== undefined && minute !== undefined) {
+        newDate.setHours(parseInt(hour), parseInt(minute), 0, 0);
+      }
+      setTempEndDate(newDate);
+    }
+  };
+
   return (
-    <div className={`flex gap-2 ${className}`}>
+    <div className={`flex gap-2`}>
       <DatePicker
         label="Start Date"
         date={startDate}
         tempDate={tempStartDate}
-        tempHour={tempStartHour}
-        tempMinute={tempStartMinute}
-        onDateChange={setTempStartDate}
-        onTimeChange={(hour, minute) => {
-          setTempStartHour(hour);
-          setTempStartMinute(minute);
-        }}
+        onDateChange={(date) => handleStartDateTimeChange(date)}
+        onTimeChange={(hour, minute) => handleStartDateTimeChange(tempStartDate, hour, minute)}
         onConfirm={handleStartConfirm}
         onCancel={handleStartCancel}
         isOpen={startOpen}
@@ -129,20 +109,15 @@ export default function DateRange({
         disabled={disabled}
         minDate={minDateObj}
         maxDate={startDateMax}
-        defaultMonth={tempStartDate || startDateObj || new Date()}
+        defaultMonth={tempStartDate}
       />
 
       <DatePicker
         label="End Date"
         date={endDate}
         tempDate={tempEndDate}
-        tempHour={tempEndHour}
-        tempMinute={tempEndMinute}
-        onDateChange={setTempEndDate}
-        onTimeChange={(hour, minute) => {
-          setTempEndHour(hour);
-          setTempEndMinute(minute);
-        }}
+        onDateChange={(date) => handleEndDateTimeChange(date)}
+        onTimeChange={(hour, minute) => handleEndDateTimeChange(tempEndDate, hour, minute)}
         onConfirm={handleEndConfirm}
         onCancel={handleEndCancel}
         isOpen={endOpen}
@@ -150,7 +125,7 @@ export default function DateRange({
         disabled={disabled}
         minDate={endDateMin}
         maxDate={maxDateObj}
-        defaultMonth={tempEndDate || endDateObj || new Date()}
+        defaultMonth={tempEndDate}
       />
     </div>
   );

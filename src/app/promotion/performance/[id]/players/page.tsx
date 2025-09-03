@@ -2,34 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useQueryPromotion } from "@/hooks/useQueryPromotion";
-import { useQueryPromotionPlayers } from "@/hooks/usePromotionPlayers";
+import { useQueryPromotion, useQueryPromotionPlayers } from "@/hooks/useQueryPromotionPerformance";
 import PerformanceHeader from "@/components/performance/PerformanceHeader";
 import PlayersTable from "@/components/performance/PlayersTable";
 import PlayerFilter from "@/components/performance/PlayerFilter";
 import { PaginationState, ColumnFiltersState } from "@tanstack/react-table";
 import { useDebounce } from "@/hooks/useDebounce";
-
-interface Player {
-  id: string;
-  username: string;
-  status: string;
-  dateJoined: string;
-  bonusReceived: number;
-  turnoverContributed: number;
-  progress: { current: number; required: number };
-  bonusRedeemed: number;
-  lastActivity: string;
-}
-
-interface PlayersResponse {
-  items: Player[];
-  metadata: {
-    pageIndex: number;
-    total: number;
-    pageSize: number;
-  };
-}
+import { DEBOUNCE_TIME } from "@/constants/constants";
+import { PlayerPromotionFilters } from "@/types/performance-report";
 
 export default function Page() {
   const params = useParams();
@@ -42,84 +22,92 @@ export default function Page() {
   });
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-  // Custom filter states
-  const [searchPlayer, setSearchPlayer] = useState("");
-  const [playerStatus, setPlayerStatus] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [isBaseCurrency, setIsBaseCurrency] = useState(false);
+  // Custom filter states - refactor into single object
+  const [filters, setFilters] = useState<PlayerPromotionFilters>({
+    searchPlayer: "",
+    playerStatus: "",
+    startDate: "",
+    endDate: "",
+    isBaseCurrency: false,
+  });
 
   // Debounce filters to avoid too many API calls
-  const debouncedSearchPlayer = useDebounce(searchPlayer, 300);
+  const debouncedSearchPlayer = useDebounce(filters.searchPlayer, DEBOUNCE_TIME);
 
   // Reset pagination when filters change
   const resetPagination = () => {
-    setPagination(prev => ({
+    setPagination((prev) => ({
       ...prev,
       pageIndex: 0,
     }));
   };
 
-  // Wrapper functions to reset pagination when filters change
-  const handleSearchPlayerChange = (value: string) => {
-    setSearchPlayer(value);
-    resetPagination();
-  };
-
-  const handlePlayerStatusChange = (value: string) => {
-    setPlayerStatus(value);
-    resetPagination();
-  };
-
-  const handleDateChange = (startDate: string, endDate: string) => {
-    setStartDate(startDate);
-    setEndDate(endDate);
+  // Generic filter update handler
+  const handleFilterChange = (key: keyof PlayerPromotionFilters, value: any) => {
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
     resetPagination();
   };
 
   // Handle pagination change
-  const handlePaginationChange = (updater: PaginationState | ((old: PaginationState) => PaginationState)) => {
+  const handlePaginationChange = (
+    updater: PaginationState | ((old: PaginationState) => PaginationState)
+  ) => {
     setPagination(updater);
   };
 
   // Handle column filters change
-  const handleColumnFiltersChange = (updater: ColumnFiltersState | ((old: ColumnFiltersState) => ColumnFiltersState)) => {
+  const handleColumnFiltersChange = (
+    updater:
+      | ColumnFiltersState
+      | ((old: ColumnFiltersState) => ColumnFiltersState)
+  ) => {
     setColumnFilters(updater);
   };
 
-  const { data: promotion, error: promotionError, isPending: promotionIsPending, isError: promotionIsError } = useQueryPromotion(params.id as string);
-  
+  const {
+    data: promotion,
+    error: promotionError,
+    isPending: promotionIsPending,
+    isError: promotionIsError,
+  } = useQueryPromotion(params.id as string);
+
   // Set default date range when promotion data is loaded
   useEffect(() => {
-    if (promotion && !startDate && !endDate) {
-      setStartDate(promotion.startDate);
-      setEndDate(promotion.endDate);
+    if (promotion && !filters.startDate && !filters.endDate) {
+      setFilters((prev) => ({
+        ...prev,
+        startDate: promotion.startDate,
+        endDate: promotion.endDate,
+      }));
     }
-  }, [promotion, startDate, endDate]);
-  
-  const { 
-    data: playersData, 
-    error: playersError, 
-    isPending: playersIsPending, 
-    isError: playersIsError 
+  }, [promotion, filters.startDate, filters.endDate]);
+
+  const {
+    data: playersData,
+    error: playersError,
+    isPending: playersIsPending,
+    isError: playersIsError,
   } = useQueryPromotionPlayers(
     params.id as string,
     pagination.pageIndex + 1, // Convert from 0-based (TanStack) to 1-based (API)
     pagination.pageSize,
     {
       player: debouncedSearchPlayer || undefined,
-      status: playerStatus || undefined,
-      isBaseCurrency: isBaseCurrency || undefined,
-      startDate: startDate || undefined,
-      endDate: endDate || undefined,
+      status: filters.playerStatus || undefined,
+      isBaseCurrency: filters.isBaseCurrency || undefined,
+      startDate: filters.startDate || undefined,
+      endDate: filters.endDate || undefined,
       ...(columnFilters.length > 0 && {
         columnFilters: columnFilters.reduce((acc, filter) => {
           if (filter.value) {
             acc[filter.id] = filter.value;
           }
           return acc;
-        }, {} as Record<string, any>)
-      })
+        }, {} as Record<string, any>),
+      }),
     }
   );
 
@@ -134,41 +122,37 @@ export default function Page() {
   if (promotionIsError) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-lg text-red-500">Error loading promotion: {promotionError?.message}</div>
+        <div className="text-lg text-red-500">
+          Error loading promotion: {promotionError?.message}
+        </div>
       </div>
     );
   }
 
   const players = playersData?.items || [];
   const totalCount = playersData?.metadata?.total || 0;
-  const pageCount = totalCount > 0 ? Math.ceil(totalCount / pagination.pageSize) : 1;
+  const pageCount =
+    totalCount > 0 ? Math.ceil(totalCount / pagination.pageSize) : 1;
 
   return (
     <div className="h-full bg-gray-50 flex flex-col">
       {promotion && (
-        <PerformanceHeader 
+        <PerformanceHeader
           title="Players in Promotion"
           backTitle="Back to Promotion Performance"
-          promotion={promotion} 
-          onBack={() => router.push(`/promotion/performance/${params.id}`)} 
+          promotion={promotion}
+          onBack={() => router.push(`/promotion/performance/${params.id}`)}
         />
       )}
-    
+
       <div className="flex-1 overflow-y-auto px-6 pb-6">
         <div className="space-y-6">
-           <PlayerFilter
-             searchPlayer={searchPlayer}
-             setSearchPlayer={handleSearchPlayerChange}
-             playerStatus={playerStatus}
-             setPlayerStatus={handlePlayerStatusChange}
-             startDate={startDate}
-             endDate={endDate}
-             onDateChange={handleDateChange}
-             isBaseCurrency={isBaseCurrency}
-             setIsBaseCurrency={setIsBaseCurrency}
-             promotionStartDate={promotion?.startDate}
-             promotionEndDate={promotion?.endDate}
-           />
+          <PlayerFilter
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            promotionStartDate={promotion?.startDate}
+            promotionEndDate={promotion?.endDate}
+          />
           <PlayersTable
             data={players}
             pageCount={pageCount}

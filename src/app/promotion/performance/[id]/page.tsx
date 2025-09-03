@@ -16,7 +16,7 @@ import { formatCurrency } from "@/helper/common";
 import {
   useQueryPromotion,
   useQueryPromotionPerformance,
-} from "@/hooks/useQueryPromotion";
+} from "@/hooks/useQueryPromotionPerformance";
 import { toGMTString } from "@/lib/date-time.utils";
 import { GMT_OFFSET } from "@/constants/constants";
 import { useState } from "react";
@@ -39,7 +39,7 @@ export default function Page() {
     isError: performanceIsError,
   } = useQueryPromotionPerformance(params.id as string, isBaseCurrency);
 
-  if (promotionIsPending || performanceIsPending) {
+  if (promotionIsPending) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-lg">Loading...</div>
@@ -70,31 +70,36 @@ export default function Page() {
 
       <div className="w-full px-6 pb-4 flex-shrink-0">
         <div className="bg-white rounded-lg shadow-sm p-3">
-                     <div className="flex items-center gap-6">
-             <div className="flex items-center gap-4">
-               <span className="text-sm text-gray-600">Promotion Period:</span>
-               {promotion && (
-                 <span className="text-base font-medium text-gray-900">
-                   {toGMTString(promotion.startDate, GMT_OFFSET)} -{" "}
-                   {toGMTString(promotion.endDate, GMT_OFFSET)}
-                 </span>
-               )}
-             </div>
-             <div className="flex items-center gap-2 h-[42px] px-4 py-2 border border-gray-300 rounded-lg bg-white">
-               <input
-                 name="baseCurrency"
-                 type="checkbox"
-                 checked={isBaseCurrency}
-                 onChange={(e) => setIsBaseCurrency(e.target.checked)}
-                 className="w-4 h-4 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-               />
-               <span className="text-sm text-gray-700">Base Currency</span>
-             </div>
-           </div>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">Promotion Period:</span>
+              {promotion && (
+                <span className="text-base font-medium text-gray-900">
+                  {toGMTString(promotion.startDate, GMT_OFFSET)} -{" "}
+                  {toGMTString(promotion.endDate, GMT_OFFSET)} (GMT+7)
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 h-[42px] px-4 py-2 border border-gray-300 rounded-lg bg-white">
+              <input
+                name="baseCurrency"
+                type="checkbox"
+                checked={isBaseCurrency}
+                onChange={(e) => setIsBaseCurrency(e.target.checked)}
+                className="w-4 h-4 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              />
+              <span className="text-sm text-gray-700">Base Currency</span>
+            </div>
+          </div>
         </div>
       </div>
-      
+
       <div className="flex-1 overflow-y-auto px-6 pb-6">
+        {performanceIsPending && (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-lg">Loading...</div>
+          </div>
+        )}
         {performanceData && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

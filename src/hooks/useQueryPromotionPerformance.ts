@@ -1,4 +1,21 @@
+import { PlayersResponse, PromotionPerformanceResponse } from "@/types/performance-report";
+import { Promotion } from "@/types/promotion";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
+
+export const useQueryPromotion = (promotionId: string) => {
+  return useQuery<Promotion, Error>({
+    queryKey: ["promotion", promotionId],
+    queryFn: () => fetch(`/api/promotions/${promotionId}`).then(res => res.json()),
+  });
+};
+
+export const useQueryPromotionPerformance = (promotionId: string, isBaseCurrency: boolean) => {
+  return useQuery<PromotionPerformanceResponse, Error>({
+    queryKey: ["promotionPerformance", promotionId, isBaseCurrency],
+    queryFn: () => fetch(`/api/promotions/${promotionId}/performance?isBaseCurrency=${isBaseCurrency}`).then(res => res.json()),
+  });
+};
+
 
 export const useQueryPromotionPlayers = (promotionId: string, pageIndex = 1, pageSize = 10, filters?: any) => {
   const queryParams = new URLSearchParams({
@@ -15,10 +32,9 @@ export const useQueryPromotionPlayers = (promotionId: string, pageIndex = 1, pag
     });
   }
 
-  return useQuery({
+  return useQuery<PlayersResponse, Error>({
     queryKey: ["promotionPlayers", promotionId, pageIndex, pageSize, filters],
     queryFn: () => fetch(`/api/promotions/${promotionId}/performance/players?${queryParams}`).then(res => res.json()),
     placeholderData: keepPreviousData,
   });
 };
-

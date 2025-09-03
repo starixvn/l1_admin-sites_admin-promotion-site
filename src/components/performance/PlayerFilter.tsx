@@ -3,44 +3,28 @@
 import { Search, X } from "lucide-react";
 import DateRange from "@/components/ui/date-range";
 import { PLAYER_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
+import { PlayerPromotionFilters } from "@/types/performance-report";
 
 interface PlayerFilterProps {
-  searchPlayer: string;
-  setSearchPlayer: (value: string) => void;
-  playerStatus: string;
-  setPlayerStatus: (value: string) => void;
-  startDate: string;
-  endDate: string;
-  onDateChange: (startDate: string, endDate: string) => void;
-  isBaseCurrency: boolean;
-  setIsBaseCurrency: (value: boolean) => void;
+  filters: PlayerPromotionFilters;
+  onFilterChange: (key: keyof PlayerPromotionFilters, value: any) => void;
   promotionStartDate?: string;
   promotionEndDate?: string;
 }
 
 export default function PlayerFilter({
-  searchPlayer,
-  setSearchPlayer,
-  playerStatus,
-  setPlayerStatus,
-  startDate,
-  endDate,
-  onDateChange,
-  isBaseCurrency,
-  setIsBaseCurrency,
+  filters,
+  onFilterChange,
   promotionStartDate,
   promotionEndDate,
 }: PlayerFilterProps) {
-  // Check if any filter is active
-  const hasActiveFilters =
-    searchPlayer || playerStatus || startDate || endDate || isBaseCurrency;
-
   // Clear all filters function
   const handleClearFilters = () => {
-    setSearchPlayer("");
-    setPlayerStatus("");
-    onDateChange("", "");
-    setIsBaseCurrency(false);
+    onFilterChange("searchPlayer", "");
+    onFilterChange("playerStatus", "");
+    onFilterChange("startDate", "");
+    onFilterChange("endDate", "");
+    onFilterChange("isBaseCurrency", false);
   };
 
   return (
@@ -48,15 +32,14 @@ export default function PlayerFilter({
       <div className="bg-white rounded-lg shadow-sm p-4">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900">Filters</h3>
-          {hasActiveFilters && (
-            <button
-              onClick={handleClearFilters}
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
-            >
-              <X className="w-4 h-4" />
-              Clear Filters
-            </button>
-          )}
+
+          <button
+            onClick={handleClearFilters}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+          >
+            <X className="w-4 h-4" />
+            Clear Filters
+          </button>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="relative flex items-end">
@@ -65,8 +48,8 @@ export default function PlayerFilter({
               <input
                 type="text"
                 placeholder="Search by Player ID or Username"
-                value={searchPlayer}
-                onChange={(e) => setSearchPlayer(e.target.value)}
+                value={filters.searchPlayer}
+                onChange={(e) => onFilterChange("searchPlayer", e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
@@ -74,8 +57,8 @@ export default function PlayerFilter({
 
           <div className="flex items-end">
             <select
-              value={playerStatus}
-              onChange={(e) => setPlayerStatus(e.target.value)}
+              value={filters.playerStatus}
+              onChange={(e) => onFilterChange("playerStatus", e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {PLAYER_STATUS_OPTIONS.map((option) => (
@@ -87,9 +70,12 @@ export default function PlayerFilter({
           </div>
           <div className="md:col-span-2">
             <DateRange
-              startDate={startDate}
-              endDate={endDate}
-              onDateChange={onDateChange}
+              startDate={filters.startDate}
+              endDate={filters.endDate}
+              onDateChange={(startDate, endDate) => {
+                onFilterChange("startDate", startDate);
+                onFilterChange("endDate", endDate);
+              }}
               minDate={promotionStartDate}
               maxDate={promotionEndDate}
             />
@@ -99,8 +85,10 @@ export default function PlayerFilter({
               <input
                 name="baseCurrency"
                 type="checkbox"
-                checked={isBaseCurrency}
-                onChange={(e) => setIsBaseCurrency(e.target.checked)}
+                checked={filters.isBaseCurrency}
+                onChange={(e) =>
+                  onFilterChange("isBaseCurrency", e.target.checked)
+                }
                 className="w-4 h-4 cursor-pointer text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
               />
               <span className="text-sm text-gray-700">Base Currency</span>

@@ -20,8 +20,6 @@ interface DatePickerProps {
   label: string;
   date: string;
   tempDate: Date | undefined;
-  tempHour: string;
-  tempMinute: string;
   onDateChange: (date: Date | undefined) => void;
   onTimeChange: (hour: string, minute: string) => void;
   onConfirm: () => void;
@@ -38,8 +36,6 @@ export default function DatePicker({
   label,
   date,
   tempDate,
-  tempHour,
-  tempMinute,
   onDateChange,
   onTimeChange,
   onConfirm,
@@ -54,6 +50,10 @@ export default function DatePicker({
   const dateObj = date ? new Date(date) : undefined;
   const hourOptions = generateHourOptions();
   const minuteOptions = generateMinuteOptions();
+
+  // Extract hour and minute from tempDate
+  const tempHour = tempDate ? tempDate.getHours().toString().padStart(2, "0") : "00";
+  const tempMinute = tempDate ? tempDate.getMinutes().toString().padStart(2, "0") : "00";
 
   const disabledDates = [
     ...(minDate ? [{ before: minDate }] : []),
