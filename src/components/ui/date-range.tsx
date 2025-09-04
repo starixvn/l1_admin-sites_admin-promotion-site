@@ -97,7 +97,6 @@ export default function DateRange({
   return (
     <div className={`flex gap-2`}>
       <DatePicker
-        label="Start Date"
         date={startDate}
         tempDate={tempStartDate}
         onDateChange={(date) => handleStartDateTimeChange(date)}
@@ -111,9 +110,10 @@ export default function DateRange({
         maxDate={startDateMax}
         defaultMonth={tempStartDate}
       />
-
+      <div className="flex items-center justify-center min-w-[20px]">
+        <span className="text-black-600 font-medium select-none">{"to"}</span>
+      </div>
       <DatePicker
-        label="End Date"
         date={endDate}
         tempDate={tempEndDate}
         onDateChange={(date) => handleEndDateTimeChange(date)}

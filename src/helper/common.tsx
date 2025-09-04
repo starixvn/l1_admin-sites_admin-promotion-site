@@ -37,8 +37,5 @@ export const getProgressColor = (current: number, required: number) => {
     if (ratio >= 1) {
         return "bg-green-500";
     }
-    if (ratio >= 0.5) {
-        return "bg-purple-500";
-    }
     return "bg-red-500";
 };

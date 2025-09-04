@@ -17,7 +17,6 @@ import {
 } from "@/lib/date-time.utils";
 
 interface DatePickerProps {
-  label: string;
   date: string;
   tempDate: Date | undefined;
   onDateChange: (date: Date | undefined) => void;
@@ -33,7 +32,6 @@ interface DatePickerProps {
 }
 
 export default function DatePicker({
-  label,
   date,
   tempDate,
   onDateChange,
@@ -63,11 +61,6 @@ export default function DatePicker({
   return (
     <div className="flex-1 flex items-end">
       <div className="w-full">
-        <label className="form-label mb-1">
-          {label}
-          <span className="text-red-500">*</span>{" "}
-          <span className="text-gray-400 text-sm ml-1">(GMT+7)</span>
-        </label>
         <Popover open={isOpen} onOpenChange={onOpenChange}>
           <PopoverTrigger asChild className="bg-white">
             <Button
@@ -80,9 +73,7 @@ export default function DatePicker({
               )}
             >
               <span>
-                {dateObj instanceof Date && !isNaN(dateObj.getTime())
-                  ? format(dateObj, "dd-MM-yyyy HH:mm")
-                  : `Select ${label.toLowerCase()}`}
+                {dateObj instanceof Date && format(dateObj, "dd-MM-yyyy HH:mm")}
               </span>
               <CalendarIcon className="h-5 w-5 text-blue-500" />
             </Button>

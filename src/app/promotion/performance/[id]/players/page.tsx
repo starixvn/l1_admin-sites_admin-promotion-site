@@ -28,7 +28,7 @@ export default function Page() {
     playerStatus: "",
     startDate: "",
     endDate: "",
-    isBaseCurrency: false,
+    currencies: [],
   });
 
   // Debounce filters to avoid too many API calls
@@ -73,7 +73,7 @@ export default function Page() {
     isPending: promotionIsPending,
     isError: promotionIsError,
   } = useQueryPromotion(params.id as string);
-
+  
   // Set default date range when promotion data is loaded
   useEffect(() => {
     if (promotion && !filters.startDate && !filters.endDate) {
@@ -97,7 +97,7 @@ export default function Page() {
     {
       player: debouncedSearchPlayer || undefined,
       status: filters.playerStatus || undefined,
-      isBaseCurrency: filters.isBaseCurrency || undefined,
+      currencies: filters.currencies.join(',') || undefined,
       startDate: filters.startDate || undefined,
       endDate: filters.endDate || undefined,
       ...(columnFilters.length > 0 && {

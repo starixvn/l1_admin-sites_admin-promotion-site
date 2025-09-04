@@ -14,18 +14,22 @@ import {
   SortingState,
   PaginationState,
 } from "@tanstack/react-table";
-import {
-  RankingInfo,
-  compareItems,
-} from "@tanstack/match-sorter-utils";
+import { RankingInfo, compareItems } from "@tanstack/match-sorter-utils";
 import {
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
   ChevronDown,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react";
-import { formatCurrency, getProgressColor, getStatusColor, getStatusDot } from "@/helper/common";
+import {
+  getProgressColor,
+  getStatusColor,
+  getStatusDot,
+} from "@/helper/common";
 import { toGMTString } from "@/lib/date-time.utils";
 import { GMT_OFFSET, PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import { Player } from "@/types/performance-report";
@@ -48,7 +52,6 @@ interface PlayersTableProps {
 }
 
 const fuzzySort: SortingFn<any> = (rowA, rowB, columnId) => {
-
   // Only sort by rank if the column has ranking data
   const aRank = rowA.columnFiltersMeta[columnId] as RankingInfo;
   const bRank = rowB.columnFiltersMeta[columnId] as RankingInfo;
@@ -68,15 +71,27 @@ export default function PlayersTable({
   onPaginationChange,
   columnFilters,
   onColumnFiltersChange,
-  isLoading = false,
+  isLoading = false
 }: PlayersTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [isBaseCurrency, setIsBaseCurrency] = useState<boolean>(true);
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: "dateJoined",
+      desc: true,
+    },
+  ]);
 
   const columns = useMemo<ColumnDef<Player>[]>(
-    () => [
-        {
+    () => {
+      const bonusClaimedKey = isBaseCurrency ? "baseBonusClaimed" : "bonusClaimed";
+      const turnoverKey = isBaseCurrency ? "baseTurnover" : "turnover";
+      const bonusWinKey = isBaseCurrency ? "baseBonusWin" : "bonusWin";
+      return [
+      {
         accessorKey: "id",
         header: "Player ID",
+        enableSorting: true,
+        size: 100,
         cell: ({ row }) => (
           <div className="font-medium">{row.getValue("id")}</div>
         ),
@@ -84,6 +99,8 @@ export default function PlayersTable({
       {
         accessorKey: "username",
         header: "Username",
+        enableSorting: true,
+        size: 120,
         cell: ({ row }) => (
           <div className="font-medium">{row.getValue("username")}</div>
         ),
@@ -91,11 +108,15 @@ export default function PlayersTable({
       {
         accessorKey: "status",
         header: "Status",
+        enableSorting: true,
+        size: 130,
         cell: ({ row }) => {
           const status = row.getValue("status") as string;
           return (
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${getStatusDot(status)}`}></div>
+              <div
+                className={`w-2 h-2 rounded-full ${getStatusDot(status)}`}
+              ></div>
               <span className={`text-sm font-medium ${getStatusColor(status)}`}>
                 {status}
               </span>
@@ -105,7 +126,9 @@ export default function PlayersTable({
       },
       {
         accessorKey: "siteName",
-        header: "Site Name",
+        header: "SiteName",
+        enableSorting: true,
+        size: 100,
         cell: ({ row }) => (
           <div className="font-medium">{row.getValue("siteName")}</div>
         ),
@@ -113,6 +136,8 @@ export default function PlayersTable({
       {
         accessorKey: "currency",
         header: "Currency",
+        enableSorting: true,
+        size: 100,
         cell: ({ row }) => (
           <div className="font-medium">{row.getValue("currency")}</div>
         ),
@@ -120,23 +145,31 @@ export default function PlayersTable({
       {
         accessorKey: "dateJoined",
         header: "Date Joined",
-        cell: ({ row }) => <div>{toGMTString(row.getValue("dateJoined"), GMT_OFFSET)}</div>,
+        enableSorting: true,
+        size: 140,
+        cell: ({ row }) => (
+          <div>{toGMTString(row.getValue("dateJoined"), GMT_OFFSET)}</div>
+        ),
       },
       {
-        accessorKey: "bonusReceived",
+        accessorKey: bonusWinKey,
         header: "Bonus Win",
+        enableSorting: true,
+        size: 120,
         cell: ({ row }) => (
           <div className="font-medium">
-            {formatCurrency(row.getValue("bonusReceived"))}
+            {row.getValue(bonusWinKey)}
           </div>
         ),
       },
       {
-        accessorKey: "turnoverContributed",
+        accessorKey: turnoverKey,
         header: "Turnover",
+        enableSorting: true,
+        size: 120,
         cell: ({ row }) => (
           <div className="font-medium">
-            {formatCurrency(row.getValue("turnoverContributed"))}
+            {row.getValue(turnoverKey)}
           </div>
         ),
       },
@@ -144,6 +177,8 @@ export default function PlayersTable({
         id: "progress",
         header: "Progress",
         accessorFn: (row) => row.progress.current,
+        enableSorting: true,
+        size: 140,
         cell: ({ row }) => {
           const progress = row.original.progress as {
             current: number;
@@ -172,23 +207,28 @@ export default function PlayersTable({
         },
       },
       {
-        accessorKey: "bonusClaimed",
+        accessorKey: bonusClaimedKey,
         header: "Bonus Claimed",
+        enableSorting: true,
+        size: 140,
         cell: ({ row }) => (
           <div className="font-medium">
-            {formatCurrency(row.getValue("bonusClaimed"))}
+            {row.getValue(bonusClaimedKey)}
           </div>
         ),
       },
       {
         accessorKey: "lastActivity",
         header: "Last Activity",
+        enableSorting: true,
+        size: 140,
         cell: ({ row }) => (
           <div>{toGMTString(row.getValue("lastActivity"), GMT_OFFSET)}</div>
         ),
       },
-    ],
-    []
+    ];
+    },
+    [isBaseCurrency]
   );
 
   const table = useReactTable({
@@ -228,110 +268,148 @@ export default function PlayersTable({
     <div className="space-y-4">
       {/* Page Size Selector */}
       <div className="bg-white rounded-lg shadow-sm p-4">
-                 <div className="flex items-center justify-between">
-           {totalCount !== undefined && (
-             <div className="text-sm text-gray-600">
-               Showing {pagination.pageIndex * pagination.pageSize + 1} to{" "}
-               {Math.min((pagination.pageIndex + 1) * pagination.pageSize, totalCount)} of{" "}
-               <span className="font-medium text-gray-900">{totalCount.toLocaleString()}</span> results
-             </div>
-           )}
+        <div className="flex items-center justify-between">
+          {totalCount !== undefined && (
+            <div className="text-sm text-gray-600">
+              Showing {pagination.pageIndex * pagination.pageSize + 1} to{" "}
+              {Math.min(
+                (pagination.pageIndex + 1) * pagination.pageSize,
+                totalCount
+              )}{" "}
+              of{" "}
+              <span className="font-medium text-gray-900">
+                {totalCount.toLocaleString()}
+              </span>{" "}
+              results
+            </div>
+          )}
 
-           <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6">
+            <div className="flex items-end">
+            <div className="flex items-center gap-3 h-[42px] px-4 py-2 border border-gray-300 rounded-lg bg-white">
+              <button
+                type="button"
+                onClick={() => setIsBaseCurrency(!isBaseCurrency)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none cursor-pointer ${
+                  isBaseCurrency ? 'bg-blue-500' : 'bg-gray-200'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    isBaseCurrency ? 'translate-x-4' : 'translate-x-0.5'
+                  }`}
+                />
+              </button>
+                <span className="text-sm text-gray-700">Base Currency (USD)</span>
+              </div>
+            </div>
             <nav
               className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
               aria-label="Pagination"
             >
-            <button
-              onClick={() => table.setPageIndex(0)}
-              disabled={!table.getCanPreviousPage()}
-              className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="sr-only">First</span>
-              <ChevronsLeft className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-              className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="sr-only">Previous</span>
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-              className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="sr-only">Next</span>
-              <ChevronRight className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-              disabled={!table.getCanNextPage()}
-              className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <span className="sr-only">Last</span>
-              <ChevronsRight className="h-5 w-5" />
-            </button>
-          </nav>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Show:</span>
-            <div className="relative">
-              <select
-                value={pagination.pageSize}
-                onChange={(e) => {
-                  onPaginationChange({
-                    ...pagination,
-                    pageIndex: 0, // Reset to first page when changing page size
-                    pageSize: Number(e.target.value),
-                  });
-                }}
-                className="appearance-none px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              <button
+                onClick={() => table.setPageIndex(0)}
+                disabled={!table.getCanPreviousPage()}
+                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {PAGE_SIZE_OPTIONS.map((size: number) => (
-                  <option key={size} value={size}>
-                    {size}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+                <span className="sr-only">First</span>
+                <ChevronsLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+                className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="sr-only">Previous</span>
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+                className="relative inline-flex items-center px-2 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="sr-only">Next</span>
+                <ChevronRight className="h-5 w-5" />
+              </button>
+              <button
+                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                disabled={!table.getCanNextPage()}
+                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="sr-only">Last</span>
+                <ChevronsRight className="h-5 w-5" />
+              </button>
+            </nav>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Show:</span>
+              <div className="relative">
+                <select
+                  value={pagination.pageSize}
+                  onChange={(e) => {
+                    onPaginationChange({
+                      ...pagination,
+                      pageIndex: 0, // Reset to first page when changing page size
+                      pageSize: Number(e.target.value),
+                    });
+                  }}
+                  className="appearance-none w-15 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {PAGE_SIZE_OPTIONS.map((size: number) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-1 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" />
+              </div>
+              <span className="text-sm text-gray-600">entries</span>
             </div>
-            <span className="text-sm text-gray-600">entries</span>
           </div>
         </div>
-      </div>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="w-full">
+          <table className="w-full table-fixed">
             <thead className="bg-gray-50 border-b border-gray-200">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className={`px-3 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider`}
+                      style={{ width: header.column.getSize() }}
                     >
                       {header.isPlaceholder ? null : (
                         <div
                           className={`flex items-center gap-2 ${
                             header.column.getCanSort()
-                              ? "cursor-pointer select-none"
+                              ? "cursor-pointer select-none hover:text-blue-600 transition-colors"
                               : ""
                           }`}
                           onClick={header.column.getToggleSortingHandler()}
+                          title={
+                            header.column.getCanSort()
+                              ? "Click to sort"
+                              : undefined
+                          }
                         >
                           {flexRender(
                             header.column.columnDef.header,
                             header.getContext()
                           )}
-                          {{
-                            asc: " 🔼",
-                            desc: " 🔽",
-                          }[header.column.getIsSorted() as string] ?? null}
+                          {header.column.getCanSort() && (
+                            <div className="flex items-center justify-end">
+                              {header.column.getIsSorted() === "asc" ? (
+                                <ArrowUp className="w-4 h-4 text-blue-600" />
+                              ) : header.column.getIsSorted() === "desc" ? (
+                                <ArrowDown className="w-4 h-4 text-blue-600" />
+                              ) : (
+                                <ArrowUpDown className="w-4 h-4 text-gray-400 opacity-60 hover:opacity-100 transition-opacity" />
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                     </th>
@@ -355,7 +433,8 @@ export default function PlayersTable({
                     {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
-                        className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                        className="px-3 py-4 text-sm text-gray-900"
+                        style={{ width: cell.column.getSize() }}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -376,6 +455,38 @@ export default function PlayersTable({
                 </tr>
               )}
             </tbody>
+            {/* Total Row */}
+            {!isLoading && table.getRowModel().rows?.length > 0 && (
+              <tfoot className="bg-gray-50 border-t-1 border-gray-300">
+                <tr>
+                  <td className="px-3 py-3 text-sm font-semibold text-gray-900">
+                    Total
+                  </td>
+                  <td className="px-3 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-3 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-3 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-3 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-3 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-3 py-3 text-sm font-semibold text-gray-900">
+                    {
+                      data.reduce((sum, player) => sum + (isBaseCurrency ? player.baseBonusWin : player.bonusWin), 0)
+                    }
+                  </td>
+                  <td className="px-3 py-3 text-sm font-semibold text-gray-900">
+                    {
+                      data.reduce((sum, player) => sum + (isBaseCurrency ? player.baseTurnover : player.turnover), 0)
+                    }
+                  </td>
+                  <td className="px-3 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-3 py-3 text-sm font-semibold text-gray-900">
+                    {
+                      data.reduce((sum, player) => sum + (isBaseCurrency ? player.baseBonusClaimed : player.bonusClaimed), 0)
+                    }
+                  </td>
+                  <td className="px-3 py-3 text-sm text-gray-500">-</td>
+                </tr>
+              </tfoot>
+            )}
           </table>
         </div>
       </div>

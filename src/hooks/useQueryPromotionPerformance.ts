@@ -9,10 +9,10 @@ export const useQueryPromotion = (promotionId: string) => {
   });
 };
 
-export const useQueryPromotionPerformance = (promotionId: string, isBaseCurrency: boolean) => {
+export const useQueryPromotionPerformance = (promotionId: string) => {
   return useQuery<PromotionPerformanceResponse, Error>({
-    queryKey: ["promotionPerformance", promotionId, isBaseCurrency],
-    queryFn: () => fetch(`/api/promotions/${promotionId}/performance?isBaseCurrency=${isBaseCurrency}`).then(res => res.json()),
+    queryKey: ["promotionPerformance", promotionId],
+    queryFn: () => fetch(`/api/promotions/${promotionId}/performance`).then(res => res.json()),
   });
 };
 

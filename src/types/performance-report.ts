@@ -5,10 +5,13 @@ export interface Player {
   siteName: string;
   currency: string;
   dateJoined: string;
-  bonusReceived: number;
-  turnoverContributed: number;
+  bonusWin: number;
+  baseBonusWin: number;
+  turnover: number;
+  baseTurnover: number;
   progress: { current: number; required: number };
   bonusClaimed: number;
+  baseBonusClaimed: number;
   lastActivity: string;
 }
 
@@ -26,12 +29,12 @@ export interface PlayerPromotionFilters {
   playerStatus: string;
   startDate: string;
   endDate: string;
-  isBaseCurrency: boolean;
+  currencies: string[];
 }
 
 export interface PromotionPerformanceResponse {
-  bonusIssued: number;
-  bonusRedeemed: number;
+  bonusWin: number;
+  bonusClaimed: number;
   redemptionRate: number;
   totalTurnover: number;
   minRequiredTurnover: number;

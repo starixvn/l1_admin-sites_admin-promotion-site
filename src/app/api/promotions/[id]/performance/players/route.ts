@@ -13,7 +13,7 @@ export async function GET(
     const endDate = searchParams.get('endDate');
     const status = searchParams.get('status');
     const player = searchParams.get('player');
-    const isBaseCurrency = searchParams.get('isBaseCurrency');
+    const currencies = searchParams.get('currencies');
     const pageIndex = searchParams.get('pageIndex') || '1';
     const pageSize = searchParams.get('pageSize') || '10';
 
@@ -31,8 +31,8 @@ export async function GET(
     if (player && player.length > 0 && player.trim() !== '') {
       apiUrl += `&player=${encodeURIComponent(player)}`;
     }
-    if (isBaseCurrency) {
-      apiUrl += `&isBaseCurrency=${isBaseCurrency}`;
+    if (currencies && currencies.length > 0) {
+      apiUrl += `&currencies=${currencies}`;
     }
     apiUrl += `&pageIndex=${pageIndex}&pageSize=${pageSize}`;
 
