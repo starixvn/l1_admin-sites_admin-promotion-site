@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import Filter from "./Filter";
 import DataGrid from "./DataGrid";
@@ -9,6 +10,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Promotion } from "@/types/promotion";
 import { Operator } from "@/types/operator";
+import { PROMOTION_FILTERS_KEY } from "@/constants/constants";
 
 interface PromotionFilters {
   status: string;
@@ -18,7 +20,9 @@ interface PromotionFilters {
   pageSize: number;
 }
 
-export default function Page() {
+function PromotionPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [operators, setOperators] = useState<Operator[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +42,17 @@ export default function Page() {
     pageIndex: 1,
     pageSize: 10,
   });
+
+  const handlePerformanceClick = (promotionId: string) => {
+    // Save current filters to localStorage before navigation
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        PROMOTION_FILTERS_KEY,
+        JSON.stringify(currentFilters)
+      );
+    }
+    router.push(`/promotion/performance/${promotionId}`);
+  };
 
   // Memoize the filter handler to prevent unnecessary re-renders
   const handleFilterSubmit = useCallback(
@@ -75,11 +90,36 @@ export default function Page() {
     [operators]
   );
 
-  // Fetch operators only once on mount
+  // Load filters from sessionStorage and fetch operators on mount
   useEffect(() => {
-    const fetchOperators = async () => {
+    const initializeData = async () => {
       try {
         setLoading(true);
+        let initialFilters = currentFilters;
+        // Check URL params first
+        const urlStatus = searchParams.get("status");
+        const urlOperator = searchParams.get("operator");
+        const urlPromotionCode = searchParams.get("promotionCode");
+        const urlPageIndex = searchParams.get("pageIndex");
+        const urlPageSize = searchParams.get("pageSize");
+
+        if (
+          urlStatus ||
+          urlOperator ||
+          urlPromotionCode ||
+          urlPageIndex ||
+          urlPageSize
+        ) {
+          initialFilters = {
+            status: urlStatus || "All",
+            operator: urlOperator ? urlOperator.split(",") : [],
+            promotionCode: urlPromotionCode || "",
+            pageIndex: parseInt(urlPageIndex || "1"),
+            pageSize: parseInt(urlPageSize || "10"),
+          };
+          setCurrentFilters(initialFilters);
+        }
+
         const response = await axios.get("/api/operators");
         const operatorsList = response.data.map((op: Operator) => ({
           Name: op.Name,
@@ -87,14 +127,17 @@ export default function Page() {
         }));
         setOperators(operatorsList);
 
-        // Set initial operator filter only if empty
-        if (currentFilters.operator.length === 0) {
+        // Set initial operator filter only if empty and no stored filters
+        if (initialFilters.operator.length === 0) {
           const newFilters = {
-            ...currentFilters,
+            ...initialFilters,
             operator: operatorsList.map((op: Operator) => op.PartnerId),
           };
           setCurrentFilters(newFilters);
           handleFilterSubmit(newFilters);
+        } else {
+          // If we have stored filters, fetch data with those filters
+          handleFilterSubmit(initialFilters);
         }
       } catch (error) {
         console.error("Failed to fetch operators:", error);
@@ -104,7 +147,7 @@ export default function Page() {
       }
     };
 
-    fetchOperators();
+    initializeData();
   }, []); // Empty dependency array - only run on mount
 
   const handlePageChange = useCallback(
@@ -184,6 +227,7 @@ export default function Page() {
           totalItems={totalItems}
           onPageChange={handlePageChange}
           onPageSizeChange={handlePageSizeChange}
+          onPerformanceClick={handlePerformanceClick}
         />
       </div>
 
@@ -204,5 +248,19 @@ export default function Page() {
 
       <ToastContainer />
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-full">
+          <div className="text-lg">Loading...</div>
+        </div>
+      }
+    >
+      <PromotionPage />
+    </Suspense>
   );
 }

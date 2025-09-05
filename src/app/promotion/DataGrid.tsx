@@ -17,7 +17,6 @@ import { useCurrencyGroups } from "@/hooks/useCurrencyGroups";
 import { toGMTString } from "@/lib/date-time.utils";
 import { useOperators } from "@/hooks/useOperators";
 import { createOperatorMap } from "@/lib/promotion/bet-settings.utils";
-import { useRouter } from "next/navigation";
 import { getStatusStyle } from "@/helper/common";
 
 interface DataGridProps {
@@ -31,6 +30,7 @@ interface DataGridProps {
   totalItems: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
+  onPerformanceClick: (promotionId: string) => void;
 }
 
 export const getGameTypeName = (gameConfigType: number) => {
@@ -88,8 +88,8 @@ export default function DataGrid({
   totalItems,
   onPageChange,
   onPageSizeChange,
+  onPerformanceClick,
 }: DataGridProps) {
-  const router = useRouter();
   const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
   const [viewPromotion, setViewPromotion] = useState<Promotion | null>(null);
   const totalPages = Math.ceil(totalItems / pageSize);
@@ -116,10 +116,6 @@ export default function DataGrid({
   };
 
   const handleEdit = (promotion: Promotion) => setEditPromotion(promotion);
-
-  const handlePerformanceClick = (promotionId: string) => {
-    router.push(`/promotion/performance/${promotionId}`);
-  };
 
   const handleSaveEdit = async (updatedPromotion: Promotion) => {
     try {
@@ -241,7 +237,7 @@ export default function DataGrid({
                       <Eye className="w-4 h-4 text-gray-600 hover:text-black" />
                     </button>
                     <button
-                      onClick={() => handlePerformanceClick(p._id)}
+                      onClick={() => onPerformanceClick(p._id)}
                       aria-label="performance"
                       className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                       title="Performance Details"

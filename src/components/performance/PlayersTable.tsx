@@ -36,6 +36,11 @@ import { Player } from "@/types/performance-report";
 
 interface PlayersTableProps {
   data: Player[];
+  metaDataTotalAmount: {
+    baseTotalWinAmount: number;
+    baseTotalTurnover: number;
+    baseTotalBonusClaimed: number;
+  };
   pageCount: number;
   totalCount?: number;
   pagination: PaginationState;
@@ -65,6 +70,7 @@ const fuzzySort: SortingFn<any> = (rowA, rowB, columnId) => {
 
 export default function PlayersTable({
   data,
+  metaDataTotalAmount,
   pageCount,
   totalCount,
   pagination,
@@ -468,20 +474,14 @@ export default function PlayersTable({
                   <td className="px-3 py-3 text-sm text-gray-500">-</td>
                   <td className="px-3 py-3 text-sm text-gray-500">-</td>
                   <td className="px-3 py-3 text-sm font-semibold text-gray-900">
-                    {
-                      data.reduce((sum, player) => sum + (isBaseCurrency ? player.baseBonusWin : player.bonusWin), 0)
-                    }
+                    {metaDataTotalAmount.baseTotalWinAmount.toFixed(2)}
                   </td>
                   <td className="px-3 py-3 text-sm font-semibold text-gray-900">
-                    {
-                      data.reduce((sum, player) => sum + (isBaseCurrency ? player.baseTurnover : player.turnover), 0)
-                    }
+                    {metaDataTotalAmount.baseTotalTurnover.toFixed(2)}
                   </td>
                   <td className="px-3 py-3 text-sm text-gray-500">-</td>
                   <td className="px-3 py-3 text-sm font-semibold text-gray-900">
-                    {
-                      data.reduce((sum, player) => sum + (isBaseCurrency ? player.baseBonusClaimed : player.bonusClaimed), 0)
-                    }
+                    {metaDataTotalAmount.baseTotalBonusClaimed.toFixed(2)}
                   </td>
                   <td className="px-3 py-3 text-sm text-gray-500">-</td>
                 </tr>

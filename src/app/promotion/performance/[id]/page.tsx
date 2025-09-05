@@ -18,7 +18,7 @@ import {
   useQueryPromotionPerformance,
 } from "@/hooks/useQueryPromotionPerformance";
 import { toGMTString } from "@/lib/date-time.utils";
-import { GMT_OFFSET } from "@/constants/constants";
+import { GMT_OFFSET, PROMOTION_FILTERS_KEY } from "@/constants/constants";
 
 export default function Page() {
   const params = useParams();
@@ -54,6 +54,42 @@ export default function Page() {
       </div>
     );
   }
+  const buildQueryParams = (filters: any) => {
+    const params = new URLSearchParams();
+    
+    if (filters.status !== "All") {
+      params.set("status", filters.status);
+    }
+    if (filters.operator?.length > 0) {
+      params.set("operator", filters.operator.join(","));
+    }
+    if (filters.promotionCode) {
+      params.set("promotionCode", filters.promotionCode);
+    }
+    if (filters.pageIndex !== 1) {
+      params.set("pageIndex", filters.pageIndex.toString());
+    }
+    if (filters.pageSize !== 10) {
+      params.set("pageSize", filters.pageSize.toString());
+    }
+    
+    return params;
+  };
+
+  const handleBack = () => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem(PROMOTION_FILTERS_KEY);
+      if (stored) {
+        const filters = JSON.parse(stored);
+        const params = buildQueryParams(filters);
+        const queryString = params.toString();
+        const url = queryString ? `/promotion?${queryString}` : "/promotion";
+        router.push(url);
+        return;
+      }
+    }
+    router.push("/promotion");
+  };
 
   return (
     <div className="h-full bg-gray-50 flex flex-col">
@@ -62,13 +98,13 @@ export default function Page() {
           title="Performance Details"
           backTitle="Back to All Promotions"
           promotion={promotion}
-          onBack={() => router.push("/promotion")}
+          onBack={() => handleBack()}
         />
       )}
 
       <div className="w-full px-6 pb-4 flex-shrink-0">
         <div className="bg-white rounded-lg shadow-sm p-3">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">Promotion Period:</span>
               {promotion && (
@@ -77,6 +113,15 @@ export default function Page() {
                   {toGMTString(promotion.endDate, GMT_OFFSET)} (GMT+7)
                 </span>
               )}
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-600">
+                Base Currency:
+                <span className="text-base font-medium text-gray-900">
+                  {" "}
+                  USD
+                </span>
+              </span>
             </div>
           </div>
         </div>

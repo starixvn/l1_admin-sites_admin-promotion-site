@@ -6,13 +6,31 @@ import axios from "axios";
 import { ToastContainer } from "react-toastify";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GAME_TYPES } from "@/constants/gameTypes";
-import { useRouter } from "next/navigation";
 
 beforeAll(() => {
   jest.spyOn(console, "error").mockImplementation(() => {});
 });
+
 afterAll(() => {
   (console.error as jest.Mock).mockRestore();
+});
+
+// Mock localStorage
+const mockLocalStorage = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+
+Object.defineProperty(window, 'localStorage', {
+  value: mockLocalStorage,
+  writable: true,
+});
+
+beforeEach(() => {
+  jest.clearAllMocks();
+  mockLocalStorage.getItem.mockReturnValue(null);
 });
 
 jest.mock("@/hooks/useUpdatePromotion", () => ({
@@ -32,6 +50,10 @@ jest.mock('next/navigation', () => ({
     prefetch: jest.fn(),
     refresh: jest.fn(),
     back: jest.fn(),
+  }),
+  useSearchParams: () => ({
+    get: jest.fn(),
+    toString: jest.fn(),
   }),
 }));
 

@@ -17,7 +17,15 @@ export const useQueryPromotionPerformance = (promotionId: string) => {
 };
 
 
-export const useQueryPromotionPlayers = (promotionId: string, pageIndex = 1, pageSize = 10, filters?: any) => {
+export const useQueryPromotionPlayers = (
+  promotionId: string, 
+  pageIndex = 1, 
+  pageSize = 10, 
+  filters?: any,
+  options?: {
+    enabled?: boolean;
+  }
+) => {
   const queryParams = new URLSearchParams({
     pageIndex: pageIndex.toString(),
     pageSize: pageSize.toString(),
@@ -36,5 +44,6 @@ export const useQueryPromotionPlayers = (promotionId: string, pageIndex = 1, pag
     queryKey: ["promotionPlayers", promotionId, pageIndex, pageSize, filters],
     queryFn: () => fetch(`/api/promotions/${promotionId}/performance/players?${queryParams}`).then(res => res.json()),
     placeholderData: keepPreviousData,
+    enabled: options?.enabled ?? true,
   });
 };

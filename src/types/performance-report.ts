@@ -19,7 +19,10 @@ export interface PlayersResponse {
   items: Player[];
   metadata: {
     pageIndex: number;
-    total: number;
+    totalCount: number;
+    baseTotalWinAmount: number;
+    baseTotalTurnover: number;
+    baseTotalBonusClaimed: number;
     pageSize: number;
   };
 }

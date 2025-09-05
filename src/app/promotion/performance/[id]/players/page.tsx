@@ -85,6 +85,13 @@ export default function Page() {
     }
   }, [promotion, filters.startDate, filters.endDate]);
 
+  const shouldFetchPlayers = !!(
+    params.id &&
+    filters.startDate &&
+    filters.endDate &&
+    filters.currencies.length > 0
+  );
+
   const {
     data: playersData,
     error: playersError,
@@ -108,6 +115,9 @@ export default function Page() {
           return acc;
         }, {} as Record<string, any>),
       }),
+    },
+    {
+      enabled: shouldFetchPlayers,
     }
   );
 
@@ -130,9 +140,14 @@ export default function Page() {
   }
 
   const players = playersData?.items || [];
-  const totalCount = playersData?.metadata?.total || 0;
+  const totalCount = playersData?.metadata?.totalCount || 0;
   const pageCount =
     totalCount > 0 ? Math.ceil(totalCount / pagination.pageSize) : 1;
+  const metaDataTotalAmount = {
+    baseTotalWinAmount: playersData?.metadata?.baseTotalWinAmount || 0,
+    baseTotalTurnover: playersData?.metadata?.baseTotalTurnover || 0,
+    baseTotalBonusClaimed: playersData?.metadata?.baseTotalBonusClaimed || 0,
+  }
 
   return (
     <div className="h-full bg-gray-50 flex flex-col">
@@ -155,6 +170,7 @@ export default function Page() {
           />
           <PlayersTable
             data={players}
+            metaDataTotalAmount={metaDataTotalAmount}
             pageCount={pageCount}
             totalCount={totalCount}
             pagination={pagination}
