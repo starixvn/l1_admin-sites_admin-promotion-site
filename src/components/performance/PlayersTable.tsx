@@ -33,6 +33,7 @@ import {
 import { toGMTString } from "@/lib/date-time.utils";
 import { GMT_OFFSET, PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import { Player } from "@/types/performance-report";
+import { roundToTwoDecimals } from "@/lib/promotion/promotion.utils";
 
 interface PlayersTableProps {
   data: Player[];
@@ -98,18 +99,34 @@ export default function PlayersTable({
         header: "Player ID",
         enableSorting: true,
         size: 100,
-        cell: ({ row }) => (
-          <div className="font-medium">{row.getValue("id")}</div>
-        ),
+        cell: ({ row }) => {
+          const playerId = row.getValue("id") as string;
+          return (
+            <div 
+              className="font-medium truncate max-w-[120px]" 
+              title={playerId}
+            >
+              {playerId}
+            </div>
+          );
+        },
       },
       {
         accessorKey: "username",
         header: "Username",
         enableSorting: true,
         size: 120,
-        cell: ({ row }) => (
-          <div className="font-medium">{row.getValue("username")}</div>
-        ),
+        cell: ({ row }) => {
+          const username = row.getValue("username") as string;
+          return (
+            <div 
+              className="font-medium truncate max-w-[120px]" 
+              title={username}
+            >
+              {username}
+            </div>
+          );
+        },
       },
       {
         accessorKey: "status",
@@ -175,7 +192,7 @@ export default function PlayersTable({
         size: 120,
         cell: ({ row }) => (
           <div className="font-medium">
-            {row.getValue(turnoverKey)}
+            {roundToTwoDecimals(row.getValue(turnoverKey))}
           </div>
         ),
       },
@@ -467,6 +484,7 @@ export default function PlayersTable({
                 <tr>
                   <td className="px-3 py-3 text-sm font-semibold text-gray-900">
                     Total
+                    <span className="text-xs text-gray-500 block"> (Base USD)</span>
                   </td>
                   <td className="px-3 py-3 text-sm text-gray-500">-</td>
                   <td className="px-3 py-3 text-sm text-gray-500">-</td>
@@ -474,14 +492,14 @@ export default function PlayersTable({
                   <td className="px-3 py-3 text-sm text-gray-500">-</td>
                   <td className="px-3 py-3 text-sm text-gray-500">-</td>
                   <td className="px-3 py-3 text-sm font-semibold text-gray-900">
-                    {metaDataTotalAmount.baseTotalWinAmount.toFixed(2)}
+                    {roundToTwoDecimals(metaDataTotalAmount.baseTotalWinAmount)}
                   </td>
                   <td className="px-3 py-3 text-sm font-semibold text-gray-900">
-                    {metaDataTotalAmount.baseTotalTurnover.toFixed(2)}
+                    {roundToTwoDecimals(metaDataTotalAmount.baseTotalTurnover)}
                   </td>
                   <td className="px-3 py-3 text-sm text-gray-500">-</td>
                   <td className="px-3 py-3 text-sm font-semibold text-gray-900">
-                    {metaDataTotalAmount.baseTotalBonusClaimed.toFixed(2)}
+                    {roundToTwoDecimals(metaDataTotalAmount.baseTotalBonusClaimed)}
                   </td>
                   <td className="px-3 py-3 text-sm text-gray-500">-</td>
                 </tr>

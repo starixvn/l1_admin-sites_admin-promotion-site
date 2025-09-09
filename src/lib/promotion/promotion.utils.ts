@@ -8,3 +8,7 @@ export function parseSiteInput(value: string): string[] {
     )
   );
 }
+
+export function roundToTwoDecimals(value: number): number {
+  return Math.round(value * 100) / 100;
+}
