@@ -181,7 +181,7 @@ export default function PlayersTable({
         size: 120,
         cell: ({ row }) => (
           <div className="font-medium">
-            {row.getValue(bonusWinKey)}
+            {roundToTwoDecimals(row.getValue(bonusWinKey))}
           </div>
         ),
       },
@@ -236,7 +236,7 @@ export default function PlayersTable({
         size: 140,
         cell: ({ row }) => (
           <div className="font-medium">
-            {row.getValue(bonusClaimedKey)}
+            {roundToTwoDecimals(row.getValue(bonusClaimedKey))}
           </div>
         ),
       },
