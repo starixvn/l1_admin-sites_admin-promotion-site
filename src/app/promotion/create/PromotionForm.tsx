@@ -66,20 +66,17 @@ export const promotionSchema = z
     betLevels: z
       .array(
         z.object({
-          currencyGroup: z.string().min(1, "Currency Group is required"),
-          betLevel: z.coerce
-            .number()
-            .min(0.01, "Bet Level must be greater than 0"),
+          currencyGroup: z.string(),
+          betLevel: z.coerce.number(),
         })
       )
       .optional(),
+
     coinValues: z
       .array(
         z.object({
-          currencyGroup: z.string().min(1, "Currency Group is required"),
-          coinValue: z.coerce
-            .number()
-            .min(0.01, "Coin Value must be greater than 0"),
+          currencyGroup: z.string(),
+          coinValue: z.coerce.number(),
         })
       )
       .optional(),
