@@ -132,7 +132,7 @@ export default function PlayersTable({
         accessorKey: "status",
         header: "Status",
         enableSorting: true,
-        size: 130,
+        size: 140,
         cell: ({ row }) => {
           const status = row.getValue("status") as string;
           return (
@@ -173,6 +173,19 @@ export default function PlayersTable({
         cell: ({ row }) => (
           <div>{toGMTString(row.getValue("dateJoined"), GMT_OFFSET)}</div>
         ),
+      },
+      {
+        accessorKey: "remainingBonusItems",
+        header: "Remaining FS",
+        enableSorting: true,
+        size: 120,
+        cell: ({ row }) => {
+          const remainingBonusItems = row.getValue("remainingBonusItems");
+          const initialBonusItem = row.original.initialBonusItem;
+          return (
+            <div className="font-medium">{`${remainingBonusItems}/${initialBonusItem}`}</div>
+          );
+        },
       },
       {
         accessorKey: bonusWinKey,
@@ -486,6 +499,7 @@ export default function PlayersTable({
                     Total
                     <span className="text-xs text-gray-500 block"> (Base USD)</span>
                   </td>
+                  <td className="px-3 py-3 text-sm text-gray-500">-</td>
                   <td className="px-3 py-3 text-sm text-gray-500">-</td>
                   <td className="px-3 py-3 text-sm text-gray-500">-</td>
                   <td className="px-3 py-3 text-sm text-gray-500">-</td>

@@ -13,6 +13,8 @@ export interface Player {
   bonusClaimed: number;
   baseBonusClaimed: number;
   lastActivity: string;
+  remainingBonusItems: number;
+  initialBonusItem: number;
 }
 
 export interface PlayersResponse {
