@@ -10,7 +10,7 @@ import {
   User,
   BarChart3,
 } from "lucide-react";
-import KPICard from "@/components/performance/KPICard";
+import KPICard from "@/app/promotion/performance/[id]/KPICard";
 import PerformanceHeader from "@/components/performance/PerformanceHeader";
 import { formatCurrency } from "@/helper/common";
 import {
@@ -39,8 +39,9 @@ export default function Page() {
 
   if (promotionIsPending) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-lg">Loading...</div>
+      <div className="flex items-center justify-center gap-2">
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+        Loading promotion data...
       </div>
     );
   }
@@ -129,8 +130,9 @@ export default function Page() {
 
       <div className="flex-1 overflow-y-auto px-6 pb-6">
         {performanceIsPending && (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-lg">Loading...</div>
+          <div className="flex items-center justify-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+            Loading performance data...
           </div>
         )}
         {performanceData && (

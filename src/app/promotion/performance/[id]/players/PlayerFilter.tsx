@@ -4,7 +4,7 @@ import { Search, X } from "lucide-react";
 import DateRange from "@/components/ui/date-range";
 import { PLAYER_STATUS_OPTIONS } from "@/constants/promotionStatusMap";
 import { PlayerPromotionFilters } from "@/types/performance-report";
-import CurrencyMultiSelect from "@/components/performance/CurrencyMultiselect";
+import CurrencyMultiSelect from "./CurrencyMultiselect";
 import useCurrencies from "@/hooks/useCurrencies";
 import { Currency } from "@/types/currencies";
 import { MultiSelectOption } from "@/types/global";

@@ -37,7 +37,6 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
-    console.log(response.data);
     return NextResponse.json(response.data, { status: 200 });
   } catch (error: any) {
     Sentry.captureException(error, {

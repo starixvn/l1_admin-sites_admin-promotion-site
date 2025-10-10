@@ -29,21 +29,36 @@ export function getTodayAtMidnightGMT7(): Date {
   return now;
 }
 
-export function toGMTString(dateStr: string, gmtOffset: number): string {
+function formatGMTDate(dateStr: string, gmtOffset: number, includeSeconds = false): string {
   if (!dateStr) {
     return "";
   }
   const date = new Date(dateStr);
   const gmtDate = new Date(date.getTime() + gmtOffset * 60 * 60 * 1000);
+  
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: "UTC",
+    hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  };
+  
+  if (includeSeconds) {
+    options.second = "2-digit";
+  }
+  
   return gmtDate
-    .toLocaleString("en-GB", {
-      timeZone: "UTC",
-      hour12: false,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
+    .toLocaleString("en-GB", options)
     .replace(",", "");
+}
+
+export function toGMTString(dateStr: string, gmtOffset: number): string {
+  return formatGMTDate(dateStr, gmtOffset, false);
+}
+
+export function toGMTStringWithSeconds(dateStr: string, gmtOffset: number): string {
+  return formatGMTDate(dateStr, gmtOffset, true);
 }

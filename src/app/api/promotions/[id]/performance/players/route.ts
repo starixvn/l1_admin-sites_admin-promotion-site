@@ -29,7 +29,7 @@ export async function GET(
       apiUrl += `&status=${status}`;
     }
     if (player && player.length > 0 && player.trim() !== '') {
-      apiUrl += `&player=${encodeURIComponent(player)}`;
+      apiUrl += `&player=${encodeURIComponent(player.trim())}`;
     }
     if (currencies && currencies.length > 0) {
       apiUrl += `&currencies=${currencies}`;

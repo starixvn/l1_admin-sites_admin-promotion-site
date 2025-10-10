@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useQueryPromotion, useQueryPromotionPlayers } from "@/hooks/useQueryPromotionPerformance";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import {
+  useQueryPromotion,
+  useQueryPromotionPlayers,
+} from "@/hooks/useQueryPromotionPerformance";
 import PerformanceHeader from "@/components/performance/PerformanceHeader";
-import PlayersTable from "@/components/performance/PlayersTable";
-import PlayerFilter from "@/components/performance/PlayerFilter";
-import { PaginationState, ColumnFiltersState } from "@tanstack/react-table";
+import PlayersTable from "@/app/promotion/performance/[id]/players/PlayersTable";
+import PlayerFilter from "@/app/promotion/performance/[id]/players/PlayerFilter";
+import { PaginationState } from "@tanstack/react-table";
 import { useDebounce } from "@/hooks/useDebounce";
 import { DEBOUNCE_TIME } from "@/constants/constants";
 import { PlayerPromotionFilters } from "@/types/performance-report";
@@ -14,13 +17,13 @@ import { PlayerPromotionFilters } from "@/types/performance-report";
 export default function Page() {
   const params = useParams();
   const router = useRouter();
-
+  const searchParams = useSearchParams();
+  const isBaseCurrencyDefault = searchParams.get("isBaseCurrency") ? searchParams.get("isBaseCurrency") === 'true' : true;
   // Table state
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0, // TanStack Table uses 0-based indexing internally
     pageSize: 10,
   });
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   // Custom filter states - refactor into single object
   const [filters, setFilters] = useState<PlayerPromotionFilters>({
@@ -31,8 +34,13 @@ export default function Page() {
     currencies: [],
   });
 
+  const [isBaseCurrency, setIsBaseCurrency] = useState<boolean>(isBaseCurrencyDefault);
+
   // Debounce filters to avoid too many API calls
-  const debouncedSearchPlayer = useDebounce(filters.searchPlayer, DEBOUNCE_TIME);
+  const debouncedSearchPlayer = useDebounce(
+    filters.searchPlayer,
+    DEBOUNCE_TIME
+  );
 
   // Reset pagination when filters change
   const resetPagination = () => {
@@ -43,7 +51,10 @@ export default function Page() {
   };
 
   // Generic filter update handler
-  const handleFilterChange = (key: keyof PlayerPromotionFilters, value: any) => {
+  const handleFilterChange = (
+    key: keyof PlayerPromotionFilters,
+    value: any
+  ) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
@@ -58,13 +69,56 @@ export default function Page() {
     setPagination(updater);
   };
 
-  // Handle column filters change
-  const handleColumnFiltersChange = (
-    updater:
-      | ColumnFiltersState
-      | ((old: ColumnFiltersState) => ColumnFiltersState)
-  ) => {
-    setColumnFilters(updater);
+  // Handle export players
+  const handleExportPlayers = async () => {
+    try {
+      const queryParams = new URLSearchParams();
+      
+      if (filters.startDate) {
+        queryParams.append('startDate', filters.startDate);
+      }
+      if (filters.endDate) {
+        queryParams.append('endDate', filters.endDate);
+      }
+      if (filters.playerStatus && filters.playerStatus !== 'All Status') {
+        queryParams.append('status', filters.playerStatus);
+      }
+      if (filters.searchPlayer && filters.searchPlayer.trim() !== '') {
+        queryParams.append('player', filters.searchPlayer.trim());
+      }
+      if (filters.currencies.length > 0) {
+        queryParams.append('currencies', filters.currencies.join(','));
+      }
+      queryParams.append('isBaseCurrency', isBaseCurrency.toString());
+
+      const response = await fetch(
+        `/api/promotions/${params.id}/performance/players/export?${queryParams.toString()}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to export players");
+      }
+
+      // Get the filename from the response headers
+      const contentDisposition = response.headers.get("content-disposition");
+      const filename = contentDisposition
+        ? contentDisposition.split("filename=")[1]?.replace(/"/g, "")
+        : `promotional-players-${params.id}-${new Date().toISOString().split("T")[0]}.csv`;
+
+      // Create blob and download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error exporting players:", error);
+      alert("Failed to export players. Please try again.");
+    }
   };
 
   const {
@@ -73,7 +127,7 @@ export default function Page() {
     isPending: promotionIsPending,
     isError: promotionIsError,
   } = useQueryPromotion(params.id as string);
-  
+
   // Set default date range when promotion data is loaded
   useEffect(() => {
     if (promotion && !filters.startDate && !filters.endDate) {
@@ -104,17 +158,9 @@ export default function Page() {
     {
       player: debouncedSearchPlayer || undefined,
       status: filters.playerStatus || undefined,
-      currencies: filters.currencies.join(',') || undefined,
+      currencies: filters.currencies.join(",") || undefined,
       startDate: filters.startDate || undefined,
       endDate: filters.endDate || undefined,
-      ...(columnFilters.length > 0 && {
-        columnFilters: columnFilters.reduce((acc, filter) => {
-          if (filter.value) {
-            acc[filter.id] = filter.value;
-          }
-          return acc;
-        }, {} as Record<string, any>),
-      }),
     },
     {
       enabled: shouldFetchPlayers,
@@ -123,8 +169,9 @@ export default function Page() {
 
   if (promotionIsPending) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-lg">Loading promotion data...</div>
+      <div className="flex items-center justify-center gap-2">
+        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+        Loading promotion data...
       </div>
     );
   }
@@ -147,7 +194,7 @@ export default function Page() {
     baseTotalWinAmount: playersData?.metadata?.baseTotalWinAmount || 0,
     baseTotalTurnover: playersData?.metadata?.baseTotalTurnover || 0,
     baseTotalBonusClaimed: playersData?.metadata?.baseTotalBonusClaimed || 0,
-  }
+  };
 
   return (
     <div className="h-full bg-gray-50 flex flex-col">
@@ -169,15 +216,16 @@ export default function Page() {
             promotionEndDate={promotion?.endDate}
           />
           <PlayersTable
+            isBaseCurrency={isBaseCurrency}
+            onCurrencyToggle={setIsBaseCurrency}
             data={players}
             metaDataTotalAmount={metaDataTotalAmount}
             pageCount={pageCount}
             totalCount={totalCount}
             pagination={pagination}
             onPaginationChange={handlePaginationChange}
-            columnFilters={columnFilters}
-            onColumnFiltersChange={handleColumnFiltersChange}
             isLoading={playersIsPending}
+            onExportPlayers={handleExportPlayers}
           />
           {playersIsError && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">

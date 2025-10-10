@@ -1,0 +1,374 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import {
+  ColumnDef,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+  SortingState,
+  PaginationState,
+} from "@tanstack/react-table";
+import {
+  getProgressColor,
+  getStatusColor,
+  getStatusDot,
+} from "@/helper/common";
+import { Download, ExternalLink, Users } from "lucide-react";
+import { toGMTString } from "@/lib/date-time.utils";
+import { GMT_OFFSET } from "@/constants/constants";
+import { Player } from "@/types/performance-report";
+import { roundToTwoDecimals } from "@/lib/promotion/promotion.utils";
+import { fuzzySort } from "@/lib/table-utils";
+import PaginationControls from "@/components/common/PaginationControls";
+import TableHeader from "@/components/common/TableHeader";
+import TableBody from "@/components/common/TableBody";
+
+interface PlayersTableProps {
+  data: Player[];
+  isBaseCurrency: boolean;
+  onCurrencyToggle: (isBaseCurrency: boolean) => void;
+  metaDataTotalAmount: {
+    baseTotalWinAmount: number;
+    baseTotalTurnover: number;
+    baseTotalBonusClaimed: number;
+  };
+  pageCount: number;
+  totalCount?: number;
+  pagination: PaginationState;
+  onPaginationChange: (
+    updater: PaginationState | ((old: PaginationState) => PaginationState)
+  ) => void;
+  isLoading?: boolean;
+  onExportPlayers?: () => void;
+}
+
+// Basic player information columns
+const getBasicPlayerColumns = (router: any, isBaseCurrency: boolean): ColumnDef<Player>[] => [
+  {
+    accessorKey: "id",
+    header: "Player ID",
+    enableSorting: true,
+    size: 100,
+    cell: ({ row }) => {
+      const playerId = row.getValue("id") as string;
+      return (
+        <div
+          className="font-medium truncate max-w-[120px]"
+          title={playerId}
+        >
+          {playerId}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "username",
+    header: "Username",
+    enableSorting: true,
+    size: 120,
+    cell: ({ row }) => {
+      const username = row.getValue("username") as string;
+      const playerId = row.getValue("id") as string;
+      const handleViewTickets = () => {
+        const currentPath = window.location.pathname;
+        const pathParts = currentPath.split('/');
+        const promotionId = pathParts[pathParts.indexOf('performance') + 1];
+        
+        router.push(`/promotion/performance/${promotionId}/players/tickets?playerId=${playerId}&username=${username}&isBaseCurrency=${isBaseCurrency.toString()}`);
+      };
+      
+      return (
+        <button
+          type="button"
+          onClick={handleViewTickets}
+          className="font-medium truncate max-w-[120px] text-left hover:text-blue-600 hover:underline transition-colors cursor-pointer flex items-center gap-1 group"
+          title={`View tickets for ${username}`}
+        >
+          <span className="truncate">{username}</span>
+          <ExternalLink className="w-3 h-3 flex-shrink-0 text-gray-400 group-hover:text-blue-600" />
+        </button>
+      );
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    enableSorting: true,
+    size: 140,
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string;
+      return (
+        <div className="flex items-center gap-2">
+          <div
+            className={`w-2 h-2 rounded-full ${getStatusDot(status)}`}
+          ></div>
+          <span className={`text-sm font-medium ${getStatusColor(status)}`}>
+            {status}
+          </span>
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "siteName",
+    header: "SiteName",
+    enableSorting: true,
+    size: 100,
+    cell: ({ row }) => (
+      <div className="font-medium">{row.getValue("siteName")}</div>
+    ),
+  },
+  {
+    accessorKey: "currency",
+    header: "Currency",
+    enableSorting: true,
+    size: 100,
+    cell: ({ row }) => (
+      <div className="font-medium">{row.getValue("currency")}</div>
+    ),
+  },
+  {
+    accessorKey: "dateJoined",
+    header: "Date Joined",
+    enableSorting: true,
+    size: 140,
+    cell: ({ row }) => (
+      <div>{toGMTString(row.getValue("dateJoined"), GMT_OFFSET)}</div>
+    ),
+  },
+];
+
+// Bonus-related columns
+const getBonusColumns = (isBaseCurrency: boolean): ColumnDef<Player>[] => {
+  const bonusClaimedKey = isBaseCurrency
+    ? "baseBonusClaimed"
+    : "bonusClaimed";
+  const turnoverKey = isBaseCurrency ? "baseTurnover" : "turnover";
+  const bonusWinKey = isBaseCurrency ? "baseBonusWin" : "bonusWin";
+
+  return [
+    {
+      accessorKey: "remainingBonusItems",
+      header: "Remaining FS",
+      enableSorting: true,
+      size: 100,
+      cell: ({ row }) => {
+        const remainingBonusItems = row.getValue("remainingBonusItems");
+        const initialBonusItem = row.original.initialBonusItem;
+        return (
+          <div className="font-medium">{`${remainingBonusItems}/${initialBonusItem}`}</div>
+        );
+      },
+    },
+    {
+      accessorKey: bonusWinKey,
+      header: "Bonus Win",
+      enableSorting: true,
+      size: 100,
+      cell: ({ row }) => (
+        <div className="font-medium">
+          {roundToTwoDecimals(row.getValue(bonusWinKey))}
+        </div>
+      ),
+    },
+    {
+      accessorKey: turnoverKey,
+      header: "Turnover",
+      enableSorting: true,
+      size: 120,
+      cell: ({ row }) => (
+        <div className="font-medium">
+          {roundToTwoDecimals(row.getValue(turnoverKey))}
+        </div>
+      ),
+    },
+    {
+      id: "progress",
+      header: "Progress",
+      accessorFn: (row) => row.progress.current,
+      enableSorting: true,
+      size: 140,
+      cell: ({ row }) => {
+        const progress = row.original.progress as {
+          current: number;
+          required: number;
+        };
+        const percentage =
+          Math.min((progress.current / progress.required) * 100, 100) || 0;
+        return (
+          <div className="flex items-center gap-2">
+            <div className="w-20 bg-gray-200 rounded-full h-2 flex-shrink-0">
+              <div
+                className={`h-2 rounded-full transition-all duration-200 ${getProgressColor(
+                  progress.current,
+                  progress.required
+                )}`}
+                style={{
+                  width: `${percentage}%`,
+                }}
+              ></div>
+            </div>
+            <span className="text-xs text-gray-600 whitespace-nowrap">
+              {progress.current}x/{progress.required}x
+            </span>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: bonusClaimedKey,
+      header: "Bonus Claimed",
+      enableSorting: true,
+      size: 100,
+      cell: ({ row }) => (
+        <div className="font-medium">
+          {roundToTwoDecimals(row.getValue(bonusClaimedKey))}
+        </div>
+      ),
+    },
+  ];
+};
+
+// Last activity column
+const getLastActivityColumn = (): ColumnDef<Player> => ({
+  accessorKey: "lastActivity",
+  header: "Last Activity",
+  enableSorting: true,
+  size: 120,
+  cell: ({ row }) => (
+    <div>{toGMTString(row.getValue("lastActivity"), GMT_OFFSET)}</div>
+  ),
+});
+
+
+export default function PlayersTable({
+  data,
+  isBaseCurrency,
+  onCurrencyToggle,
+  metaDataTotalAmount,
+  pageCount,
+  totalCount,
+  pagination,
+  onPaginationChange,
+  isLoading = false,
+  onExportPlayers,
+}: PlayersTableProps) {
+  const router = useRouter();
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: "dateJoined",
+      desc: true,
+    },
+  ]);
+
+  const columns = useMemo<ColumnDef<Player>[]>(() => {
+    return [
+      ...getBasicPlayerColumns(router, isBaseCurrency),
+      ...getBonusColumns(isBaseCurrency),
+      getLastActivityColumn(),
+    ];
+  }, [isBaseCurrency, router]);
+
+  const table = useReactTable({
+    data: data || [],
+    columns,
+    sortingFns: {
+      fuzzy: fuzzySort,
+    },
+    state: {
+      sorting,
+      pagination,
+    },
+    onSortingChange: setSorting,
+    onPaginationChange,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    manualPagination: true,
+    pageCount: pageCount,
+  });
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center gap-2">
+          <Users className="w-5 h-5 text-gray-600" />
+          <h2 className="text-lg font-semibold text-gray-900">
+            Promotional Players
+          </h2>
+        </div>
+         <button 
+           onClick={onExportPlayers}
+           className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+         >
+           <Download className="w-4 h-4" />
+           Export
+         </button>
+      </div>
+
+      <PaginationControls
+        pagination={pagination}
+        totalCount={totalCount || 0}
+        onPaginationChange={onPaginationChange}
+        table={table}
+        showCurrencyToggle={true}
+        isBaseCurrency={isBaseCurrency}
+        onCurrencyToggle={onCurrencyToggle}
+      />
+
+      {/* Table */}
+      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="w-full">
+          <table className="w-full table-fixed">
+            <TableHeader table={table} />
+            <TableBody
+              table={table}
+              columns={columns}
+              isLoading={isLoading}
+              loadingText="Loading players..."
+              emptyText="No results."
+            />
+            {/* Total Row */}
+            {!isLoading && table.getRowModel().rows?.length > 0 && (
+              <tfoot className="bg-gray-50 border-t-1 border-gray-300">
+                <tr>
+                  <td className="px-3 py-3 text-sm font-semibold text-gray-900">
+                    Total
+                    <span className="text-xs text-gray-500 block">
+                      {" "}
+                      (Base USD)
+                    </span>
+                  </td>
+                  <td className="px-6 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-6 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-6 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-6 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-6 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-6 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-6 py-3 text-sm font-semibold text-gray-900">
+                    {roundToTwoDecimals(metaDataTotalAmount.baseTotalWinAmount)}
+                  </td>
+                  <td className="px-6 py-3 text-sm font-semibold text-gray-900">
+                    {roundToTwoDecimals(metaDataTotalAmount.baseTotalTurnover)}
+                  </td>
+                  <td className="px-6 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-6 py-3 text-sm font-semibold text-gray-900">
+                    {roundToTwoDecimals(
+                      metaDataTotalAmount.baseTotalBonusClaimed
+                    )}
+                  </td>
+                  <td className="px-6 py-3 text-sm text-gray-500">-</td>
+                </tr>
+              </tfoot>
+            )}
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
