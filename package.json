@@ -9,7 +9,7 @@
     "start:window": "next start -p 5000",
     "lint": "next lint",
     "test": "jest",
-    "test:watch": "jest --watch",
+    "test:watch": "jest --watchAll",
     "test-coverage": "jest --coverage"
   },
   "dependencies": {
