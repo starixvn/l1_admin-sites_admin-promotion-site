@@ -9,7 +9,7 @@ import {
   getStatus,
   PROMOTION_STATUS_OPTIONS,
 } from "@/constants/promotionStatusMap";
-import { Eye, Pencil, Trash2, BarChart3, X } from "lucide-react";
+import { Eye, Pencil, Trash2, BarChart3 } from "lucide-react";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import PromotionPreviewDialog from "./create/PromotionPreviewDialog";
 import { useFilteredSelectedGames } from "@/hooks/useFilteredSelectedGames";
@@ -18,7 +18,6 @@ import { toGMTString } from "@/lib/date-time.utils";
 import { useOperators } from "@/hooks/useOperators";
 import { createOperatorMap } from "@/lib/promotion/bet-settings.utils";
 import { getStatusStyle } from "@/helper/common";
-import ConfirmModal from "@/components/ConfirmDialog";
 
 interface DataGridProps {
   promotions: Promotion[];
@@ -93,10 +92,6 @@ export default function DataGrid({
 }: DataGridProps) {
   const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
   const [viewPromotion, setViewPromotion] = useState<Promotion | null>(null);
-  const [cancelPromotion, setCancelPromotion] = useState<Promotion | null>(
-    null
-  );
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const totalPages = Math.ceil(totalItems / pageSize);
   const { data: currencyGroupsInfo = [] } = useCurrencyGroups(
     viewPromotion?.operatorId,
@@ -121,16 +116,6 @@ export default function DataGrid({
   };
 
   const handleEdit = (promotion: Promotion) => setEditPromotion(promotion);
-
-  const handleCancel = async () => {
-    try {
-      // TODO: Implement cancel promotion API call
-      onRefresh();
-    } catch (error) {
-      console.error("Failed to cancel promotion:", error);
-      toast.error("Failed to cancel promotion");
-    }
-  };
 
   const handleSaveEdit = async (updatedPromotion: Promotion) => {
     try {
@@ -276,19 +261,6 @@ export default function DataGrid({
                         </button>
                       </>
                     )}
-                    {status === PROMOTION_STATUS_OPTIONS.Running && (
-                      <button
-                        aria-label="cancel-promotion"
-                        onClick={() => {
-                          setIsCancelModalOpen(true);
-                          setCancelPromotion(p);
-                        }}
-                        title="Cancel Promotion"
-                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                      >
-                        <X className="w-4 h-4 text-orange-600 hover:text-orange-800" />
-                      </button>
-                    )}
                   </div>
                 </td>
               </tr>
@@ -407,19 +379,6 @@ export default function DataGrid({
         promotion={editPromotion}
         onClose={() => setEditPromotion(null)}
         onSave={handleSaveEdit}
-      />
-
-      <ConfirmModal
-        open={isCancelModalOpen}
-        title="Confirm Promotion Cancellation"
-        message={`Are you sure you want to cancel promotion with code <strong style="color: black; font-weight: 600;">${cancelPromotion?.code}</strong>? 
-        This action is permanent and cannot be undone.`}
-        confirmText="Confirm"
-        cancelText="Cancel"
-        onCancel={() => {
-          setIsCancelModalOpen(false);
-        }}
-        onConfirm={handleCancel}
       />
 
       {viewPromotion && (

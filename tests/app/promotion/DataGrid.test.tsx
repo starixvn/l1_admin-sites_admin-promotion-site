@@ -98,8 +98,9 @@ describe("DataGrid Component with Pagination", () => {
         pageSize={pageSize}
         totalItems={totalItems}
         onPageChange={setPage}
-        onPageSizeChange={jest.fn()}
-      />,
+        onPageSizeChange={jest.fn()} onPerformanceClick={function (promotionId: string): void {
+          throw new Error("Function not implemented.");
+        } }      />,
       { wrapper }
     );
 
@@ -117,8 +118,9 @@ describe("DataGrid Component with Pagination", () => {
         pageSize={pageSize}
         totalItems={totalItems}
         onPageChange={setPage}
-        onPageSizeChange={jest.fn()}
-      />
+        onPageSizeChange={jest.fn()} onPerformanceClick={function (promotionId: string): void {
+          throw new Error("Function not implemented.");
+        } }      />
     );
 
     expect(screen.getByText("Promotion 11")).toBeInTheDocument();
