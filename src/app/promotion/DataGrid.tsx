@@ -9,7 +9,7 @@ import {
   getStatus,
   PROMOTION_STATUS_OPTIONS,
 } from "@/constants/promotionStatusMap";
-import { Eye, Pencil, Trash2, BarChart3 } from "lucide-react";
+import { Eye, Pencil, Trash2, BarChart3, X } from "lucide-react";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import PromotionPreviewDialog from "./create/PromotionPreviewDialog";
 import { useFilteredSelectedGames } from "@/hooks/useFilteredSelectedGames";
@@ -18,6 +18,7 @@ import { toGMTString } from "@/lib/date-time.utils";
 import { useOperators } from "@/hooks/useOperators";
 import { createOperatorMap } from "@/lib/promotion/bet-settings.utils";
 import { getStatusStyle } from "@/helper/common";
+import ConfirmModal from "@/components/ConfirmDialog";
 
 interface DataGridProps {
   promotions: Promotion[];
@@ -92,6 +93,10 @@ export default function DataGrid({
 }: DataGridProps) {
   const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
   const [viewPromotion, setViewPromotion] = useState<Promotion | null>(null);
+  const [cancelPromotion, setCancelPromotion] = useState<Promotion | null>(
+    null
+  );
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const totalPages = Math.ceil(totalItems / pageSize);
   const { data: currencyGroupsInfo = [] } = useCurrencyGroups(
     viewPromotion?.operatorId,
@@ -116,6 +121,16 @@ export default function DataGrid({
   };
 
   const handleEdit = (promotion: Promotion) => setEditPromotion(promotion);
+
+  const handleCancel = async () => {
+    try {
+      // TODO: Implement cancel promotion API call
+      onRefresh();
+    } catch (error) {
+      console.error("Failed to cancel promotion:", error);
+      toast.error("Failed to cancel promotion");
+    }
+  };
 
   const handleSaveEdit = async (updatedPromotion: Promotion) => {
     try {
@@ -168,7 +183,9 @@ export default function DataGrid({
                 <td className="px-4 py-4">
                   <div className="flex flex-col items-start gap-1">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(status)}`}
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusStyle(
+                        status
+                      )}`}
                     >
                       {status}
                     </span>
@@ -210,20 +227,21 @@ export default function DataGrid({
                 <td className="px-4 py-4">
                   <div className="flex flex-col">
                     {p.claimExpirationDate && (
-                      <div>
-                        {toGMTString(p.claimExpirationDate, 7)}
-                      </div>
+                      <div>{toGMTString(p.claimExpirationDate, 7)}</div>
                     )}
                     <span className="font-semibold text-black">
-                      {p.minTurnoverMultiplier ? `${p.minTurnoverMultiplier}x` : "-"}
+                      {p.minTurnoverMultiplier
+                        ? `${p.minTurnoverMultiplier}x`
+                        : "-"}
                     </span>
                   </div>
                 </td>
                 <td className="px-4 py-4">
-                  {p.announcementTitle
-                    ? <span className="text-green-500">Linked</span>
-                    : <span className="text-red-500">Unlinked</span>
-                  }
+                  {p.announcementTitle ? (
+                    <span className="text-green-500">Linked</span>
+                  ) : (
+                    <span className="text-red-500">Unlinked</span>
+                  )}
                   {p.announcementTitle && <div>{p.announcementTitle}</div>}
                 </td>
                 <td className="px-4 py-4">
@@ -245,17 +263,30 @@ export default function DataGrid({
                       <BarChart3 className="w-4 h-4 text-purple-600 hover:text-purple-800" />
                     </button>
                     {status === PROMOTION_STATUS_OPTIONS.Upcoming && (
-                      <button onClick={() => handleEdit(p)} title="Edit">
-                        <Pencil className="w-4 h-4 text-blue-600" />
-                      </button>
+                      <>
+                        <button onClick={() => handleEdit(p)} title="Edit">
+                          <Pencil className="w-4 h-4 text-blue-600" />
+                        </button>
+                        <button
+                          aria-label="delete-promotion"
+                          onClick={() => handleDelete(p._id, p.code)}
+                          title="Delete"
+                        >
+                          <Trash2 className="w-4 h-4 text-red-500" />
+                        </button>
+                      </>
                     )}
-                    {status === PROMOTION_STATUS_OPTIONS.Upcoming && (
+                    {status === PROMOTION_STATUS_OPTIONS.Running && (
                       <button
-                        aria-label="delete-promotion"
-                        onClick={() => handleDelete(p._id, p.code)}
-                        title="Delete"
+                        aria-label="cancel-promotion"
+                        onClick={() => {
+                          setIsCancelModalOpen(true);
+                          setCancelPromotion(p);
+                        }}
+                        title="Cancel Promotion"
+                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
                       >
-                        <Trash2 className="w-4 h-4 text-red-500" />
+                        <X className="w-4 h-4 text-orange-600 hover:text-orange-800" />
                       </button>
                     )}
                   </div>
@@ -377,6 +408,20 @@ export default function DataGrid({
         onClose={() => setEditPromotion(null)}
         onSave={handleSaveEdit}
       />
+
+      <ConfirmModal
+        open={isCancelModalOpen}
+        title="Confirm Promotion Cancellation"
+        message={`Are you sure you want to cancel promotion with code <strong style="color: black; font-weight: 600;">${cancelPromotion?.code}</strong>? 
+        This action is permanent and cannot be undone.`}
+        confirmText="Confirm"
+        cancelText="Cancel"
+        onCancel={() => {
+          setIsCancelModalOpen(false);
+        }}
+        onConfirm={handleCancel}
+      />
+
       {viewPromotion && (
         <PromotionPreviewDialog
           open={!!viewPromotion}
@@ -395,8 +440,10 @@ export default function DataGrid({
             offeredSiteNames: viewPromotion.offeredSiteNames,
             operatorId: viewPromotion.operatorId,
             startDate: new Date(viewPromotion.startDate),
-            allPlayers:
-              viewPromotion.isGiftCode ? false : (!viewPromotion.offeredPlayerIds || viewPromotion.offeredPlayerIds.length === 0),
+            allPlayers: viewPromotion.isGiftCode
+              ? false
+              : !viewPromotion.offeredPlayerIds ||
+                viewPromotion.offeredPlayerIds.length === 0,
             uploadedFile: undefined,
             betLevels: viewPromotion.betLevels,
             claimExpirationDate: new Date(viewPromotion.claimExpirationDate),

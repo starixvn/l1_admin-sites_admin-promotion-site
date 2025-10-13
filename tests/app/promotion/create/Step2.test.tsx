@@ -153,10 +153,38 @@ describe("Step2 Component", () => {
       </TestWrapper>
     );
 
-    const gameRadios = screen.getAllByRole("radio");
-    await userEvent.click(gameRadios[0]); // Click first game radio
+    const gameCheckboxes = screen.getAllByRole("checkbox");
+    // Skip the "Select All" checkbox (first one) and click the first game checkbox
+    await userEvent.click(gameCheckboxes[1]); // Click first game checkbox
 
     expect(mockSetValue).toHaveBeenCalledWith("gameIds", [1]);
+  });
+
+  it("handles Select All functionality correctly", async () => {
+    const mockSetValue = jest.fn();
+    render(
+      <TestWrapper
+        defaultValues={{
+          currencyGroups: ["USD"],
+          gameConfigType: GAME_TYPES.CLASSIC,
+        }}
+      >
+        {({ control, setValue, errors }) => (
+          <Step2
+            {...defaultProps}
+            control={control}
+            setValue={mockSetValue}
+            errors={errors}
+          />
+        )}
+      </TestWrapper>
+    );
+
+    const selectAllCheckbox = screen.getByLabelText("Select all");
+    await userEvent.click(selectAllCheckbox);
+
+    // Should select all games (assuming 2 games in mock data)
+    expect(mockSetValue).toHaveBeenCalledWith("gameIds", [1, 2]);
   });
 
   it("handles target members selection correctly", async () => {

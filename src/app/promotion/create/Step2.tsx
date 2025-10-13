@@ -61,12 +61,43 @@ function GameSelection({
   isRunning,
   toggleGame,
 }: GameSelectionProps) {
-  const selectedGameId =
-    Array.isArray(gameIds) && gameIds.length > 0 ? gameIds[0] : undefined;
   const [filter, setFilter] = useState("");
   const filteredGames = games.filter((game) =>
     game.DisplayName.toLowerCase().includes(filter.toLowerCase())
   );
+
+  const handleGameToggle = (gameId: number) => {
+    const currentGameIds = Array.isArray(gameIds) ? gameIds : [];
+    const isSelected = currentGameIds.includes(gameId);
+    
+    if (isSelected) {
+      const newGameIds = currentGameIds.filter(id => id !== gameId);
+      setValue("gameIds", newGameIds);
+    } else {
+      const newGameIds = [...currentGameIds, gameId];
+      setValue("gameIds", newGameIds);
+    }
+  };
+
+  const handleSelectAll = () => {
+    const currentGameIds = Array.isArray(gameIds) ? gameIds : [];
+    const allGameIds = games.map(game => game.GameId);
+    const allSelected = allGameIds.every(id => currentGameIds.includes(id));
+    
+    if (allSelected) {
+      setValue("gameIds", []);
+    } else {
+      setValue("gameIds", allGameIds);
+    }
+  };
+
+  const isAllSelected = () => {
+    const currentGameIds = Array.isArray(gameIds) ? gameIds : [];
+    const allGameIds = games.map(game => game.GameId);
+    return games.length > 0 && allGameIds.every(id => currentGameIds.includes(id));
+  };
+
+
   if (!shouldShowGames) {
     return (
       <p className="text-sm text-gray-500 italic">
@@ -106,37 +137,69 @@ function GameSelection({
           disabled={isRunning}
         />
       </div>
-      {/* Game list - radio only */}
+      {/* Select All option */}
+      {filteredGames.length > 0 && (
+        <div className="mb-3">
+           <label
+             htmlFor="select-all-games"
+             className={cn(
+               "flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer",
+               isAllSelected()
+                 ? "bg-blue-50 border-blue-200 text-blue-800 font-medium"
+                 : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+             )}
+           >
+             <div className="flex items-center space-x-3">
+               <input
+                 type="checkbox"
+                 id="select-all-games"
+                 checked={isAllSelected()}
+                 onChange={handleSelectAll}
+                 disabled={isRunning}
+                 aria-label="Select all"
+               />
+               <span className="text-sm font-medium">
+                 Select All
+               </span>
+             </div>
+           </label>
+        </div>
+      )}
+
+      {/* Game list - checkboxes for multiple selection */}
       <div className="grid gap-3 max-h-[15rem] overflow-y-auto pr-2">
         {filteredGames.length === 0 ? (
           <p className="text-sm text-gray-500 italic">
             No games match your filter.
           </p>
         ) : (
-          filteredGames.map((game) => (
-            <label
-              key={game.GameId}
-              htmlFor={`game-${game.GameId}`}
-              className={cn(
-                "flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer",
-                selectedGameId === game.GameId
-                  ? "bg-green-50 border-green-200 text-green-800 font-small"
-                  : "bg-white border-green-100 hover:bg-green-50"
-              )}
-            >
-              <div className="flex items-center space-x-3">
-                <input
-                  type="radio"
-                  id={`game-${game.GameId}`}
-                  name="gameId"
-                  checked={selectedGameId === game.GameId}
-                  onChange={() => setValue("gameIds", [game.GameId])}
-                  disabled={isRunning}
-                />
-                <span className="text-sm">{game.DisplayName}</span>
-              </div>
-            </label>
-          ))
+          filteredGames.map((game) => {
+            const isSelected = Array.isArray(gameIds) && gameIds.includes(game.GameId);
+            return (
+              <label
+                key={game.GameId}
+                htmlFor={`game-${game.GameId}`}
+                className={cn(
+                  "flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer",
+                  isSelected
+                    ? "bg-green-50 border-green-200 text-green-800 font-small"
+                    : "bg-white border-green-100 hover:bg-green-50"
+                )}
+              >
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    id={`game-${game.GameId}`}
+                    checked={isSelected}
+                    onChange={() => handleGameToggle(game.GameId)}
+                    disabled={isRunning}
+                    aria-label="Display name"
+                  />
+                  <span className="text-sm">{game.DisplayName}</span>
+                </div>
+              </label>
+            );
+          })
         )}
       </div>
     </>
