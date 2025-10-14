@@ -21,7 +21,7 @@ import { Download, ExternalLink, Users } from "lucide-react";
 import { toGMTString } from "@/lib/date-time.utils";
 import { GMT_OFFSET } from "@/constants/constants";
 import { Player } from "@/types/performance-report";
-import { roundToTwoDecimals } from "@/lib/promotion/promotion.utils";
+import { roundToDecimals } from "@/lib/promotion/promotion.utils";
 import { fuzzySort } from "@/lib/table-utils";
 import PaginationControls from "@/components/common/PaginationControls";
 import TableHeader from "@/components/common/TableHeader";
@@ -171,7 +171,7 @@ const getBonusColumns = (isBaseCurrency: boolean): ColumnDef<Player>[] => {
       size: 100,
       cell: ({ row }) => (
         <div className="font-medium">
-          {roundToTwoDecimals(row.getValue(bonusWinKey))}
+          {roundToDecimals(row.getValue(bonusWinKey))}
         </div>
       ),
     },
@@ -182,7 +182,7 @@ const getBonusColumns = (isBaseCurrency: boolean): ColumnDef<Player>[] => {
       size: 120,
       cell: ({ row }) => (
         <div className="font-medium">
-          {roundToTwoDecimals(row.getValue(turnoverKey))}
+          {roundToDecimals(row.getValue(turnoverKey))}
         </div>
       ),
     },
@@ -213,7 +213,7 @@ const getBonusColumns = (isBaseCurrency: boolean): ColumnDef<Player>[] => {
               ></div>
             </div>
             <span className="text-xs text-gray-600 whitespace-nowrap">
-              {progress.current}x/{progress.required}x
+              {roundToDecimals(progress.current)}x/{roundToDecimals(progress.required)}x
             </span>
           </div>
         );
@@ -226,7 +226,7 @@ const getBonusColumns = (isBaseCurrency: boolean): ColumnDef<Player>[] => {
       size: 100,
       cell: ({ row }) => (
         <div className="font-medium">
-          {roundToTwoDecimals(row.getValue(bonusClaimedKey))}
+          {roundToDecimals(row.getValue(bonusClaimedKey))}
         </div>
       ),
     },
@@ -351,14 +351,14 @@ export default function PlayersTable({
                   <td className="px-6 py-3 text-sm text-gray-500">-</td>
                   <td className="px-6 py-3 text-sm text-gray-500">-</td>
                   <td className="px-6 py-3 text-sm font-semibold text-gray-900">
-                    {roundToTwoDecimals(metaDataTotalAmount.baseTotalWinAmount)}
+                    {roundToDecimals(metaDataTotalAmount.baseTotalWinAmount)}
                   </td>
                   <td className="px-6 py-3 text-sm font-semibold text-gray-900">
-                    {roundToTwoDecimals(metaDataTotalAmount.baseTotalTurnover)}
+                    {roundToDecimals(metaDataTotalAmount.baseTotalTurnover)}
                   </td>
                   <td className="px-6 py-3 text-sm text-gray-500">-</td>
                   <td className="px-6 py-3 text-sm font-semibold text-gray-900">
-                    {roundToTwoDecimals(
+                    {roundToDecimals(
                       metaDataTotalAmount.baseTotalBonusClaimed
                     )}
                   </td>

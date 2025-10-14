@@ -10,7 +10,7 @@ jest.mock("@/lib/date-time.utils", () => ({
 }));
 
 jest.mock("@/lib/promotion/promotion.utils", () => ({
-  roundToTwoDecimals: jest.fn((value) => Number(value).toFixed(2)),
+  roundToDecimals: jest.fn((value) => Number(value).toFixed(4)),
 }));
 
 jest.mock("@/lib/table-utils", () => ({
@@ -219,16 +219,16 @@ describe("TicketPromotionTable", () => {
     
     expect(screen.getByText("Total")).toBeInTheDocument();
     expect(screen.getByText("Base USD")).toBeInTheDocument();
-    expect(screen.getByText("300.00")).toBeInTheDocument(); // totalBaseBetAmount
-    expect(screen.getByText("450.00")).toBeInTheDocument(); // totalBaseWinAmount
+    expect(screen.getByText("300.0000")).toBeInTheDocument(); // totalBaseBetAmount
+    expect(screen.getByText("450.0000")).toBeInTheDocument(); // totalBaseWinAmount
   });
 
   it("renders total row with correct metadata when not using base currency", () => {
     render(<TicketPromotionTable {...defaultProps} isBaseCurrency={false} />);
     
     expect(screen.getByText("Total")).toBeInTheDocument();
-    expect(screen.getByText("300.00")).toBeInTheDocument(); // totalBetAmount
-    expect(screen.getByText("450.00")).toBeInTheDocument(); // totalWinAmount
+    expect(screen.getByText("300.0000")).toBeInTheDocument(); // totalBetAmount
+    expect(screen.getByText("450.0000")).toBeInTheDocument(); // totalWinAmount
   });
 
   it("uses base currency columns when isBaseCurrency is true", () => {
@@ -331,7 +331,7 @@ describe("TicketPromotionTable", () => {
     expect(screen.getByText("Promotional Tickets")).toBeInTheDocument();
     expect(screen.getByText("Export")).toBeInTheDocument();
   });
-
+  
   it("renders export button with correct styling", () => {
     render(<TicketPromotionTable {...defaultProps} />);
     
@@ -398,8 +398,8 @@ describe("TicketPromotionTable", () => {
     
     render(<TicketPromotionTable {...defaultProps} metaData={customMetaData} />);
     
-    expect(screen.getByText("500.00")).toBeInTheDocument();
-    expect(screen.getByText("750.00")).toBeInTheDocument();
+    expect(screen.getByText("500.0000")).toBeInTheDocument();
+    expect(screen.getByText("750.0000")).toBeInTheDocument();
   });
 
   it("handles undefined metadata gracefully", () => {

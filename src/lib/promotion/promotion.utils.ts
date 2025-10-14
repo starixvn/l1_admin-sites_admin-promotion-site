@@ -9,6 +9,6 @@ export function parseSiteInput(value: string): string[] {
   );
 }
 
-export function roundToTwoDecimals(value: number): number {
-  return Math.round(value * 100) / 100;
+export function roundToDecimals(value: number, decimals = 4): number {
+  return Math.round(value * 10 ** decimals) / 10 ** decimals;
 }

@@ -10,6 +10,6 @@
   "clientSecret": "adminapi@20luminet&",
   "siteId": "admin-api",
   "scope": "admin-api",
-  "apiPromotionUrl": "http://localhost:5000",
+  "apiPromotionUrl": "https://l2-proxy2.lumigame.com/game-promotion-api",
   "apiConfigurationUrl": "https://l2-proxy.lumigame.com/game/static/free-spins-promotion-template"
 }

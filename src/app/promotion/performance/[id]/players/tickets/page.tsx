@@ -103,6 +103,7 @@ export default function Page() {
     try {
       const queryParams = new URLSearchParams();
       queryParams.append('playerId', playerId);
+      queryParams.append('roundId', filters.roundId);
       queryParams.append('startDate', filters.startDate);
       queryParams.append('endDate', filters.endDate);
       queryParams.append('isBaseCurrency', isBaseCurrency.toString());

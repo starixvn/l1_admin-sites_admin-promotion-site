@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import configs from '../../../../../../../../configs';
-import { roundToTwoDecimals } from '@/lib/promotion/promotion.utils';
+import { roundToDecimals } from '@/lib/promotion/promotion.utils';
 import { toGMTString } from '@/lib/date-time.utils';
 import { GMT_OFFSET } from '@/constants/constants';
 import { Player } from '@/types/performance-report';
@@ -82,10 +82,10 @@ export async function GET(
       player.currency || '',
       toGMTString(player.dateJoined, GMT_OFFSET) || '',
       `${player.remainingBonusItems || 0}/${player.initialBonusItem || 0}`,
-      roundToTwoDecimals(isBaseCurrency ? player.baseBonusWin : player.bonusWin) || 0,
-      roundToTwoDecimals(isBaseCurrency ? player.baseTurnover : player.turnover) || 0,
+      roundToDecimals(isBaseCurrency ? player.baseBonusWin : player.bonusWin) || 0,
+      roundToDecimals(isBaseCurrency ? player.baseTurnover : player.turnover) || 0,
       `${player.progress?.current || 0}x/${player.progress?.required || 0}x`,
-      roundToTwoDecimals(isBaseCurrency ? player.baseBonusClaimed : player.bonusClaimed) || 0,
+      roundToDecimals(isBaseCurrency ? player.baseBonusClaimed : player.bonusClaimed) || 0,
       toGMTString(player.lastActivity, GMT_OFFSET) || ''
     ]);
 
@@ -103,10 +103,10 @@ export async function GET(
       '-',
       '--',
       '',
-      roundToTwoDecimals(totalBonusWin),
-      roundToTwoDecimals(totalTurnover),
+      roundToDecimals(totalBonusWin),
+      roundToDecimals(totalTurnover),
       '-',
-      roundToTwoDecimals(totalBonusClaimed),
+      roundToDecimals(totalBonusClaimed),
       '-'
     ];
 

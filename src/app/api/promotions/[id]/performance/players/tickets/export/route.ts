@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import configs from '../../../../../../../../../configs';
-import { roundToTwoDecimals } from '@/lib/promotion/promotion.utils';
+import { roundToDecimals } from '@/lib/promotion/promotion.utils';
 import { toGMTStringWithSeconds } from '@/lib/date-time.utils';
 import { GMT_OFFSET } from '@/constants/constants';
 import { PromotionalTicket } from '@/types/promotional-tickets';
@@ -69,8 +69,8 @@ export async function GET(
       toGMTStringWithSeconds(ticket.createdAt, GMT_OFFSET) || '',
       ticket.gameRoundId || '',
       `${ticket.gameId || ''} / ${ticket.displayName || ''}`,
-      roundToTwoDecimals(isBaseCurrency ? ticket.baseBetAmount : ticket.betAmount) || 0,
-      roundToTwoDecimals(isBaseCurrency ? ticket.baseWinAmount : ticket.winAmount) || 0,
+      roundToDecimals(isBaseCurrency ? ticket.baseBetAmount : ticket.betAmount) || 0,
+      roundToDecimals(isBaseCurrency ? ticket.baseWinAmount : ticket.winAmount) || 0,
       ticket.siteName || '',
     ]);
 
@@ -83,8 +83,8 @@ export async function GET(
       `Total ${currencySuffix}`,
       '-',
       '-',
-      roundToTwoDecimals(totalBetAmount),
-      roundToTwoDecimals(totalWinAmount),
+      roundToDecimals(totalBetAmount),
+      roundToDecimals(totalWinAmount),
       '-'
     ];
 

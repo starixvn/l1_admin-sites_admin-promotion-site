@@ -18,7 +18,7 @@ import {
 import { toGMTStringWithSeconds } from "@/lib/date-time.utils";
 import { GMT_OFFSET } from "@/constants/constants";
 import { PromotionalTicket } from "@/types/promotional-tickets";
-import { roundToTwoDecimals } from "@/lib/promotion/promotion.utils";
+import { roundToDecimals } from "@/lib/promotion/promotion.utils";
 import { fuzzySort } from "@/lib/table-utils";
 import PaginationControls from "@/components/common/PaginationControls";
 import TableHeader from "@/components/common/TableHeader";
@@ -65,7 +65,7 @@ const getAmountColumns = (isBaseCurrency: boolean): ColumnDef<PromotionalTicket>
       size: 160,
       cell: ({ row }) => (
         <div className="font-medium">
-          {roundToTwoDecimals(row.getValue(betAmountKey))}
+          {roundToDecimals(row.getValue(betAmountKey))}
         </div>
       ),
     },
@@ -76,7 +76,7 @@ const getAmountColumns = (isBaseCurrency: boolean): ColumnDef<PromotionalTicket>
       size: 160,
       cell: ({ row }) => (
         <div className="font-medium">
-          {roundToTwoDecimals(row.getValue(winAmountKey))}
+          {roundToDecimals(row.getValue(winAmountKey))}
         </div>
       ),
     },
@@ -235,10 +235,10 @@ export default function TicketPromotionTable({
                 <td className="px-6 py-3 text-sm text-gray-500">-</td>
                 <td className="px-6 py-3 text-sm text-gray-500">-</td>
                 <td className="px-6 py-3 text-sm font-semibold text-gray-900">
-                  {roundToTwoDecimals(isBaseCurrency ? metaData.totalBaseBetAmount : metaData.totalBetAmount)}
+                  {roundToDecimals(isBaseCurrency ? metaData.totalBaseBetAmount : metaData.totalBetAmount)}
                 </td>
                 <td className="px-6 py-3 text-sm font-semibold text-gray-900">
-                  {roundToTwoDecimals(isBaseCurrency ? metaData.totalBaseWinAmount : metaData.totalWinAmount)}
+                  {roundToDecimals(isBaseCurrency ? metaData.totalBaseWinAmount : metaData.totalWinAmount)}
                 </td>
                 <td className="px-6 py-3 text-sm text-gray-500">-</td>
               </tr>

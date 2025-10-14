@@ -39,7 +39,7 @@ jest.mock("@/lib/date-time.utils", () => ({
 }));
 
 jest.mock("@/lib/promotion/promotion.utils", () => ({
-  roundToTwoDecimals: jest.fn((value) => Number(value).toFixed(2)),
+  roundToDecimals: jest.fn((value) => Number(value).toFixed(4)),
 }));
 
 jest.mock("@/lib/table-utils", () => ({
@@ -269,9 +269,9 @@ describe("PlayersTable", () => {
     
     expect(screen.getByText("Total")).toBeInTheDocument();
     expect(screen.getByText("(Base USD)")).toBeInTheDocument();
-    expect(screen.getByText("300.00")).toBeInTheDocument(); // baseTotalWinAmount
-    expect(screen.getByText("1500.00")).toBeInTheDocument(); // baseTotalTurnover
-    expect(screen.getByText("150.00")).toBeInTheDocument(); // baseTotalBonusClaimed
+    expect(screen.getByText("300.0000")).toBeInTheDocument(); // baseTotalWinAmount
+    expect(screen.getByText("1500.0000")).toBeInTheDocument(); // baseTotalTurnover
+    expect(screen.getByText("150.0000")).toBeInTheDocument(); // baseTotalBonusClaimed
   });
 
   it("handles username click navigation", async () => {
@@ -400,7 +400,7 @@ describe("PlayersTable", () => {
     expect(screen.getByText("Promotional Players")).toBeInTheDocument();
     expect(screen.getByText("Export")).toBeInTheDocument();
   });
-
+  
   it("renders export button with correct styling", () => {
     render(<PlayersTable {...defaultProps} />);
     
