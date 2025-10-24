@@ -330,17 +330,9 @@ export default function Step1({
         <DateTimePicker
           label="Claim Expiration Date"
           value={useWatch({ control, name: "claimExpirationDate" })}
-          onChange={(val) => {
-            if (val) {
-              const utc = new Date(val.getFullYear(), val.getMonth(), val.getDate(), 23, 59, 59, 0);
-              setValue("claimExpirationDate", utc);
-            } else {
-              setValue("claimExpirationDate", val);
-            }
-          }}
+          onChange={(val) => setValue("claimExpirationDate", val)}
           error={errors.claimExpirationDate?.message}
           disabled={isRunning}
-          dateOnly={true}
         />
       </div>
 
