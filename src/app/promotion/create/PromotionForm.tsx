@@ -111,8 +111,8 @@ export const promotionSchema = z
       message: "Please upload a file before saving.",
     }
   )
-  .refine((data) => data.claimExpirationDate > data.endDate, {
-    message: "Claim Expiration Date must be greater than the End Date",
+  .refine((data) => data.claimExpirationDate >= data.endDate, {
+    message: "Claim Expiration Date must be equal to or greater than the End Date.",
     path: ["claimExpirationDate"],
   });
 
