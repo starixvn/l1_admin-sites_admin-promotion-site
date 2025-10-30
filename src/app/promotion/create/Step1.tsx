@@ -8,6 +8,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { GAME_TYPES, type GameType } from "@/constants/gameTypes";
 import { cn } from "@/lib/utils";
 import { Info, Calculator } from "lucide-react";
@@ -335,7 +336,6 @@ export default function Step1({
           disabled={isRunning}
         />
       </div>
-
       <div className="text-xs text-gray-500 mt-1">
         Players must wager this many times their real money before claiming promotion wins. Minimum: 2x.
       </div>
@@ -351,6 +351,69 @@ export default function Step1({
           </div>
         </div>
       </div>
+       <div className="space-y-4">
+         <div className="flex items-center space-x-2">
+           <Checkbox
+             id="unlimited-redemption"
+             checked={useWatch({ control, name: "maxRedemptionTimes" }) === -1}
+             onCheckedChange={(checked) => {
+               if (checked) {
+                 setValue("maxRedemptionTimes", -1);
+               } else {
+                 setValue("maxRedemptionTimes", 1);
+               }
+             }}
+             disabled={isRunning}
+           />
+           <Label
+             htmlFor="unlimited-redemption"
+             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+           >
+             Unlimited Redemptions
+           </Label>
+         </div>
+
+         {useWatch({ control, name: "maxRedemptionTimes" }) !== -1 && (
+           <div>
+             <Label className="form-label mb-1" htmlFor="max-redemption-times">
+               Maximum Redemption Times<span className="text-red-500">*</span>
+             </Label>
+             <Input
+               type="number"
+               step={1}
+               inputMode="numeric"
+               pattern="\d*"
+               onKeyDown={(e) => invalidKeys.includes(e.key) && e.preventDefault()}
+               id="max-redemption-times"
+               aria-label="Maximum Redemption Times"
+               aria-required="true"
+               {...register("maxRedemptionTimes", {
+                 required: "Maximum redemption times is required",
+                 min: { value: 1, message: "Maximum redemption times must be greater than 0" },
+                 valueAsNumber: true,
+               })}
+               onBlur={(e) => {
+                 const raw = e.target.value.trim();
+                 const parsed = Number.parseInt(raw, 10);
+                 if (Number.isNaN(parsed) || parsed < 1) {
+                   e.target.value = "1";
+                   setValue("maxRedemptionTimes", 1, { shouldValidate: true });
+                 }
+               }}
+               className={cn(
+                 FORM_INPUT_CLASS,
+                 errors.maxRedemptionTimes && BORDER_RED_CLASS
+               )}
+               disabled={isRunning}
+             />
+             {errors.maxRedemptionTimes && (
+               <p className="error-message" role="alert">
+                 {errors.maxRedemptionTimes.message}
+               </p>
+             )}
+           </div>
+         )}
+       </div>
       <div>
         <Label className="form-label mb-1" htmlFor="operator">
           Operator<span className="text-red-500">*</span>

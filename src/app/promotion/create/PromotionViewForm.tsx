@@ -39,6 +39,7 @@ export default function PromotionViewForm({
     isGiftCode,
     minTurnoverMultiplier,
     claimExpirationDate,
+    maxRedemptionTimes = 1,
   } = data;
   const [showPlayerList, setShowPlayerList] = useState(false);
   return (
@@ -87,6 +88,10 @@ export default function PromotionViewForm({
                 {operatorName || operatorId}
               </span>
             }
+          />
+          <InfoRow
+            label="Max Redemption Times"
+            value={maxRedemptionTimes === -1 ? "Unlimited" : `${maxRedemptionTimes}`}
           />
         </div>
       </section>

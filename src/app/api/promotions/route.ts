@@ -12,7 +12,6 @@ export async function POST(req: NextRequest) {
   }
   try {
     const body = await req.json();
-
     const response = await axios.post(
       `${configs.apiPromotionUrl}/promotions`,
       body

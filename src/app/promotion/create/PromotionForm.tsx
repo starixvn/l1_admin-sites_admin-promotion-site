@@ -87,6 +87,14 @@ export const promotionSchema = z
         required_error: "Minimum turnover multiplier is required",
       })
       .min(2, "Minimum turnover multiplier must be at least 2"),
+    maxRedemptionTimes: z.coerce
+      .number({
+        invalid_type_error: "Maximum redemption times must be a number",
+        required_error: "Maximum redemption times is required",
+      })
+      .refine((val) => val === -1 || val >= 1, {
+        message: "Maximum redemption times must be -1 (unlimited) or at least 1",
+      }),
   })
   .refine((data) => data.endDate > data.startDate, {
     message: "Start Date must be earlier than the End Date",
@@ -148,6 +156,7 @@ const getDefaultValues = (initialValues?: Promotion) => {
       coinValues: initialValues.coinValues || [],
       isGiftCode: initialValues.isGiftCode || false,
       minTurnoverMultiplier: initialValues.minTurnoverMultiplier || 2,
+      maxRedemptionTimes: initialValues.maxRedemptionTimes || 1,
       allPlayers: initialValues.isGiftCode
         ? false
         : !initialValues.offeredPlayerIds ||
@@ -185,6 +194,7 @@ const getDefaultValues = (initialValues?: Promotion) => {
     coinValues: [],
     isGiftCode: false,
     minTurnoverMultiplier: 2,
+    maxRedemptionTimes: 1,
   };
 };
 
@@ -396,6 +406,7 @@ export default function PromotionForm({
       offeredPlayerIds: data.offeredPlayerIds || [],
       isGiftCode: data.isGiftCode,
       minTurnoverMultiplier: data.minTurnoverMultiplier,
+      maxRedemptionTimes: data.maxRedemptionTimes,
       claimExpirationDate: new Date(data.claimExpirationDate).toISOString(),
       betLevels:
         data.gameConfigType === 2

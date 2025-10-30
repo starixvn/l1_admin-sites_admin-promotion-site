@@ -27,6 +27,7 @@ export interface Promotion {
   }[];
   isGiftCode: boolean;
   minTurnoverMultiplier: number;
+  maxRedemptionTimes: number;
   createdAt: string;
   updatedAt: string;
   __v: number;
@@ -54,6 +55,7 @@ export type CreatePromotionResponse = {
   }[];
   isGiftCode: boolean;
   minTurnoverMultiplier: number;
+  maxRedemptionTimes: number;
 };
 
 export type PromotionPayload = {
@@ -71,4 +73,5 @@ export type PromotionPayload = {
   betLevels: { currencyGroup: string; betLevel: number }[];
   isGiftCode: boolean;
   minTurnoverMultiplier: number;
+  maxRedemptionTimes: number;
 };
