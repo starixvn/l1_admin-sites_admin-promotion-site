@@ -226,6 +226,7 @@ export default function Page() {
             onPaginationChange={handlePaginationChange}
             isLoading={playersIsPending}
             onExportPlayers={handleExportPlayers}
+            promotion={promotion}
           />
           {playersIsError && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">

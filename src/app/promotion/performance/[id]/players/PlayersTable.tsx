@@ -17,7 +17,7 @@ import {
   getStatusColor,
   getStatusDot,
 } from "@/helper/common";
-import { Download, ExternalLink, Users } from "lucide-react";
+import { Download, ExternalLink, Users, Gift } from "lucide-react";
 import { toGMTString } from "@/lib/date-time.utils";
 import { GMT_OFFSET } from "@/constants/constants";
 import { Player } from "@/types/performance-report";
@@ -26,6 +26,10 @@ import { fuzzySort } from "@/lib/table-utils";
 import PaginationControls from "@/components/common/PaginationControls";
 import TableHeader from "@/components/common/TableHeader";
 import TableBody from "@/components/common/TableBody";
+import { Promotion } from "@/types/promotion";
+import { PROMOTION_STATUS } from "@/constants/promotionStatusMap";
+import { getPromotionStatus, PROMOTION_REPORT_STATUS } from "@/constants/promotionStatusMap";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 interface PlayersTableProps {
   data: Player[];
@@ -44,6 +48,7 @@ interface PlayersTableProps {
   ) => void;
   isLoading?: boolean;
   onExportPlayers?: () => void;
+  promotion?: Promotion;
 }
 
 // Basic player information columns
@@ -244,6 +249,116 @@ const getLastActivityColumn = (): ColumnDef<Player> => ({
   ),
 });
 
+// Claim Bonus column
+const getClaimBonusColumn = (
+  promotion: Promotion | undefined,
+  promotionId: string,
+  adminUserId: string
+): ColumnDef<Player> => ({
+  id: "claimBonus",
+  header: "Action",
+  enableSorting: false,
+  size: 120,
+  cell: ({ row }) => {
+    const player = row.original;
+    const playerStatus = player.status;
+    const isTurnoverMet = playerStatus === PROMOTION_STATUS.TURN_OVER_MET;
+    
+    // Check if promotion is completed
+    const isPromotionCompleted = promotion
+      ? getPromotionStatus(promotion) === PROMOTION_REPORT_STATUS.Completed
+      : false;
+
+    const canClaim = isTurnoverMet && isPromotionCompleted;
+
+    const handleClaimBonus = async () => {
+      if (!canClaim) return;
+
+      if (!promotion?.operatorId) {
+        alert("Error: Operator ID is missing from promotion data");
+        return;
+      }
+
+      // Get currencyGroupId from player_promotion data
+      const currencyGroup = (player as any).currencyGroupId;
+      if (!currencyGroup) {
+        alert("Error: Currency group ID is missing from player data");
+        return;
+      }
+
+      // gameTypeId - using gameId from player_promotions data
+      const gameTypeId = (player as any).gameId;
+      if (!gameTypeId) {
+        alert("Error: Game ID is missing from player data");
+        return;
+      }
+
+      // siteId - not available in Player or Promotion
+      // Note: This field needs to be provided or mapped from siteName
+      const siteId = (player as any).siteId;
+      if (!siteId) {
+        alert("Error: Site ID is missing. Please ensure siteId is available in player data.");
+        return;
+      }
+
+      // Confirm before making request
+      const confirmed = window.confirm(
+        `Are you sure you want to claim bonus for player ${player.username}?`
+      );
+
+      if (!confirmed) return;
+
+      try {
+        const response = await fetch("/api/bonus-wins/manual-claim-bonus-wins", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            promotionId,
+            playerId: player.id,
+            operatorId: promotion.operatorId,
+            siteId,
+            siteName: player.siteName,
+            currency: player.currency,
+            currencyGroup,
+            gameTypeId,
+            adminUserId,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to claim bonus");
+        }
+
+        alert("Bonus claimed successfully!");
+        // Optionally refresh the data
+        window.location.reload();
+      } catch (error) {
+        console.error("Error claiming bonus:", error);
+        alert(error instanceof Error ? error.message : "Failed to claim bonus. Please try again.");
+      }
+    };
+
+    if (!canClaim) {
+      return <div className="text-gray-400 text-sm">-</div>;
+    }
+
+    return (
+      <button
+        onClick={handleClaimBonus}
+        className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 transition-colors"
+        title="Claim bonus for this player"
+      >
+        <Gift className="w-3 h-3" />
+        Claim Bonus
+      </button>
+    );
+  },
+});
+
 
 export default function PlayersTable({
   data,
@@ -256,8 +371,10 @@ export default function PlayersTable({
   onPaginationChange,
   isLoading = false,
   onExportPlayers,
+  promotion,
 }: PlayersTableProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const [sorting, setSorting] = useState<SortingState>([
     {
       id: "dateJoined",
@@ -265,13 +382,20 @@ export default function PlayersTable({
     },
   ]);
 
+  // Get promotion ID from promotion data
+  const promotionId = promotion?._id || '';
+  
+  // Get admin user ID (username) from logged in user
+  const adminUserId = user?.Username || '';
+
   const columns = useMemo<ColumnDef<Player>[]>(() => {
     return [
       ...getBasicPlayerColumns(router, isBaseCurrency),
       ...getBonusColumns(isBaseCurrency),
       getLastActivityColumn(),
+      getClaimBonusColumn(promotion, promotionId, adminUserId),
     ];
-  }, [isBaseCurrency, router]);
+  }, [isBaseCurrency, router, promotion, promotionId, adminUserId]);
 
   const table = useReactTable({
     data: data || [],
