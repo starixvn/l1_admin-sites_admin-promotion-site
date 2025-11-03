@@ -288,12 +288,28 @@ const getClaimBonusColumn = (
       }
 
       // gameTypeId - using gameId from player_promotions data
-      const gameTypeId = player.gameId;
+      let gameTypeId = player.gameId;
       if (!gameTypeId) {
-        alert("Error: Game ID is missing from player data");
-        return;
-      }
+        // Show popup to input gameId
+        const inputGameId = window.prompt(
+          `Game ID is missing for player ${player.username}.\nPlease enter the Game ID to proceed with bonus claim:`,
+          ""
+        );
+        
+        if (!inputGameId) {
+          alert("Game ID is required to claim bonus. Operation cancelled.");
+          return;
+        }
 
+        // Validate that the input is a number
+        const parsedGameId = parseInt(inputGameId.trim());
+        if (isNaN(parsedGameId) || parsedGameId <= 0) {
+          alert("Invalid Game ID. Please enter a valid positive number.");
+          return;
+        }
+
+        gameTypeId = parsedGameId;
+      }
       // siteId - not available in Player or Promotion
       // Note: This field needs to be provided or mapped from siteName
       const siteId = player.siteId;
