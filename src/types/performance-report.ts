@@ -1,5 +1,8 @@
 export interface Player {
-  id: string;
+  playerId: string;
+  currencyGroup: string;
+  gameId: number;
+  siteId: string;
   username: string;
   status: string;
   siteName: string;

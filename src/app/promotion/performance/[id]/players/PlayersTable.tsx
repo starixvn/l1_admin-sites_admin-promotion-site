@@ -53,12 +53,12 @@ interface PlayersTableProps {
 // Basic player information columns
 const getBasicPlayerColumns = (router: any, isBaseCurrency: boolean): ColumnDef<Player>[] => [
   {
-    accessorKey: "id",
+    accessorKey: "playerId",
     header: "Player ID",
     enableSorting: true,
     size: 100,
     cell: ({ row }) => {
-      const playerId = row.getValue("id") as string;
+      const playerId = row.getValue("playerId") as string;
       return (
         <div
           className="font-medium truncate max-w-[120px]"
@@ -76,7 +76,7 @@ const getBasicPlayerColumns = (router: any, isBaseCurrency: boolean): ColumnDef<
     size: 120,
     cell: ({ row }) => {
       const username = row.getValue("username") as string;
-      const playerId = row.getValue("id") as string;
+      const playerId = row.getValue("playerId") as string;
       const handleViewTickets = () => {
         const currentPath = window.location.pathname;
         const pathParts = currentPath.split('/');
@@ -281,7 +281,7 @@ const getClaimBonusColumn = (
       }
 
       // Get currencyGroupId from player_promotion data
-      const currencyGroup = player.currencyGroupId;
+      const currencyGroup = player.currencyGroup;
       if (!currencyGroup) {
         alert("Error: Currency group ID is missing from player data");
         return;
@@ -319,7 +319,7 @@ const getClaimBonusColumn = (
           },
           body: JSON.stringify({
             promotionId,
-            playerId: player.id,
+            playerId: player.playerId,
             operatorId: promotion.operatorId,
             siteId,
             siteName: player.siteName,
