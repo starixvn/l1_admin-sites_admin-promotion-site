@@ -15,6 +15,10 @@ export interface Player {
   lastActivity: string;
   remainingBonusItems: number;
   initialBonusItem: number;
+  // Additional properties for bonus claiming
+  currencyGroupId?: string;
+  gameId?: number;
+  siteId?: string;
 }
 
 export interface PlayersResponse {

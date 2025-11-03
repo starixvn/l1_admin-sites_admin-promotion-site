@@ -27,8 +27,7 @@ import PaginationControls from "@/components/common/PaginationControls";
 import TableHeader from "@/components/common/TableHeader";
 import TableBody from "@/components/common/TableBody";
 import { Promotion } from "@/types/promotion";
-import { PROMOTION_STATUS } from "@/constants/promotionStatusMap";
-import { getPromotionStatus, PROMOTION_REPORT_STATUS } from "@/constants/promotionStatusMap";
+import { getPromotionStatus, PROMOTION_REPORT_STATUS, PROMOTION_STATUS } from "@/constants/promotionStatusMap";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 interface PlayersTableProps {
@@ -272,7 +271,9 @@ const getClaimBonusColumn = (
     const canClaim = isTurnoverMet && isPromotionCompleted;
 
     const handleClaimBonus = async () => {
-      if (!canClaim) return;
+      if (!canClaim) {
+        return;
+      }
 
       if (!promotion?.operatorId) {
         alert("Error: Operator ID is missing from promotion data");
@@ -280,14 +281,14 @@ const getClaimBonusColumn = (
       }
 
       // Get currencyGroupId from player_promotion data
-      const currencyGroup = (player as any).currencyGroupId;
+      const currencyGroup = player.currencyGroupId;
       if (!currencyGroup) {
         alert("Error: Currency group ID is missing from player data");
         return;
       }
 
       // gameTypeId - using gameId from player_promotions data
-      const gameTypeId = (player as any).gameId;
+      const gameTypeId = player.gameId;
       if (!gameTypeId) {
         alert("Error: Game ID is missing from player data");
         return;
@@ -295,7 +296,7 @@ const getClaimBonusColumn = (
 
       // siteId - not available in Player or Promotion
       // Note: This field needs to be provided or mapped from siteName
-      const siteId = (player as any).siteId;
+      const siteId = player.siteId;
       if (!siteId) {
         alert("Error: Site ID is missing. Please ensure siteId is available in player data.");
         return;
@@ -306,7 +307,9 @@ const getClaimBonusColumn = (
         `Are you sure you want to claim bonus for player ${player.username}?`
       );
 
-      if (!confirmed) return;
+      if (!confirmed) {
+        return;
+      }
 
       try {
         const response = await fetch("/api/bonus-wins/manual-claim-bonus-wins", {
