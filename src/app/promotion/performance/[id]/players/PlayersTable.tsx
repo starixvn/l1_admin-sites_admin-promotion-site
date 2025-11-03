@@ -348,7 +348,7 @@ const getClaimBonusColumn = (
 
         const data = await response.json();
 
-        if (!response.ok) {
+        if (!data.success) {
           throw new Error(data.error || "Failed to claim bonus");
         }
 
