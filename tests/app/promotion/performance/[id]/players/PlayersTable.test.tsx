@@ -10,6 +10,21 @@ jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
 }));
 
+// Mock Auth Context
+jest.mock("@/lib/auth/AuthContext", () => ({
+  useAuth: jest.fn(() => ({
+    isAuthenticated: true,
+    user: { 
+      Username: "testuser",
+      id: "test-id"
+    },
+    setUser: jest.fn(),
+    setIsAuthenticated: jest.fn(),
+    login: jest.fn(),
+    logout: jest.fn()
+  })),
+}));
+
 // Mock helper functions
 jest.mock("@/helper/common", () => ({
   getProgressColor: jest.fn((current, required) => {

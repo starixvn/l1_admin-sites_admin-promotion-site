@@ -7,6 +7,8 @@ const customJestConfig = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
     "^.+\\.(css|scss|sass)$": "identity-obj-proxy",
+    "^@mui/x-charts/LineChart$": "@mui/x-charts",
+    "^@mui/x-charts/BarChart$": "@mui/x-charts",
   },
   testEnvironment: "jest-environment-jsdom",
   transform: {
