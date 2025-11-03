@@ -75,7 +75,7 @@ export async function GET(
     ];
 
     const csvRows = players.map((player: Player) => [
-      player.id || '',
+      player.playerId || '',
       player.username || '',
       player.status || '',
       player.siteName || '',
