@@ -217,7 +217,7 @@ const getBonusColumns = (isBaseCurrency: boolean): ColumnDef<Player>[] => {
               ></div>
             </div>
             <span className="text-xs text-gray-600 whitespace-nowrap">
-              {roundToDecimals(progress.current)}x/{roundToDecimals(progress.required)}x
+              {roundToDecimals(progress.current, 2)}x/{roundToDecimals(progress.required, 2)}x
             </span>
           </div>
         );
@@ -261,7 +261,7 @@ const getClaimBonusColumn = (
   cell: ({ row }) => {
     const player = row.original;
     const playerStatus = player.status;
-    const isExpired = playerStatus === PROMOTION_STATUS.EXPIRED;
+    const isExpired = player.progress.current >= player.progress.required && playerStatus === PROMOTION_STATUS.EXPIRED;
     
     // Check if promotion is completed
     const isPromotionCompleted = promotion
