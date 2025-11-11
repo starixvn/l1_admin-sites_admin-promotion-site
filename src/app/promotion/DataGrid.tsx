@@ -9,7 +9,7 @@ import {
   getStatus,
   PROMOTION_STATUS_OPTIONS,
 } from "@/constants/promotionStatusMap";
-import { Eye, Pencil, Trash2, BarChart3 } from "lucide-react";
+import { Eye, Pencil, Trash2, BarChart3, X } from "lucide-react";
 import { PAGE_SIZE_OPTIONS } from "@/constants/constants";
 import PromotionPreviewDialog from "./create/PromotionPreviewDialog";
 import { useFilteredSelectedGames } from "@/hooks/useFilteredSelectedGames";
@@ -18,6 +18,9 @@ import { toGMTString } from "@/lib/date-time.utils";
 import { useOperators } from "@/hooks/useOperators";
 import { createOperatorMap } from "@/lib/promotion/bet-settings.utils";
 import { getStatusStyle } from "@/helper/common";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface DataGridProps {
   promotions: Promotion[];
@@ -92,6 +95,8 @@ export default function DataGrid({
 }: DataGridProps) {
   const [editPromotion, setEditPromotion] = useState<Promotion | null>(null);
   const [viewPromotion, setViewPromotion] = useState<Promotion | null>(null);
+  const [cancelPromotion, setCancelPromotion] = useState<Promotion | null>(null);
+  const { user } = useAuth();
   const totalPages = Math.ceil(totalItems / pageSize);
   const { data: currencyGroupsInfo = [] } = useCurrencyGroups(
     viewPromotion?.operatorId,
@@ -131,6 +136,37 @@ export default function DataGrid({
     } catch (error) {
       console.error("Failed to update promotion:", error);
     }
+  };
+
+  const handleCancelPromotion = async (promotion: Promotion) => {
+    try {
+      await fetch(`/api/promotions/${promotion._id}/cancel`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          adminUserId: user?.Username || "",
+        }),
+      });
+      toast.success("Promotion cancelled successfully");
+      setCancelPromotion(null);
+      onRefresh();
+    } catch (error) {
+      console.error("Failed to cancel promotion:", error);
+      toast.error("Failed to cancel promotion");
+    }
+  };
+
+  const isPromotionCancellable = (promotion: Promotion): boolean => {
+    const now = new Date();
+    const startDate = new Date(promotion.startDate);
+    const claimExpirationDate = promotion.claimExpirationDate 
+      ? new Date(promotion.claimExpirationDate) 
+      : null;
+    
+    // Show cancel button if startDate <= now <= claimExpirationDate
+    return startDate <= now && 
+           claimExpirationDate !== null && 
+           now <= claimExpirationDate;
   };
 
   if (loading) {
@@ -247,6 +283,16 @@ export default function DataGrid({
                     >
                       <BarChart3 className="w-4 h-4 text-purple-600 hover:text-purple-800" />
                     </button>
+                    {isPromotionCancellable(p) && (
+                      <button
+                        onClick={() => setCancelPromotion(p)}
+                        aria-label="cancel-promotion"
+                        className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                        title="Cancel Promotion"
+                      >
+                        <X className="w-4 h-4 text-orange-600 hover:text-orange-800" />
+                      </button>
+                    )}
                     {status === PROMOTION_STATUS_OPTIONS.Upcoming && (
                       <>
                         <button onClick={() => handleEdit(p)} title="Edit">
@@ -419,6 +465,51 @@ export default function DataGrid({
           readonly={true}
         />
       )}
+
+      {/* Cancel Promotion Confirmation Dialog */}
+      <Dialog open={!!cancelPromotion} onOpenChange={() => setCancelPromotion(null)}>
+        <DialogContent className="max-w-md bg-white rounded-2xl shadow-2xl">
+          <DialogHeader className="space-y-3">
+            <DialogTitle className="text-center text-xl font-semibold text-gray-900">
+              Cancel Promotion
+            </DialogTitle>
+            <div className="text-center space-y-3">
+              <p className="text-gray-600 leading-relaxed">
+                Are you sure you want to cancel this promotion?
+              </p>
+              <div className="bg-gray-50 rounded-lg p-3 border-l-4 border-orange-400">
+                <p className="font-semibold text-gray-800 text-sm">
+                  {cancelPromotion?.name}
+                </p>
+                <p className="font-mono text-blue-600 text-sm mt-1">
+                  {cancelPromotion?.code}
+                </p>
+              </div>
+              <p className="text-red-600 font-medium text-sm flex items-center justify-center gap-1">
+                <span className="text-red-500">⚠️</span>
+                This action cannot be undone
+              </p>
+            </div>
+          </DialogHeader>
+          <DialogFooter>
+            <div className="flex gap-3 justify-center w-full">
+              <Button
+                onClick={() => setCancelPromotion(null)}
+                variant="outline"
+                className="min-w-[100px]"
+              >
+                No, Keep
+              </Button>
+              <Button
+                onClick={() => cancelPromotion && handleCancelPromotion(cancelPromotion)}
+                className="bg-orange-600 hover:bg-orange-700 text-white min-w-[100px]"
+              >
+                Yes, Cancel
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
