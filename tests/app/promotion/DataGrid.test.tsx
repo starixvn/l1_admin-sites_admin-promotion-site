@@ -28,6 +28,40 @@ jest.mock("react-toastify", () => ({
   },
 }));
 
+jest.mock("../../../src/lib/auth/AuthContext", () => ({
+  useAuth: () => ({
+    user: { Username: "testuser" },
+    isAuthenticated: true,
+  }),
+}));
+
+jest.mock("../../../src/hooks/useFilteredSelectedGames", () => ({
+  useFilteredSelectedGames: () => ({
+    data: [],
+    isLoading: false,
+    error: null,
+  }),
+}));
+
+jest.mock("../../../src/hooks/useCurrencyGroups", () => ({
+  useCurrencyGroups: () => ({
+    data: [],
+    isLoading: false,
+    error: null,
+  }),
+}));
+
+jest.mock("../../../src/hooks/useOperators", () => ({
+  useOperators: () => ({
+    data: [
+      { Name: "Operator 1", PartnerId: "op1" },
+      { Name: "Operator 2", PartnerId: "op2" },
+    ],
+    isLoading: false,
+    error: null,
+  }),
+}));
+
 beforeAll(() => {
   jest.spyOn(console, "error").mockImplementation(() => {});
 });

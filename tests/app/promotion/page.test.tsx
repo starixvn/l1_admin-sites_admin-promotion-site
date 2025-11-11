@@ -40,6 +40,59 @@ jest.mock("@/hooks/useUpdatePromotion", () => ({
   }),
 }));
 
+jest.mock("@/lib/auth/AuthContext", () => ({
+  useAuth: () => ({
+    user: { Username: "testuser" },
+    isAuthenticated: true,
+  }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+jest.mock("@/hooks/usePromotions", () => ({
+  usePromotions: () => ({
+    data: [],
+    isLoading: false,
+    error: null,
+    refetch: jest.fn(),
+  }),
+}));
+
+jest.mock("@/hooks/usePromotionsUnLink", () => ({
+  usePromotionsUnLink: () => ({
+    data: [],
+    isLoading: false,
+    error: null,
+    refetch: jest.fn(),
+  }),
+}));
+
+jest.mock("@/hooks/useOperators", () => ({
+  useOperators: () => ({
+    data: [
+      { Name: "Operator 1", PartnerId: "op1" },
+      { Name: "Operator 2", PartnerId: "op2" },
+    ],
+    isLoading: false,
+    error: null,
+  }),
+}));
+
+jest.mock("@/hooks/useFilteredSelectedGames", () => ({
+  useFilteredSelectedGames: () => ({
+    data: [],
+    isLoading: false,
+    error: null,
+  }),
+}));
+
+jest.mock("@/hooks/useCurrencyGroups", () => ({
+  useCurrencyGroups: () => ({
+    data: [],
+    isLoading: false,
+    error: null,
+  }),
+}));
+
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
@@ -97,10 +150,14 @@ const mockPromotions = [
     operatorId: "op1",
     startDate: "2024-03-20T00:00:00Z",
     endDate: "2024-03-25T00:00:00Z",
+    claimExpirationDate: "2024-03-30T00:00:00Z",
     betLevels: [],
     offeredSiteNames: [],
     currencyGroups: [],
     offeredPlayerIds: [],
+    coinValues: [],
+    isGiftCode: false,
+    minTurnoverMultiplier: 1,
     createdAt: "2024-03-19T00:00:00Z",
     updatedAt: "2024-03-19T00:00:00Z",
     status: "ACTIVE",
@@ -116,10 +173,14 @@ const mockPromotions = [
     operatorId: "op2",
     startDate: "",
     endDate: "",
+    claimExpirationDate: "2024-03-30T00:00:00Z",
     betLevels: [],
     offeredSiteNames: [],
     currencyGroups: [],
     offeredPlayerIds: [],
+    coinValues: [],
+    isGiftCode: false,
+    minTurnoverMultiplier: 1,
     createdAt: "2024-03-14T00:00:00Z",
     updatedAt: "2024-03-14T00:00:00Z",
     status: "ACTIVE",
@@ -135,10 +196,14 @@ const mockPromotions = [
     operatorId: "op2",
     startDate: "2025-05-16T00:00:00Z",
     endDate: "2025-05-29T00:00:00Z",
+    claimExpirationDate: "2025-06-05T00:00:00Z",
     betLevels: [],
     offeredSiteNames: [],
     currencyGroups: [],
     offeredPlayerIds: [],
+    coinValues: [],
+    isGiftCode: false,
+    minTurnoverMultiplier: 1,
     createdAt: "2024-03-14T00:00:00Z",
     updatedAt: "2024-03-14T00:00:00Z",
     status: "ACTIVE",
