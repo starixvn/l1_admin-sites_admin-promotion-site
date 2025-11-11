@@ -5,7 +5,7 @@ import { roundToDecimals } from '@/lib/promotion/promotion.utils';
 import { toGMTStringWithSeconds } from '@/lib/date-time.utils';
 import { GMT_OFFSET } from '@/constants/constants';
 import { PromotionalTicket } from '@/types/promotional-tickets';
-import { createGameDisplayNameMap, mapTicketsWithDisplayNames } from '@/lib/promotion/gameDisplayName.utils';
+import { createGameDisplayNameMap, mapWithDisplayNames } from '@/lib/promotion/gameDisplayName.utils';
 
 export async function GET(
   request: NextRequest,
@@ -21,6 +21,7 @@ export async function GET(
     const isBaseCurrency = searchParams.get('isBaseCurrency') === 'true';
     const gameType = searchParams.get('gameType');
     const currencyGroups = searchParams.get('currencyGroups');
+    const playerPromotionId = searchParams.get('playerPromotionId');
 
     if (!promotionId || !playerId) {
       return NextResponse.json(
@@ -39,6 +40,7 @@ export async function GET(
       roundId,
       startDate,
       endDate,
+      playerPromotionId,
     };
 
     // Call external API to get all tickets for export
@@ -53,7 +55,7 @@ export async function GET(
     const tickets = response.data.tickets || [];
     
     // Map tickets to include proper display names using utility function
-    const mappedTickets = mapTicketsWithDisplayNames(tickets, gameDisplayNameMap);
+    const mappedTickets = mapWithDisplayNames(tickets, gameDisplayNameMap);
 
     const currencySuffix = isBaseCurrency ? ' (USD)' : '';
     const csvHeaders = [

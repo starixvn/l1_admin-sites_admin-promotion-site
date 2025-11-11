@@ -81,8 +81,8 @@ const getBasicPlayerColumns = (router: any, isBaseCurrency: boolean): ColumnDef<
         const currentPath = window.location.pathname;
         const pathParts = currentPath.split('/');
         const promotionId = pathParts[pathParts.indexOf('performance') + 1];
-        
-        router.push(`/promotion/performance/${promotionId}/players/tickets?playerId=${playerId}&username=${username}&isBaseCurrency=${isBaseCurrency.toString()}`);
+        const playerPromotionId = row.original.playerPromotionId as string;
+        router.push(`/promotion/performance/${promotionId}/players/tickets?playerId=${playerId}&username=${username}&isBaseCurrency=${isBaseCurrency.toString()}&playerPromotionId=${playerPromotionId}`);
       };
       
       return (
@@ -102,7 +102,7 @@ const getBasicPlayerColumns = (router: any, isBaseCurrency: boolean): ColumnDef<
     accessorKey: "status",
     header: "Status",
     enableSorting: true,
-    size: 140,
+    size: 120,
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
       return (
@@ -127,6 +127,15 @@ const getBasicPlayerColumns = (router: any, isBaseCurrency: boolean): ColumnDef<
     ),
   },
   {
+    accessorKey: "displayName",
+    header: "Game Name",
+    enableSorting: true,
+    size: 100,
+    cell: ({ row }) => (
+      <div className="font-medium">{row.getValue("displayName")}</div>
+    ),
+  },
+  {
     accessorKey: "currency",
     header: "Currency",
     enableSorting: true,
@@ -139,7 +148,7 @@ const getBasicPlayerColumns = (router: any, isBaseCurrency: boolean): ColumnDef<
     accessorKey: "dateJoined",
     header: "Date Joined",
     enableSorting: true,
-    size: 140,
+    size: 120,
     cell: ({ row }) => (
       <div>{toGMTString(row.getValue("dateJoined"), GMT_OFFSET)}</div>
     ),
@@ -242,7 +251,7 @@ const getLastActivityColumn = (): ColumnDef<Player> => ({
   accessorKey: "lastActivity",
   header: "Last Activity",
   enableSorting: true,
-  size: 120,
+  size: 100,
   cell: ({ row }) => (
     <div>{toGMTString(row.getValue("lastActivity"), GMT_OFFSET)}</div>
   ),
@@ -400,7 +409,6 @@ export default function PlayersTable({
       desc: true,
     },
   ]);
-
   // Get promotion ID from promotion data
   const promotionId = promotion?._id || '';
   
@@ -466,8 +474,8 @@ export default function PlayersTable({
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="w-full">
-          <table className="w-full table-fixed">
+        <div className="overflow-x-auto">
+          <table className="w-full table-fixed min-w-[1200px]">
             <TableHeader table={table} />
             <TableBody
               table={table}
@@ -493,6 +501,7 @@ export default function PlayersTable({
                   <td className="px-6 py-3 text-sm text-gray-500">-</td>
                   <td className="px-6 py-3 text-sm text-gray-500">-</td>
                   <td className="px-6 py-3 text-sm text-gray-500">-</td>
+                  <td className="px-6 py-3 text-sm text-gray-500">-</td>
                   <td className="px-6 py-3 text-sm font-semibold text-gray-900">
                     {roundToDecimals(metaDataTotalAmount.baseTotalWinAmount)}
                   </td>
@@ -505,6 +514,7 @@ export default function PlayersTable({
                       metaDataTotalAmount.baseTotalBonusClaimed
                     )}
                   </td>
+                  <td className="px-6 py-3 text-sm text-gray-500">-</td>
                   <td className="px-6 py-3 text-sm text-gray-500">-</td>
                 </tr>
               </tfoot>

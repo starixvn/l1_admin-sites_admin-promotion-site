@@ -51,12 +51,12 @@ export async function createGameDisplayNameMap(
  * @param gameDisplayNameMap - Map of GameId to DisplayName
  * @returns Array of tickets with updated displayName
  */
-export function mapTicketsWithDisplayNames(
-  tickets: any[],
+export function mapWithDisplayNames(
+    items: any[],
   gameDisplayNameMap: Map<number, string>
 ): any[] {
-  return tickets.map((ticket: any) => ({
-    ...ticket,
-    displayName: gameDisplayNameMap.get(ticket.gameId) || ticket.displayName || 'Unknown Game'
+  return items.map((item: any) => ({
+    ...item,
+    displayName: gameDisplayNameMap.get(item.gameId) || 'Unknown Game'
   }));
 }

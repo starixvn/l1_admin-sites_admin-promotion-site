@@ -3,6 +3,7 @@ import { PromotionalTicketsResponse, PromotionalTicketsFilters } from '@/types/p
 
 interface UsePromotionalTicketsProps {
   promotionId: string;
+  playerPromotionId: string;
   gameType: number;
   currencyGroups: string[];
   playerId: string;
@@ -14,6 +15,7 @@ interface UsePromotionalTicketsProps {
 
 export function usePromotionalTickets({
   promotionId,
+  playerPromotionId,
   gameType,
   currencyGroups,
   playerId,
@@ -26,6 +28,7 @@ export function usePromotionalTickets({
     queryKey: [
       'promotional-tickets',
       promotionId,
+      playerPromotionId,
       gameType,
       currencyGroups,
       playerId,
@@ -63,6 +66,10 @@ export function usePromotionalTickets({
       if (currencyGroups.length > 0)
       {
         params.append("currencyGroups", currencyGroups.join(","));
+      }
+      if (playerPromotionId !== undefined)
+      {
+        params.append("playerPromotionId", playerPromotionId.toString());
       }
 
       const response = await fetch(`/api/promotions/${promotionId}/performance/players/tickets?${params.toString()}`);

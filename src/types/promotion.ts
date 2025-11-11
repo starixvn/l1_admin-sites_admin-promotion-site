@@ -11,6 +11,11 @@ export interface Promotion {
   offeredPlayerIds: string[];
   gameConfigType: number;
   gameIds: number[];
+  games: {
+    gameId: number;
+    name: string;
+    displayName: string;
+  }[];
   betLevels: {
     currencyGroup: string;
     betLevel: number;
@@ -71,7 +76,9 @@ export type PromotionPayload = {
   gameConfigType: number;
   gameIds: number[];
   betLevels: { currencyGroup: string; betLevel: number }[];
+  coinValues: { currencyGroup: string; coinValue: number }[];
   isGiftCode: boolean;
   minTurnoverMultiplier: number;
   maxRedemptionTimes: number;
+  claimExpirationDate: string;
 };

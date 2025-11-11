@@ -28,6 +28,7 @@ export default function Page() {
   // Custom filter states - refactor into single object
   const [filters, setFilters] = useState<PlayerPromotionFilters>({
     searchPlayer: "",
+    gameIds: [],
     playerStatus: "",
     startDate: "",
     endDate: "",
@@ -73,7 +74,8 @@ export default function Page() {
   const handleExportPlayers = async () => {
     try {
       const queryParams = new URLSearchParams();
-      
+      queryParams.append('gameType', promotion?.gameConfigType?.toString() || "");
+      queryParams.append('currencyGroups', promotion?.currencyGroups?.join(",") || "");
       if (filters.startDate) {
         queryParams.append('startDate', filters.startDate);
       }
@@ -88,6 +90,9 @@ export default function Page() {
       }
       if (filters.currencies.length > 0) {
         queryParams.append('currencies', filters.currencies.join(','));
+      }
+      if (filters.gameIds.length > 0) {
+        queryParams.append('gameIds', filters.gameIds.join(','));
       }
       queryParams.append('isBaseCurrency', isBaseCurrency.toString());
 
@@ -153,10 +158,13 @@ export default function Page() {
     isError: playersIsError,
   } = useQueryPromotionPlayers(
     params.id as string,
+    promotion?.gameConfigType || 0,
+    promotion?.currencyGroups || [],
     pagination.pageIndex + 1, // Convert from 0-based (TanStack) to 1-based (API)
     pagination.pageSize,
     {
       player: debouncedSearchPlayer || undefined,
+      gameIds: filters.gameIds.join(",") || undefined,
       status: filters.playerStatus || undefined,
       currencies: filters.currencies.join(",") || undefined,
       startDate: filters.startDate || undefined,
@@ -214,6 +222,7 @@ export default function Page() {
             onFilterChange={handleFilterChange}
             promotionStartDate={promotion?.startDate}
             promotionEndDate={promotion?.endDate}
+            games={promotion?.games || []}
           />
           <PlayersTable
             isBaseCurrency={isBaseCurrency}

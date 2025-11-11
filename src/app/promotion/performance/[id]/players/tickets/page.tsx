@@ -19,6 +19,7 @@ export default function Page() {
   const username = searchParams.get("username") || "UnknownUsername";
   const isBaseCurrency = searchParams.get("isBaseCurrency") === 'true';
   const promotionId = params.id as string;
+  const playerPromotionId = searchParams.get("playerPromotionId") || "UnknownPlayerPromotion";
 
   const [filters, setFilters] = useState<PromotionalTicketsFilters>({
     roundId: "",
@@ -71,6 +72,7 @@ export default function Page() {
     refetch,
   } = usePromotionalTickets({
     promotionId,
+    playerPromotionId,
     gameType: promotion?.gameConfigType || 0,
     currencyGroups: promotion?.currencyGroups || [],
     playerId,
@@ -109,6 +111,7 @@ export default function Page() {
       queryParams.append('isBaseCurrency', isBaseCurrency.toString());
       queryParams.append('gameType', promotion?.gameConfigType?.toString() || "");
       queryParams.append('currencyGroups', promotion?.currencyGroups?.join(",") || "");
+      queryParams.append('playerPromotionId', playerPromotionId);
       const response = await fetch(
         `/api/promotions/${promotionId}/performance/players/tickets/export?${queryParams.toString()}`
       );

@@ -19,6 +19,8 @@ export const useQueryPromotionPerformance = (promotionId: string) => {
 
 export const useQueryPromotionPlayers = (
   promotionId: string, 
+  gameType?: number,
+  currencyGroups?: string[],
   pageIndex = 1, 
   pageSize = 10, 
   filters?: any,
@@ -41,8 +43,8 @@ export const useQueryPromotionPlayers = (
   }
 
   return useQuery<PlayersResponse, Error>({
-    queryKey: ["promotionPlayers", promotionId, pageIndex, pageSize, filters],
-    queryFn: () => fetch(`/api/promotions/${promotionId}/performance/players?${queryParams}`).then(res => res.json()),
+    queryKey: ["promotionPlayers", promotionId, pageIndex, pageSize, filters, gameType, currencyGroups],
+    queryFn: () => fetch(`/api/promotions/${promotionId}/performance/players?${queryParams}&gameType=${gameType}&currencyGroups=${currencyGroups}`).then(res => res.json()),
     placeholderData: keepPreviousData,
     enabled: options?.enabled ?? true,
   });

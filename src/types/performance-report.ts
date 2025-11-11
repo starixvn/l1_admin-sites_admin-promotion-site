@@ -1,5 +1,6 @@
 export interface Player {
   playerId: string;
+  playerPromotionId: string;
   currencyGroup: string;
   gameId: number;
   siteId: string;
@@ -34,6 +35,7 @@ export interface PlayersResponse {
 
 export interface PlayerPromotionFilters {
   searchPlayer: string;
+  gameIds: number[];
   playerStatus: string;
   startDate: string;
   endDate: string;

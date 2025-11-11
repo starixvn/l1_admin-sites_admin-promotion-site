@@ -7,7 +7,7 @@ import Step2 from "./Step2";
 import { useCreatePromotion } from "@/hooks/useCreatePromotion";
 import { GAME_TYPES } from "@/constants/gameTypes";
 import { useOperators } from "@/hooks/useOperators";
-import { Promotion } from "@/types/promotion";
+import { Promotion, PromotionPayload } from "@/types/promotion";
 import { getStatus } from "@/constants/promotionStatusMap";
 import { getTodayAtMidnightGMT7 } from "@/lib/date-time.utils";
 import { checkPromotionCodeExists } from "@/lib/api/checkPromotionCodeExists";
@@ -392,7 +392,7 @@ export default function PromotionForm({
   const { mutate: createPromotion, isPending } = useCreatePromotion();
 
   const handleFormSubmit = (data: PromotionFormValues) => {
-    const payload: PromotionFormSubmission & { claimExpirationDate: string } = {
+    const payload: PromotionPayload & { _id?: string } = {
       bonusItemCount: data.bonusItemCount,
       code: data.code.toLowerCase(),
       currencyGroups: data.currencyGroups,

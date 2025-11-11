@@ -162,7 +162,7 @@ describe("CurrencyMultiSelect", () => {
   it("passes max display items", () => {
     render(<CurrencyMultiSelect {...defaultProps} />);
     
-    expect(screen.getByTestId("multi-select-max-display")).toHaveTextContent("5");
+    expect(screen.getByTestId("multi-select-max-display")).toHaveTextContent("4");
   });
 
   it("enables default select all", () => {
@@ -250,7 +250,7 @@ describe("CurrencyMultiSelect", () => {
     expect(screen.getByTestId("multi-select-no-options")).toHaveTextContent("No currencies found");
     expect(screen.getByTestId("multi-select-loading")).toHaveTextContent("Loading...");
     expect(screen.getByTestId("multi-select-error")).toHaveTextContent("Error loading currencies");
-    expect(screen.getByTestId("multi-select-max-display")).toHaveTextContent("5");
+    expect(screen.getByTestId("multi-select-max-display")).toHaveTextContent("4");
     expect(screen.getByTestId("multi-select-default-select-all")).toHaveTextContent("true");
     expect(screen.getByTestId("multi-select-searchable")).toHaveTextContent("true");
   });

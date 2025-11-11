@@ -31,6 +31,28 @@ jest.mock("@/app/promotion/performance/[id]/players/CurrencyMultiselect", () => 
   ),
 }));
 
+jest.mock("@/app/promotion/performance/[id]/players/GameMultiselect", () => ({
+  __esModule: true,
+  default: ({ 
+    gameOptions, 
+    selectedGames, 
+    onSelectionChange, 
+    placeholder 
+  }: any) => (
+    <div data-testid="game-multiselect">
+      <div data-testid="game-options">{JSON.stringify(gameOptions)}</div>
+      <div data-testid="game-selected">{JSON.stringify(selectedGames)}</div>
+      <div data-testid="game-placeholder">{placeholder}</div>
+      <button 
+        data-testid="game-change"
+        onClick={() => onSelectionChange(["1", "2"])}
+      >
+        Change Games
+      </button>
+    </div>
+  ),
+}));
+
 jest.mock("@/components/ui/date-range", () => ({
   __esModule: true,
   default: ({ 
@@ -93,13 +115,21 @@ const defaultFilters: PlayerPromotionFilters = {
   startDate: "",
   endDate: "",
   currencies: [],
+  gameIds: [],
 };
+
+const mockGames = [
+  { gameId: 1, name: "Game 1", displayName: "Game 1" },
+  { gameId: 2, name: "Game 2", displayName: "Game 2" },
+  { gameId: 3, name: "Game 3", displayName: "Game 3" },
+];
 
 const defaultProps = {
   filters: defaultFilters,
   onFilterChange: jest.fn(),
   promotionStartDate: "2024-01-01",
   promotionEndDate: "2024-01-31",
+  games: mockGames,
 };
 
 describe("PlayerFilter", () => {
@@ -117,13 +147,14 @@ describe("PlayerFilter", () => {
     
     expect(screen.getByText("Filters")).toBeInTheDocument();
     expect(screen.getByTestId("currency-multiselect")).toBeInTheDocument();
+    expect(screen.getByTestId("game-multiselect")).toBeInTheDocument();
     expect(screen.getByTestId("date-range")).toBeInTheDocument();
   });
 
   it("renders search input with correct placeholder", () => {
     render(<PlayerFilter {...defaultProps} />);
     
-    const searchInput = screen.getByPlaceholderText("Search by Player ID or Username");
+    const searchInput = screen.getByPlaceholderText("Search by PlayerID or Username");
     expect(searchInput).toBeInTheDocument();
     expect(searchInput).toHaveValue("");
   });
@@ -134,9 +165,9 @@ describe("PlayerFilter", () => {
     const statusSelect = screen.getByDisplayValue("All Status");
     expect(statusSelect).toBeInTheDocument();
     
-    PLAYER_STATUS_OPTIONS.forEach(option => {
+    for (const option of PLAYER_STATUS_OPTIONS) {
       expect(screen.getByText(option.label)).toBeInTheDocument();
-    });
+    }
   });
 
   it("renders date range component with correct props", () => {
@@ -195,12 +226,12 @@ describe("PlayerFilter", () => {
     
     render(<PlayerFilter {...defaultProps} onFilterChange={mockOnFilterChange} />);
     
-    const searchInput = screen.getByPlaceholderText("Search by Player ID or Username");
+    const searchInput = screen.getByPlaceholderText("Search by PlayerID or Username");
     await user.type(searchInput, "testuser");
     
     // Check that the final call has the complete string
     const calls = mockOnFilterChange.mock.calls;
-    const lastCall = calls[calls.length - 1];
+    const lastCall = calls.at(-1);
     expect(lastCall[0]).toBe("searchPlayer");
     // The last character typed should be 'r' from 'testuser'
     expect(lastCall[1]).toBe("r");
@@ -243,6 +274,18 @@ describe("PlayerFilter", () => {
     expect(mockOnFilterChange).toHaveBeenCalledWith("currencies", ["USD", "EUR"]);
   });
 
+  it("handles game selection changes", async () => {
+    const user = userEvent.setup();
+    const mockOnFilterChange = jest.fn();
+    
+    render(<PlayerFilter {...defaultProps} onFilterChange={mockOnFilterChange} />);
+    
+    const gameChangeButton = screen.getByTestId("game-change");
+    await user.click(gameChangeButton);
+    
+    expect(mockOnFilterChange).toHaveBeenCalledWith("gameIds", [1, 2]);
+  });
+
   it("handles clear filters functionality", async () => {
     const user = userEvent.setup();
     const mockOnFilterChange = jest.fn();
@@ -253,6 +296,7 @@ describe("PlayerFilter", () => {
       startDate: "2024-01-01",
       endDate: "2024-01-31",
       currencies: ["USD", "EUR"],
+      gameIds: [1, 2],
     };
     
     render(
@@ -271,6 +315,7 @@ describe("PlayerFilter", () => {
     expect(mockOnFilterChange).toHaveBeenCalledWith("startDate", "");
     expect(mockOnFilterChange).toHaveBeenCalledWith("endDate", "");
     expect(mockOnFilterChange).toHaveBeenCalledWith("currencies", ["USD", "EUR", "GBP"]);
+    expect(mockOnFilterChange).toHaveBeenCalledWith("gameIds", [1, 2, 3]);
   });
 
   it("displays current filter values", () => {
@@ -280,6 +325,7 @@ describe("PlayerFilter", () => {
       startDate: "2024-01-01",
       endDate: "2024-01-31",
       currencies: ["USD", "EUR"],
+      gameIds: [1, 2],
     };
     
     render(<PlayerFilter {...defaultProps} filters={filtersWithData} />);
@@ -289,6 +335,7 @@ describe("PlayerFilter", () => {
     expect(screen.getByTestId("date-start")).toHaveTextContent("2024-01-01");
     expect(screen.getByTestId("date-end")).toHaveTextContent("2024-01-31");
     expect(screen.getByTestId("currency-selected")).toHaveTextContent(JSON.stringify(["USD", "EUR"]));
+    expect(screen.getByTestId("game-selected")).toHaveTextContent(JSON.stringify(["1", "2"]));
   });
 
   it("handles loading state for currencies", () => {
@@ -344,7 +391,7 @@ describe("PlayerFilter", () => {
     
     // Check that key elements are present
     expect(screen.getByText("Filters")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Search by Player ID or Username")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Search by PlayerID or Username")).toBeInTheDocument();
     expect(screen.getByText("Clear Filters")).toBeInTheDocument();
   });
 
@@ -362,7 +409,7 @@ describe("PlayerFilter", () => {
   it("renders search input with correct styling", () => {
     render(<PlayerFilter {...defaultProps} />);
     
-    const searchInput = screen.getByPlaceholderText("Search by Player ID or Username");
+    const searchInput = screen.getByPlaceholderText("Search by PlayerID or Username");
     expect(searchInput).toHaveClass(
       "w-full", "pl-10", "pr-4", "py-2", "border", "border-gray-300", 
       "rounded-lg", "focus:ring-2", "focus:ring-blue-500", 

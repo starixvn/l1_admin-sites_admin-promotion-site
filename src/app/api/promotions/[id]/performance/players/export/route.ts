@@ -5,6 +5,7 @@ import { roundToDecimals } from '@/lib/promotion/promotion.utils';
 import { toGMTString } from '@/lib/date-time.utils';
 import { GMT_OFFSET } from '@/constants/constants';
 import { Player } from '@/types/performance-report';
+import { createGameDisplayNameMap, mapWithDisplayNames } from '@/lib/promotion/gameDisplayName.utils';
 
 export async function GET(
   request: NextRequest,
@@ -13,12 +14,15 @@ export async function GET(
   try {
     const { id: promotionId } = await params;
     const { searchParams } = new URL(request.url);
+    const gameType = searchParams.get('gameType');
+    const currencyGroups = searchParams.get('currencyGroups');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const status = searchParams.get('status');
     const player = searchParams.get('player');
     const currencies = searchParams.get('currencies');
     const isBaseCurrency = searchParams.get('isBaseCurrency') === 'true';
+    const gameIds = searchParams.get('gameIds');
     if (!promotionId) {
       return NextResponse.json(
         { error: 'promotionId is required' },
@@ -46,7 +50,9 @@ export async function GET(
     if (currencies && currencies.length > 0) {
       queryParams.currencies = currencies;
     }
-
+    if (gameIds && gameIds.length > 0) {
+      queryParams.gameIds = gameIds;
+    }
     // Call external API to get all players for export
     const response = await axios.get(`${configs.apiPromotionUrl}/player-promotions/state/export`, {
       params: queryParams,
@@ -54,6 +60,11 @@ export async function GET(
         'Content-Type': 'application/json'
       },
     });
+    const gameDisplayNameMap = await createGameDisplayNameMap(gameType, currencyGroups);
+
+    if (response.data?.items) {
+      response.data.items = mapWithDisplayNames(response.data.items, gameDisplayNameMap);
+    }
 
     // Convert data to CSV format
     const players = response.data.items || [];
@@ -64,6 +75,7 @@ export async function GET(
       'Username',
       'Status',
       'Site Name',
+      'Game Name',
       'Currency',
       'Date Joined (GMT+7)',
       'Remaining FS',
@@ -74,11 +86,12 @@ export async function GET(
       'Last Activity (GMT+7)'
     ];
 
-    const csvRows = players.map((player: Player) => [
+    const csvRows = players.map((player: Player & { displayName: string }) => [
       player.playerId || '',
       player.username || '',
       player.status || '',
       player.siteName || '',
+      player.displayName || '',
       player.currency || '',
       toGMTString(player.dateJoined, GMT_OFFSET) || '',
       `${player.remainingBonusItems || 0}/${player.initialBonusItem || 0}`,
@@ -101,7 +114,8 @@ export async function GET(
       '-',
       '-',
       '-',
-      '--',
+      '-',
+      '-',
       '',
       roundToDecimals(totalBonusWin),
       roundToDecimals(totalTurnover),

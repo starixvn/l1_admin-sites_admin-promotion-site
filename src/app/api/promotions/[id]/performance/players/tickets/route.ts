@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import configs from "../../../../../../../../configs";
-import { createGameDisplayNameMap, mapTicketsWithDisplayNames } from "@/lib/promotion/gameDisplayName.utils";
+import { createGameDisplayNameMap, mapWithDisplayNames } from "@/lib/promotion/gameDisplayName.utils";
 
 export async function GET(
   request: NextRequest,
@@ -11,6 +11,7 @@ export async function GET(
     const { id: promotionId } = await params;
     const { searchParams } = new URL(request.url);
     const gameType = searchParams.get("gameType");
+    const playerPromotionId = searchParams.get("playerPromotionId");
     const currencyGroups = searchParams.get("currencyGroups");
     const playerId = searchParams.get("playerId");
     const pageIndex = searchParams.get("pageIndex");
@@ -18,7 +19,9 @@ export async function GET(
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     let apiUrl = `${configs.apiPromotionUrl}/promotion-tickets/get-promotion-tickets?promotionId=${promotionId}&playerId=${playerId}&pageIndex=${pageIndex}&pageSize=${pageSize}`;
-
+    if (playerPromotionId) {
+      apiUrl += `&playerPromotionId=${playerPromotionId}`;
+    }
     const roundId = searchParams.get("roundId");
     if (roundId) {
       apiUrl += `&roundId=${roundId.trim()}`;
@@ -44,7 +47,7 @@ export async function GET(
     
     // Map tickets with display names using utility function
     if (response.data?.tickets) {
-      response.data.tickets = mapTicketsWithDisplayNames(response.data.tickets, gameDisplayNameMap);
+      response.data.tickets = mapWithDisplayNames(response.data.tickets, gameDisplayNameMap);
     }
 
     return NextResponse.json(response.data);
