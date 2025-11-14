@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
-import configs from "../../../../../../../../configs";
+import configs from "../../../../../../configs";
 import { createGameDisplayNameMap, mapWithDisplayNames } from "@/lib/promotion/gameDisplayName.utils";
+import { pipe, appendIf } from "@/lib/functional.utils";
 
 export async function GET(
   request: NextRequest,
@@ -18,20 +19,7 @@ export async function GET(
     const pageSize = searchParams.get("pageSize");
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
-    let apiUrl = `${configs.apiPromotionUrl}/promotion-tickets/get-promotion-tickets?promotionId=${promotionId}&playerId=${playerId}&pageIndex=${pageIndex}&pageSize=${pageSize}`;
-    if (playerPromotionId) {
-      apiUrl += `&playerPromotionId=${playerPromotionId}`;
-    }
     const roundId = searchParams.get("roundId");
-    if (roundId) {
-      apiUrl += `&roundId=${roundId.trim()}`;
-    }
-    if (startDate) {
-      apiUrl += `&startDate=${startDate}`;
-    }
-    if (endDate) {
-      apiUrl += `&endDate=${endDate}`;
-    }
 
     if (!promotionId || !playerId) {
       return NextResponse.json(
@@ -39,6 +27,20 @@ export async function GET(
         { status: 400 }
       );
     }
+
+    // Build query parameters for external API
+    const urlParams = pipe<URLSearchParams>(
+      (p) => { p.append('promotionId', promotionId); return p; },
+      (p) => { p.append('playerId', playerId); return p; },
+      (p) => { p.append('pageIndex', pageIndex || ''); return p; },
+      (p) => { p.append('pageSize', pageSize || ''); return p; },
+      appendIf(playerPromotionId, (v) => !!v, "playerPromotionId", String),
+      appendIf(roundId, (v) => !!v, "roundId", String),
+      appendIf(startDate, (v) => !!v, "startDate", String),
+      appendIf(endDate, (v) => !!v, "endDate", String)
+    )(new URLSearchParams());
+
+    const apiUrl = `${configs.apiPromotionUrl}/promotion-tickets/get-promotion-tickets?${urlParams.toString()}`;
 
     // Create game display name map using utility function
     const gameDisplayNameMap = await createGameDisplayNameMap(gameType, currencyGroups);

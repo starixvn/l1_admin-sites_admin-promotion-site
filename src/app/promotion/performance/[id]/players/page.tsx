@@ -74,30 +74,24 @@ export default function Page() {
   const handleExportPlayers = async () => {
     try {
       const queryParams = new URLSearchParams();
-      queryParams.append('gameType', promotion?.gameConfigType?.toString() || "");
-      queryParams.append('currencyGroups', promotion?.currencyGroups?.join(",") || "");
-      if (filters.startDate) {
-        queryParams.append('startDate', filters.startDate);
-      }
-      if (filters.endDate) {
-        queryParams.append('endDate', filters.endDate);
-      }
-      if (filters.playerStatus && filters.playerStatus !== 'All Status') {
-        queryParams.append('status', filters.playerStatus);
-      }
-      if (filters.searchPlayer && filters.searchPlayer.trim() !== '') {
-        queryParams.append('player', filters.searchPlayer.trim());
-      }
-      if (filters.currencies.length > 0) {
-        queryParams.append('currencies', filters.currencies.join(','));
-      }
-      if (filters.gameIds.length > 0) {
-        queryParams.append('gameIds', filters.gameIds.join(','));
-      }
-      queryParams.append('isBaseCurrency', isBaseCurrency.toString());
+      queryParams.append(
+        "gameType",
+        promotion?.gameConfigType?.toString() || ""
+      );
+      queryParams.append(
+        "currencyGroups",
+        promotion?.currencyGroups?.join(",") || ""
+      );
+      queryParams.append("startDate", filters.startDate);
+      queryParams.append("endDate", filters.endDate);
+      queryParams.append("status", filters.playerStatus);
+      queryParams.append("player", filters.searchPlayer);
+      queryParams.append("currencies", filters.currencies.join(","));
+      queryParams.append("gameIds", filters.gameIds.join(","));
+      queryParams.append("isBaseCurrency", isBaseCurrency.toString());
 
       const response = await fetch(
-        `/api/promotions/${params.id}/performance/players/export?${queryParams.toString()}`
+        `/api/promotions/${params.id}/players/export?${queryParams.toString()}`
       );
 
       if (!response.ok) {

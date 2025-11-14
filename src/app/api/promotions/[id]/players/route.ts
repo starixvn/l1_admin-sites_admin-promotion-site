@@ -1,7 +1,8 @@
 import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
-import configs from "../../../../../../../configs";
+import configs from "../../../../../../configs";
 import { createGameDisplayNameMap, mapWithDisplayNames } from "@/lib/promotion/gameDisplayName.utils";
+import { pipe, appendIf } from "@/lib/functional.utils";
 
 export async function GET(
   request: NextRequest,
@@ -23,29 +24,20 @@ export async function GET(
     const pageSize = searchParams.get('pageSize') || '10';
 
     // Construct the API URL with date range parameters
-    let apiUrl = `${configs.apiPromotionUrl}/player-promotions/state?promotionId=${id}`;
-    if (startDate) {
-      apiUrl += `&startDate=${startDate}`;
-    }
-    if (endDate) {
-      apiUrl += `&endDate=${endDate}`;
-    }
-    if (status && status !== 'All Status') {
-      apiUrl += `&status=${status}`;
-    }
-    if (player && player.length > 0 && player.trim() !== '') {
-      apiUrl += `&player=${encodeURIComponent(player.trim())}`;
-    }
-    if (gameName && gameName.length > 0 && gameName.trim() !== '') {
-      apiUrl += `&gameName=${encodeURIComponent(gameName.trim())}`;
-    }
-    if (currencies && currencies.length > 0) {
-      apiUrl += `&currencies=${currencies}`;
-    }
-    if (gameIds && gameIds.length > 0) {
-      apiUrl += `&gameIds=${gameIds}`;
-    }
-    apiUrl += `&pageIndex=${pageIndex}&pageSize=${pageSize}`;
+    const urlParams = pipe<URLSearchParams>(
+      (p) => { p.append('promotionId', id); return p; },
+      appendIf(startDate, (v) => !!v, "startDate", String),
+      appendIf(endDate, (v) => !!v, "endDate", String),
+      appendIf(status, (v) => !!v && v !== 'All Status', "status", String),
+      appendIf(player, (v) => !!v && v.length > 0 && v.trim() !== '', "player", (v) => encodeURIComponent((v as string).trim())),
+      appendIf(gameName, (v) => !!v && v.length > 0 && v.trim() !== '', "gameName", (v) => encodeURIComponent((v as string).trim())),
+      appendIf(currencies, (v) => !!v && v.length > 0, "currencies", String),
+      appendIf(gameIds, (v) => !!v && v.length > 0, "gameIds", String),
+      (p) => { p.append('pageIndex', pageIndex); return p; },
+      (p) => { p.append('pageSize', pageSize); return p; }
+    )(new URLSearchParams());
+
+    const apiUrl = `${configs.apiPromotionUrl}/player-promotions/state?${urlParams.toString()}`;
 
     const response = await axios.get(apiUrl);
     const gameDisplayNameMap = await createGameDisplayNameMap(gameType, currencyGroups);

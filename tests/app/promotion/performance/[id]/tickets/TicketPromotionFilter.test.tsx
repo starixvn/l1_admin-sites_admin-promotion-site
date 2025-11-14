@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import TicketPromotionFilter from "@/app/promotion/performance/[id]/players/tickets/TicketPromotionFilter";
+import TicketPromotionFilter from "@/app/promotion/performance/[id]/tickets/TicketPromotionFilter";
 import { PromotionalTicketsFilters } from "@/types/promotional-tickets";
 
 // Mock child components

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
-import configs from '../../../../../../../../configs';
+import configs from '../../../../../../../configs';
 import { roundToDecimals } from '@/lib/promotion/promotion.utils';
 import { toGMTString } from '@/lib/date-time.utils';
 import { GMT_OFFSET } from '@/constants/constants';
 import { Player } from '@/types/performance-report';
 import { createGameDisplayNameMap, mapWithDisplayNames } from '@/lib/promotion/gameDisplayName.utils';
+import { pipe, appendIf } from '@/lib/functional.utils';
 
 export async function GET(
   request: NextRequest,
@@ -31,31 +32,19 @@ export async function GET(
     }
 
     // Build query parameters for external API
-    const queryParams: any = {
-      promotionId,
-    };
+    const urlParams = pipe<URLSearchParams>(
+      (p) => { p.append('promotionId', promotionId); return p; },
+      appendIf(startDate, (v) => !!v, "startDate", String),
+      appendIf(endDate, (v) => !!v, "endDate", String),
+      appendIf(status, (v) => !!v && v !== 'All Status', "status", String),
+      appendIf(player, (v) => !!v && v.length > 0 && v.trim() !== '', "player", (v) => encodeURIComponent((v as string).trim())),
+      appendIf(currencies, (v) => !!v && v.length > 0, "currencies", String),
+      appendIf(gameIds, (v) => !!v && v.length > 0, "gameIds", String)
+    )(new URLSearchParams());
 
-    if (startDate) {
-      queryParams.startDate = startDate;
-    }
-    if (endDate) {
-      queryParams.endDate = endDate;
-    }
-    if (status && status !== 'All Status') {
-      queryParams.status = status;
-    }
-    if (player && player.length > 0 && player.trim() !== '') {
-      queryParams.player = player.trim();
-    }
-    if (currencies && currencies.length > 0) {
-      queryParams.currencies = currencies;
-    }
-    if (gameIds && gameIds.length > 0) {
-      queryParams.gameIds = gameIds;
-    }
     // Call external API to get all players for export
-    const response = await axios.get(`${configs.apiPromotionUrl}/player-promotions/state/export`, {
-      params: queryParams,
+    const apiUrl = `${configs.apiPromotionUrl}/player-promotions/state/export?${urlParams.toString()}`;
+    const response = await axios.get(apiUrl, {
       headers: {
         'Content-Type': 'application/json'
       },

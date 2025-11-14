@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
-import configs from '../../../../../../../../../configs';
+import configs from '../../../../../../../configs';
 import { roundToDecimals } from '@/lib/promotion/promotion.utils';
 import { toGMTStringWithSeconds } from '@/lib/date-time.utils';
 import { GMT_OFFSET } from '@/constants/constants';
 import { PromotionalTicket } from '@/types/promotional-tickets';
 import { createGameDisplayNameMap, mapWithDisplayNames } from '@/lib/promotion/gameDisplayName.utils';
+import { appendIf, pipe } from '@/lib/functional.utils';
 
 export async function GET(
   request: NextRequest,
@@ -30,22 +31,21 @@ export async function GET(
       );
     }
 
+    const urlParams = pipe<URLSearchParams>(
+      (p) => { p.append('promotionId', promotionId); return p; },
+      appendIf(playerId, (v) => !!v, "playerId", String),
+      appendIf(roundId, (v) => !!v, "roundId", String),
+      appendIf(startDate, (v) => !!v, "startDate", String),
+      appendIf(endDate, (v) => !!v, "endDate", String),
+      appendIf(playerPromotionId, (v) => !!v, "playerPromotionId", String)
+    )(new URLSearchParams());
+    const apiUrl = `${configs.apiPromotionUrl}/promotion-tickets/export-promotion-tickets?${urlParams.toString()}`;
+
     // Create game display name map using utility function
     const gameDisplayNameMap = await createGameDisplayNameMap(gameType, currencyGroups);
 
-    // Build query parameters for external API
-    const queryParams = {
-      promotionId,
-      playerId,
-      roundId,
-      startDate,
-      endDate,
-      playerPromotionId,
-    };
-
     // Call external API to get all tickets for export
-    const response = await axios.get(`${configs.apiPromotionUrl}/promotion-tickets/export-promotion-tickets`, {
-      params: queryParams,
+    const response = await axios.get(apiUrl, {
       headers: {
         'Content-Type': 'application/json'
       },

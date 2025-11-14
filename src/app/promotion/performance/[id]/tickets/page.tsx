@@ -8,8 +8,8 @@ import { DEBOUNCE_TIME } from "@/constants/constants";
 import { PromotionalTicketsFilters } from "@/types/promotional-tickets";
 import { useQueryPromotion } from "@/hooks/useQueryPromotionPerformance";
 import { useDebounce } from "@/hooks/useDebounce";
-import TicketPromotionTable from "@/app/promotion/performance/[id]/players/tickets/TicketPromotionTable";
-import TicketPromotionFilter from "@/app/promotion/performance/[id]/players/tickets/TicketPromotionFilter";
+import TicketPromotionTable from "./TicketPromotionTable";
+import TicketPromotionFilter from "./TicketPromotionFilter";
 
 export default function Page() {
   const router = useRouter();
@@ -113,7 +113,7 @@ export default function Page() {
       queryParams.append('currencyGroups', promotion?.currencyGroups?.join(",") || "");
       queryParams.append('playerPromotionId', playerPromotionId);
       const response = await fetch(
-        `/api/promotions/${promotionId}/performance/players/tickets/export?${queryParams.toString()}`
+        `/api/promotions/${promotionId}/tickets/export?${queryParams.toString()}`
       );
 
       if (!response.ok) {

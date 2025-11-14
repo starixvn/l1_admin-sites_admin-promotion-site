@@ -24,7 +24,7 @@ jest.mock("@/hooks/useDebounce", () => ({
 }));
 
 // Mock child components
-jest.mock("@/app/promotion/performance/[id]/players/tickets/TicketPromotionFilter", () => {
+jest.mock("@/app/promotion/performance/[id]/tickets/TicketPromotionFilter", () => {
   return function MockTicketPromotionFilter({ onFilterChange, onClearFilters }: any) {
     return (
       <div data-testid="ticket-promotion-filter">
@@ -39,7 +39,7 @@ jest.mock("@/app/promotion/performance/[id]/players/tickets/TicketPromotionFilte
   };
 });
 
-jest.mock("@/app/promotion/performance/[id]/players/tickets/TicketPromotionTable", () => {
+jest.mock("@/app/promotion/performance/[id]/tickets/TicketPromotionTable", () => {
   return function MockTicketPromotionTable({ tickets, isLoading, metaData, pagination, onPaginationChange, onCurrencyToggle, isBaseCurrency }: any) {
     return (
       <div data-testid="ticket-promotion-table">

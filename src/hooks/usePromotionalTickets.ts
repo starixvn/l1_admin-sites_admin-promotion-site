@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { PromotionalTicketsResponse, PromotionalTicketsFilters } from '@/types/promotional-tickets';
+import { pipe, appendIf } from '@/lib/functional.utils';
 
 interface UsePromotionalTicketsProps {
   promotionId: string;
@@ -39,40 +40,19 @@ export function usePromotionalTickets({
       pageSize,
     ],
     queryFn: async (): Promise<PromotionalTicketsResponse> => {
-      const params = new URLSearchParams();
-      params.append('playerId', playerId);
-      
-      if (filters.roundId) {
-        params.append("roundId", filters.roundId);
-      }
-      if (filters.startDate) {
-        params.append("startDate", filters.startDate);
-      }
-      if (filters.endDate) {
-        params.append("endDate", filters.endDate);
-      }
-      if (pageIndex !== undefined)
-      {
-        params.append("pageIndex", pageIndex.toString());
-      }
-      if (pageSize !== undefined)
-      {
-        params.append("pageSize", pageSize.toString());  
-      }
-      if (gameType !== undefined)
-      {
-        params.append("gameType", gameType.toString());
-      }
-      if (currencyGroups.length > 0)
-      {
-        params.append("currencyGroups", currencyGroups.join(","));
-      }
-      if (playerPromotionId !== undefined)
-      {
-        params.append("playerPromotionId", playerPromotionId.toString());
-      }
+      const params = pipe<URLSearchParams>(
+        (p) => { p.append('playerId', playerId); return p; },
+        appendIf(filters.roundId, (v) => !!v, "roundId", (v) => v.toString()),
+        appendIf(filters.startDate, (v) => !!v, "startDate", (v) => v.toString()),
+        appendIf(filters.endDate, (v) => !!v, "endDate", (v) => v.toString()),
+        appendIf(pageIndex, (v) => v !== undefined, "pageIndex", (v) => v.toString()),
+        appendIf(pageSize, (v) => v !== undefined, "pageSize", (v) => v.toString()),
+        appendIf(gameType, (v) => v !== undefined, "gameType", (v) => v.toString()),
+        appendIf(currencyGroups, (v) => v.length > 0, "currencyGroups", (v) => v.join(",")),
+        appendIf(playerPromotionId, (v) => v !== undefined, "playerPromotionId", (v) => v.toString())
+      )(new URLSearchParams());
 
-      const response = await fetch(`/api/promotions/${promotionId}/performance/players/tickets?${params.toString()}`);
+      const response = await fetch(`/api/promotions/${promotionId}/tickets?${params.toString()}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

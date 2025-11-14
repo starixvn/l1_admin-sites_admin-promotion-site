@@ -82,7 +82,7 @@ const getBasicPlayerColumns = (router: any, isBaseCurrency: boolean): ColumnDef<
         const pathParts = currentPath.split('/');
         const promotionId = pathParts[pathParts.indexOf('performance') + 1];
         const playerPromotionId = row.original.playerPromotionId as string;
-        router.push(`/promotion/performance/${promotionId}/players/tickets?playerId=${playerId}&username=${username}&isBaseCurrency=${isBaseCurrency.toString()}&playerPromotionId=${playerPromotionId}`);
+        router.push(`/promotion/performance/${promotionId}/tickets?playerId=${playerId}&username=${username}&isBaseCurrency=${isBaseCurrency.toString()}&playerPromotionId=${playerPromotionId}`);
       };
       
       return (

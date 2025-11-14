@@ -1,6 +1,6 @@
 import { Search, X } from "lucide-react";
 import { PromotionalTicketsFilters } from "@/types/promotional-tickets";
-import DateRange from "../../../../../../components/ui/date-range";
+import DateRange from "@/components/ui/date-range";
 
 interface TicketPromotionFilterProps {
   filters: PromotionalTicketsFilters;

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import TicketPromotionTable from "@/app/promotion/performance/[id]/players/tickets/TicketPromotionTable";
+import TicketPromotionTable from "@/app/promotion/performance/[id]/tickets/TicketPromotionTable";
 import { PromotionalTicket } from "@/types/promotional-tickets";
 import { PaginationState } from "@tanstack/react-table";
 
