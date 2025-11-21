@@ -2,8 +2,8 @@ import { z } from "zod";
 
 const baseSchema = z.object({
   promotionTitle: z.object({
-    'en-US': z.string().min(1, 'English title cannot be left empty.').max(50),
-  }).catchall(z.string().max(50)),
+    'en-US': z.string().min(1, 'English title cannot be left empty.').max(40),
+  }).catchall(z.string().max(40)),
   bannerContent: z.object({
     'en-US': z.string().min(1, 'English banner content cannot be left empty.').max(150),
   }).catchall(z.string().max(150)),

@@ -163,20 +163,56 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
   ): { hasError: boolean; isFirstError: boolean } => {
     const forbiddenChars = /[%$#]/;
     const currentValue = value || "";
+
+    const trimmedValue = currentValue.trim();
     let hasError = false;
     let isFirstError = false;
+    if (fieldName === "promotionTitle") {
+      // English title: required
+      if (isEnglish && !trimmedValue) {
+        setError(`${fieldName}.${langCode}`, {
+          type: "manual",
+          message: "English title cannot be left empty.",
+        });
+        hasError = true;
+        isFirstError = true;
+      }
+      // Length rule: 1–40 characters (áp dụng cho mọi ngôn ngữ nếu có nhập)
+      else if (
+        currentValue &&
+        (currentValue.length < 1 || currentValue.length > 40)
+      ) {
+        setError(`${fieldName}.${langCode}`, {
+          type: "manual",
+          message: "Title must be between 1 and 40 characters.",
+        });
+        hasError = true;
+        isFirstError = isEnglish; // ưu tiên focus English
+      } else {
+        clearErrors(`${fieldName}.${langCode}`);
+      }
 
+      return { hasError, isFirstError };
+    }
     if (forbiddenChars.test(currentValue)) {
       setError(`${fieldName}.${langCode}`, {
         type: "manual",
-        message: `${fieldName === "promotionTitle" ? "Title" : fieldName === "bannerContent" ? "Banner content" : TERMS_AND_CONDITIONS_LABEL} must not contain %, $, or #`,
+        message: `${
+          fieldName === "bannerContent"
+            ? "Banner content"
+            : TERMS_AND_CONDITIONS_LABEL
+        } must not contain %, $, or #`,
       });
       hasError = true;
       isFirstError = isEnglish;
     } else if (isEnglish && !currentValue) {
       setError(`${fieldName}.${langCode}`, {
         type: "manual",
-        message: `English ${fieldName === "promotionTitle" ? "title" : fieldName === "bannerContent" ? "banner content" : TERMS_AND_CONDITIONS_LABEL} cannot be left empty.`,
+        message: `English ${
+          fieldName === "bannerContent"
+            ? "banner content"
+            : TERMS_AND_CONDITIONS_LABEL
+        } cannot be left empty.`,
       });
       hasError = true;
       isFirstError = true;
@@ -187,47 +223,53 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
     return { hasError, isFirstError };
   };
 
-  const validateAllFields = (): { hasInvalid: boolean; firstErrorField: HTMLElement | null } => {
+  const validateAllFields = (): {
+    hasInvalid: boolean;
+    firstErrorField: HTMLElement | null;
+  } => {
     let hasInvalid = false;
     let firstErrorField: HTMLElement | null = null;
 
     LANGS.forEach((lang) => {
       const isEnglish = lang.code === "en-US";
-      
+
       // Validate title
-      const { hasError: titleError, isFirstError: isFirstTitleError } = validateField<HTMLInputElement>(
-        promotionTitle?.[lang.code],
-        lang.code,
-        "promotionTitle",
-        enUsTitleRef,
-        isEnglish
-      );
+      const { hasError: titleError, isFirstError: isFirstTitleError } =
+        validateField<HTMLInputElement>(
+          promotionTitle?.[lang.code],
+          lang.code,
+          "promotionTitle",
+          enUsTitleRef,
+          isEnglish
+        );
       if (titleError && !firstErrorField && isFirstTitleError) {
         firstErrorField = enUsTitleRef.current;
       }
       hasInvalid = hasInvalid || titleError;
 
       // Validate banner content
-      const { hasError: bannerError, isFirstError: isFirstBannerError } = validateField<HTMLTextAreaElement>(
-        bannerContent?.[lang.code],
-        lang.code,
-        "bannerContent",
-        enUsBannerRef,
-        isEnglish
-      );
+      const { hasError: bannerError, isFirstError: isFirstBannerError } =
+        validateField<HTMLTextAreaElement>(
+          bannerContent?.[lang.code],
+          lang.code,
+          "bannerContent",
+          enUsBannerRef,
+          isEnglish
+        );
       if (bannerError && !firstErrorField && isFirstBannerError) {
         firstErrorField = enUsBannerRef.current;
       }
       hasInvalid = hasInvalid || bannerError;
 
       // Validate terms and conditions
-      const { hasError: termsError, isFirstError: isFirstTermsError } = validateField<HTMLTextAreaElement>(
-        termsAndConditions?.[lang.code],
-        lang.code,
-        "termsAndConditions",
-        enUsTermsRef,
-        isEnglish
-      );
+      const { hasError: termsError, isFirstError: isFirstTermsError } =
+        validateField<HTMLTextAreaElement>(
+          termsAndConditions?.[lang.code],
+          lang.code,
+          "termsAndConditions",
+          enUsTermsRef,
+          isEnglish
+        );
       if (termsError && !firstErrorField && isFirstTermsError) {
         firstErrorField = enUsTermsRef.current;
       }
@@ -331,18 +373,25 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                       ? ERROR_BORDER_CLASS
                       : BORDER_DEFAULT_CLASS
                   }`}
-                  maxLength={50}
+                  maxLength={40}
                   value={promotionTitle?.[lang.code] || ""}
                   onChange={(e) => {
-                    const value = e.target.value;
-                    const sanitized = value.replace(/[%$#]/g, "");
-                    setValue(`promotionTitle.${lang.code}`, sanitized);
+                    setValue(`promotionTitle.${lang.code}`, e.target.value);
                   }}
                   placeholder={`Enter title in ${lang.label}`}
                   ref={lang.code === "en-US" ? enUsTitleRef : undefined}
                 />
-                <span className={`text-xs w-16 text-right ${getNestedErrorMsg(errors.promotionTitle, lang.code)?.includes('at most') ? ERROR_TEXT_CLASS : TEXT_GRAY_CLASS}`}>
-                  {(promotionTitle?.[lang.code] || "").length}/50
+                <span
+                  className={`text-xs w-16 text-right ${
+                    getNestedErrorMsg(
+                      errors.promotionTitle,
+                      lang.code
+                    )?.includes("at most")
+                      ? ERROR_TEXT_CLASS
+                      : TEXT_GRAY_CLASS
+                  }`}
+                >
+                  {(promotionTitle?.[lang.code] || "").length}/40
                 </span>
               </div>
               {getNestedErrorMsg(errors.promotionTitle, lang.code) && (
@@ -388,7 +437,16 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   placeholder={`Enter banner content in ${lang.label}`}
                   ref={lang.code === "en-US" ? enUsBannerRef : undefined}
                 />
-                <span className={`text-xs w-20 text-right pt-2 ${getNestedErrorMsg(errors.bannerContent, lang.code)?.includes('at most') ? ERROR_TEXT_CLASS : TEXT_GRAY_CLASS}`}>
+                <span
+                  className={`text-xs w-20 text-right pt-2 ${
+                    getNestedErrorMsg(
+                      errors.bannerContent,
+                      lang.code
+                    )?.includes("at most")
+                      ? ERROR_TEXT_CLASS
+                      : TEXT_GRAY_CLASS
+                  }`}
+                >
                   {(bannerContent?.[lang.code] || "").length}/150
                 </span>
               </div>
@@ -435,7 +493,16 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                   placeholder={`Enter terms in ${lang.label}`}
                   ref={lang.code === "en-US" ? enUsTermsRef : undefined}
                 />
-                <span className={`text-xs w-24 text-right pt-2 ${getNestedErrorMsg(errors.termsAndConditions, lang.code)?.includes('at most') ? ERROR_TEXT_CLASS : TEXT_GRAY_CLASS}`}>
+                <span
+                  className={`text-xs w-24 text-right pt-2 ${
+                    getNestedErrorMsg(
+                      errors.termsAndConditions,
+                      lang.code
+                    )?.includes("at most")
+                      ? ERROR_TEXT_CLASS
+                      : TEXT_GRAY_CLASS
+                  }`}
+                >
                   {(termsAndConditions?.[lang.code] || "").length}/1500
                 </span>
               </div>
