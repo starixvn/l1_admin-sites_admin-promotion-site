@@ -177,10 +177,10 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
         hasError = true;
         isFirstError = true;
       }
-      // Length rule: 1–40 characters (áp dụng cho mọi ngôn ngữ nếu có nhập)
+      // Length rule: 1–50 characters (áp dụng cho mọi ngôn ngữ nếu có nhập)
       else if (
         currentValue &&
-        (currentValue.length < 1 || currentValue.length > 40)
+        (currentValue.length < 1 || currentValue.length > 50)
       ) {
         setError(`${fieldName}.${langCode}`, {
           type: "manual",
@@ -373,7 +373,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                       ? ERROR_BORDER_CLASS
                       : BORDER_DEFAULT_CLASS
                   }`}
-                  maxLength={40}
+                  maxLength={50}
                   value={promotionTitle?.[lang.code] || ""}
                   onChange={(e) => {
                     setValue(`promotionTitle.${lang.code}`, e.target.value);
@@ -391,7 +391,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                       : TEXT_GRAY_CLASS
                   }`}
                 >
-                  {(promotionTitle?.[lang.code] || "").length}/40
+                  {(promotionTitle?.[lang.code] || "").length}/50
                 </span>
               </div>
               {getNestedErrorMsg(errors.promotionTitle, lang.code) && (
