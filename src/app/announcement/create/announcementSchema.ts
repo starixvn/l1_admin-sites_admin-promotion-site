@@ -8,8 +8,8 @@ const baseSchema = z.object({
     'en-US': z.string().min(1, 'English banner content cannot be left empty.').max(150),
   }).catchall(z.string().max(150)),
   termsAndConditions: z.object({
-    'en-US': z.string().min(1, 'English terms & conditions cannot be left empty.').max(1500),
-  }).catchall(z.string().max(1500)),
+    'en-US': z.string().min(1, 'English terms & conditions cannot be left empty.').max(3000),
+  }).catchall(z.string().max(3000)),
   template: z.number().min(1, 'Banner is required'),
   fromDate: z.date({ required_error: 'Start date is required' }),
   toDate: z.date({ required_error: 'End date is required' }),

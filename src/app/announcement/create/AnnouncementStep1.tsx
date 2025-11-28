@@ -485,7 +485,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                       ? ERROR_BORDER_CLASS
                       : BORDER_DEFAULT_CLASS
                   }`}
-                  maxLength={1500}
+                  maxLength={3000}
                   value={termsAndConditions?.[lang.code] || ""}
                   onChange={(e) =>
                     setValue(`termsAndConditions.${lang.code}`, e.target.value)
@@ -503,7 +503,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
                       : TEXT_GRAY_CLASS
                   }`}
                 >
-                  {(termsAndConditions?.[lang.code] || "").length}/1500
+                  {(termsAndConditions?.[lang.code] || "").length}/3000
                 </span>
               </div>
               {getNestedErrorMsg(errors.termsAndConditions, lang.code) && (
