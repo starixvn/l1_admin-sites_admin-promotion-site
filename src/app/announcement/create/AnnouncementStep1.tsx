@@ -161,9 +161,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
     ref: React.RefObject<T | null>,
     isEnglish: boolean
   ): { hasError: boolean; isFirstError: boolean } => {
-    const forbiddenChars = /[%$#]/;
     const currentValue = value || "";
-
     const trimmedValue = currentValue.trim();
     let hasError = false;
     let isFirstError = false;
@@ -194,18 +192,7 @@ export default function AnnouncementStep1({ onNext }: { onNext: () => void }) {
 
       return { hasError, isFirstError };
     }
-    if (forbiddenChars.test(currentValue)) {
-      setError(`${fieldName}.${langCode}`, {
-        type: "manual",
-        message: `${
-          fieldName === "bannerContent"
-            ? "Banner content"
-            : TERMS_AND_CONDITIONS_LABEL
-        } must not contain %, $, or #`,
-      });
-      hasError = true;
-      isFirstError = isEnglish;
-    } else if (isEnglish && !currentValue) {
+    if (isEnglish && !currentValue) {
       setError(`${fieldName}.${langCode}`, {
         type: "manual",
         message: `English ${
