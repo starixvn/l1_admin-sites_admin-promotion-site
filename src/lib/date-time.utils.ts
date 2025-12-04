@@ -68,5 +68,8 @@ export function convertToGMTDate(dateStr: string, gmtOffset: number): Date | nul
     return null;
   }
   const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
   return new Date(date.getTime() + gmtOffset * 60 * 60 * 1000);
 };

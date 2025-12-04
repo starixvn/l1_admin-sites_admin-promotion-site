@@ -8,6 +8,7 @@ import { Player } from '@/types/performance-report';
 import { createGameDisplayNameMap, mapWithDisplayNames } from '@/lib/promotion/gameDisplayName.utils';
 import { pipe, appendIf } from '@/lib/functional.utils';
 import { convertToGMTDate } from '@/lib/date-time.utils';
+import { sanitizeForExcel } from '@/lib/excel.utils';
 
 export async function GET(
   request: NextRequest,
@@ -92,25 +93,31 @@ export async function GET(
 
     // Add data rows
     players.forEach((player: Player & { displayName: string }) => {
+      const dateJoined = convertToGMTDate(player.dateJoined, GMT_OFFSET);
+      const lastActivity = convertToGMTDate(player.lastActivity, GMT_OFFSET);
       const row = worksheet.addRow({
-        playerId: player.playerId || '',
-        username: player.username || '',
-        status: player.status || '',
-        siteName: player.siteName || '',
-        gameName: player.displayName || '',
-        currency: player.currency || '',
-        dateJoined: convertToGMTDate(player.dateJoined, GMT_OFFSET) || '',
+        playerId: sanitizeForExcel(player.playerId || ''),
+        username: sanitizeForExcel(player.username || ''),
+        status: sanitizeForExcel(player.status || ''),
+        siteName: sanitizeForExcel(player.siteName || ''),
+        gameName: sanitizeForExcel(player.displayName || ''),
+        currency: sanitizeForExcel(player.currency || ''),
+        dateJoined: dateJoined || '',
         remainingFS: `\t${player.remainingBonusItems || 0}/${player.initialBonusItem || 0}`,
         bonusWin: roundToDecimals(isBaseCurrency ? player.baseBonusWin : player.bonusWin) || 0,
         turnover: roundToDecimals(isBaseCurrency ? player.baseTurnover : player.turnover) || 0,
         progress: `${roundToDecimals(player.progress?.current || 0)}x/${player.progress?.required || 0}x`,
         bonusClaimed: roundToDecimals(isBaseCurrency ? player.baseBonusClaimed : player.bonusClaimed) || 0,
-        lastActivity: convertToGMTDate(player.lastActivity, GMT_OFFSET) || ''
+        lastActivity: lastActivity || ''
       });
 
-      // Set custom date format for date columns
-      row.getCell('dateJoined').numFmt = 'dd-mmm-yyyy hh:mm:ss';
-      row.getCell('lastActivity').numFmt = 'dd-mmm-yyyy hh:mm:ss';
+      // Set custom date format for date columns (only if date exists)
+      if (dateJoined) {
+        row.getCell('dateJoined').numFmt = 'dd-mmm-yyyy hh:mm:ss';
+      }
+      if (lastActivity) {
+        row.getCell('lastActivity').numFmt = 'dd-mmm-yyyy hh:mm:ss';
+      }
       
       // Set number format for numeric columns
       row.getCell('bonusWin').numFmt = '#,##0.00';
