@@ -62,3 +62,11 @@ export function toGMTString(dateStr: string, gmtOffset: number): string {
 export function toGMTStringWithSeconds(dateStr: string, gmtOffset: number): string {
   return formatGMTDate(dateStr, gmtOffset, true);
 }
+
+export function convertToGMTDate(dateStr: string, gmtOffset: number): Date | null {
+  if (!dateStr) {
+    return null;
+  }
+  const date = new Date(dateStr);
+  return new Date(date.getTime() + gmtOffset * 60 * 60 * 1000);
+};

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
+import ExcelJS from 'exceljs';
 import configs from '../../../../../../../configs';
 import { roundToDecimals } from '@/lib/promotion/promotion.utils';
-import { toGMTString } from '@/lib/date-time.utils';
 import { GMT_OFFSET } from '@/constants/constants';
 import { Player } from '@/types/performance-report';
 import { createGameDisplayNameMap, mapWithDisplayNames } from '@/lib/promotion/gameDisplayName.utils';
 import { pipe, appendIf } from '@/lib/functional.utils';
+import { convertToGMTDate } from '@/lib/date-time.utils';
 
 export async function GET(
   request: NextRequest,
@@ -55,77 +56,110 @@ export async function GET(
       response.data.items = mapWithDisplayNames(response.data.items, gameDisplayNameMap);
     }
 
-    // Convert data to CSV format
+    // Create Excel workbook
     const players = response.data.items || [];
     
     const currencySuffix = isBaseCurrency ? ' (USD)' : '';
-    const csvHeaders = [
-      'Player ID',
-      'Username',
-      'Status',
-      'Site Name',
-      'Game Name',
-      'Currency',
-      'Date Joined (GMT+7)',
-      'Remaining FS',
-      `Bonus Win${currencySuffix}`,
-      `Turnover${currencySuffix}`,
-      'Progress',
-      `Bonus Claimed${currencySuffix}`,
-      'Last Activity (GMT+7)'
+    
+    // Create workbook and worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Players');
+
+    // Define columns with headers
+    worksheet.columns = [
+      { header: 'Player ID', key: 'playerId', width: 15 },
+      { header: 'Username', key: 'username', width: 20 },
+      { header: 'Status', key: 'status', width: 15 },
+      { header: 'Site Name', key: 'siteName', width: 20 },
+      { header: 'Game Name', key: 'gameName', width: 30 },
+      { header: 'Currency', key: 'currency', width: 12 },
+      { header: 'Date Joined (GMT+7)', key: 'dateJoined', width: 22 },
+      { header: 'Remaining FS', key: 'remainingFS', width: 15 },
+      { header: `Bonus Win${currencySuffix}`, key: 'bonusWin', width: 18 },
+      { header: `Turnover${currencySuffix}`, key: 'turnover', width: 18 },
+      { header: 'Progress', key: 'progress', width: 15 },
+      { header: `Bonus Claimed${currencySuffix}`, key: 'bonusClaimed', width: 18 },
+      { header: 'Last Activity (GMT+7)', key: 'lastActivity', width: 22 }
     ];
 
-    const csvRows = players.map((player: Player & { displayName: string }) => [
-      player.playerId || '',
-      player.username || '',
-      player.status || '',
-      player.siteName || '',
-      player.displayName || '',
-      player.currency || '',
-      toGMTString(player.dateJoined, GMT_OFFSET) || '',
-      `${player.remainingBonusItems || 0}/${player.initialBonusItem || 0}`,
-      roundToDecimals(isBaseCurrency ? player.baseBonusWin : player.bonusWin) || 0,
-      roundToDecimals(isBaseCurrency ? player.baseTurnover : player.turnover) || 0,
-      `${player.progress?.current || 0}x/${player.progress?.required || 0}x`,
-      roundToDecimals(isBaseCurrency ? player.baseBonusClaimed : player.bonusClaimed) || 0,
-      toGMTString(player.lastActivity, GMT_OFFSET) || ''
-    ]);
+    // Style header row
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+
+    // Add data rows
+    players.forEach((player: Player & { displayName: string }) => {
+      const row = worksheet.addRow({
+        playerId: player.playerId || '',
+        username: player.username || '',
+        status: player.status || '',
+        siteName: player.siteName || '',
+        gameName: player.displayName || '',
+        currency: player.currency || '',
+        dateJoined: convertToGMTDate(player.dateJoined, GMT_OFFSET) || '',
+        remainingFS: `\t${player.remainingBonusItems || 0}/${player.initialBonusItem || 0}`,
+        bonusWin: roundToDecimals(isBaseCurrency ? player.baseBonusWin : player.bonusWin) || 0,
+        turnover: roundToDecimals(isBaseCurrency ? player.baseTurnover : player.turnover) || 0,
+        progress: `${roundToDecimals(player.progress?.current || 0)}x/${player.progress?.required || 0}x`,
+        bonusClaimed: roundToDecimals(isBaseCurrency ? player.baseBonusClaimed : player.bonusClaimed) || 0,
+        lastActivity: convertToGMTDate(player.lastActivity, GMT_OFFSET) || ''
+      });
+
+      // Set custom date format for date columns
+      row.getCell('dateJoined').numFmt = 'dd-mmm-yyyy hh:mm:ss';
+      row.getCell('lastActivity').numFmt = 'dd-mmm-yyyy hh:mm:ss';
+      
+      // Set number format for numeric columns
+      row.getCell('bonusWin').numFmt = '#,##0.00';
+      row.getCell('turnover').numFmt = '#,##0.00';
+      row.getCell('bonusClaimed').numFmt = '#,##0.00';
+    });
 
     // Calculate totals
     const totalBonusWin = players.reduce((sum: number, player: Player) => sum + player.baseBonusWin, 0);
     const totalTurnover = players.reduce((sum: number, player: Player) => sum + player.baseTurnover, 0);
     const totalBonusClaimed = players.reduce((sum: number, player: Player) => sum + player.baseBonusClaimed, 0);
 
-    // Create total row
-    const totalRow = [
-      'Total (Base USD)',
-      '-',
-      '-',
-      '-',
-      '-',
-      '-',
-      '-',
-      '',
-      roundToDecimals(totalBonusWin),
-      roundToDecimals(totalTurnover),
-      '-',
-      roundToDecimals(totalBonusClaimed),
-      '-'
-    ];
+    // Add total row
+    const totalRow = worksheet.addRow({
+      playerId: 'Total (Base USD)',
+      username: '-',
+      status: '-',
+      siteName: '-',
+      gameName: '-',
+      currency: '-',
+      dateJoined: '-',
+      remainingFS: '-',
+      bonusWin: roundToDecimals(totalBonusWin),
+      turnover: roundToDecimals(totalTurnover),
+      progress: '-',
+      bonusClaimed: roundToDecimals(totalBonusClaimed),
+      lastActivity: '-'
+    });
 
-    // Create CSV content
-    const csvContent = [
-      csvHeaders.join(','),
-      ...csvRows.map((row: string[]) => row.map((field: string) => `"${field}"`).join(',')),
-      totalRow.map((field: string | number) => `"${field}"`).join(',')
-    ].join('\n');
+    // Style total row
+    totalRow.font = { bold: true };
+    totalRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFFFD700' }
+    };
+    totalRow.getCell('bonusWin').numFmt = '#,##0.00';
+    totalRow.getCell('turnover').numFmt = '#,##0.00';
+    totalRow.getCell('bonusClaimed').numFmt = '#,##0.00';
 
-    // Return CSV file
-    return new NextResponse(csvContent, {
+    // Generate Excel file buffer
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    // Return XLSX file
+    return new NextResponse(buffer, {
       status: 200,
       headers: {
-        'Content-Type': 'text/csv',
-        'Content-Disposition': `attachment; filename="promotional-players-${promotionId}-${new Date().toISOString().split('T')[0]}.csv"`
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="promotional-players-${promotionId}-${new Date().toISOString().split('T')[0]}.xlsx"`
       }
     });
 
