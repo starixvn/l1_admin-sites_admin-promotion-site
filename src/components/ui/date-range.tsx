@@ -13,6 +13,7 @@ interface DateRangeProps {
   disabled?: boolean;
   minDate?: string;
   maxDate?: string;
+  dateOnly?: boolean;
 }
 
 export default function DateRange({
@@ -22,6 +23,7 @@ export default function DateRange({
   disabled = false,
   minDate,
   maxDate,
+  dateOnly = false,
 }: DateRangeProps) {
   const [startOpen, setStartOpen] = useState(false);
   const [endOpen, setEndOpen] = useState(false);
@@ -109,6 +111,7 @@ export default function DateRange({
         minDate={minDateObj}
         maxDate={startDateMax}
         defaultMonth={tempStartDate}
+        dateOnly={dateOnly}
       />
       <div className="flex items-center justify-center min-w-[20px]">
         <span className="text-black-600 font-medium select-none">{"to"}</span>
@@ -126,6 +129,7 @@ export default function DateRange({
         minDate={endDateMin}
         maxDate={maxDateObj}
         defaultMonth={tempEndDate}
+        dateOnly={dateOnly}
       />
     </div>
   );

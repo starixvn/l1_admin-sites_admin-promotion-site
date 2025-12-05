@@ -13,8 +13,8 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const gameType = searchParams.get("gameType");
     const currencyGroups = searchParams.get("currencyGroups");
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
+    const startDateParam = searchParams.get('startDate');
+    const endDateParam = searchParams.get('endDate');
     const status = searchParams.get('status');
     const player = searchParams.get('player');
     const gameName = searchParams.get('gameName');
@@ -22,6 +22,21 @@ export async function GET(
     const gameIds = searchParams.get('gameIds');
     const pageIndex = searchParams.get('pageIndex') || '1';
     const pageSize = searchParams.get('pageSize') || '10';
+
+    let startDate = startDateParam;
+    let endDate = endDateParam;
+    
+    if (startDateParam) {
+      const date = new Date(startDateParam);
+      date.setHours(0, 0, 0, 0);
+      startDate = date.toISOString();
+    }
+    
+    if (endDateParam) {
+      const date = new Date(endDateParam);
+      date.setHours(23, 59, 59, 999);
+      endDate = date.toISOString();
+    }
 
     // Construct the API URL with date range parameters
     const urlParams = pipe<URLSearchParams>(

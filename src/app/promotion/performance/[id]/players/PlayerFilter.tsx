@@ -113,6 +113,7 @@ export default function PlayerFilter({
                 }}
                 minDate={promotionStartDate}
                 maxDate={promotionEndDate}
+                dateOnly={true}
               />
             </div>
           </div>

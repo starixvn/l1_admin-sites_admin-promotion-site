@@ -29,6 +29,7 @@ interface DatePickerProps {
   minDate?: Date;
   maxDate?: Date;
   defaultMonth?: Date;
+  dateOnly?: boolean;
 }
 
 export default function DatePicker({
@@ -44,6 +45,7 @@ export default function DatePicker({
   minDate,
   maxDate,
   defaultMonth,
+  dateOnly = false,
 }: DatePickerProps) {
   const dateObj = date ? new Date(date) : undefined;
   const hourOptions = generateHourOptions();
@@ -73,7 +75,7 @@ export default function DatePicker({
               )}
             >
               <span>
-                {dateObj instanceof Date && format(dateObj, "dd-MM-yyyy HH:mm")}
+                {dateObj instanceof Date && format(dateObj, dateOnly ? "dd-MM-yyyy" : "dd-MM-yyyy HH:mm")}
               </span>
               <CalendarIcon className="h-5 w-5 text-blue-500" />
             </Button>
@@ -89,29 +91,31 @@ export default function DatePicker({
                 className="custom-day-picker"
               />
 
-              <div className="flex items-center gap-3">
-                <select
-                  value={tempHour}
-                  onChange={(e) => onTimeChange(e.target.value, tempMinute)}
-                  className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-300 focus:border-blue-300"
-                  disabled={disabled}
-                >
-                  {hourOptions.map((h) => (
-                    <option key={h} value={h}>{h}</option>
-                  ))}
-                </select>
-                <span className="text-lg font-bold">:</span>
-                <select
-                  value={tempMinute}
-                  onChange={(e) => onTimeChange(tempHour, e.target.value)}
-                  className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-300 focus:border-blue-300"
-                  disabled={disabled}
-                >
-                  {minuteOptions.map((m) => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-              </div>
+              {!dateOnly && (
+                <div className="flex items-center gap-3">
+                  <select
+                    value={tempHour}
+                    onChange={(e) => onTimeChange(e.target.value, tempMinute)}
+                    className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-300 focus:border-blue-300"
+                    disabled={disabled}
+                  >
+                    {hourOptions.map((h) => (
+                      <option key={h} value={h}>{h}</option>
+                    ))}
+                  </select>
+                  <span className="text-lg font-bold">:</span>
+                  <select
+                    value={tempMinute}
+                    onChange={(e) => onTimeChange(tempHour, e.target.value)}
+                    className="border border-gray-300 rounded-lg px-2 py-1 text-sm bg-white focus:ring-1 focus:ring-blue-300 focus:border-blue-300"
+                    disabled={disabled}
+                  >
+                    {minuteOptions.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="flex gap-3 pt-2">
                 <Button
