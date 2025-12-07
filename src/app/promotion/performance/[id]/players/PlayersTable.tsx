@@ -27,7 +27,7 @@ import PaginationControls from "@/components/common/PaginationControls";
 import TableHeader from "@/components/common/TableHeader";
 import TableBody from "@/components/common/TableBody";
 import { Promotion } from "@/types/promotion";
-import { getPromotionStatus, PROMOTION_REPORT_STATUS, PROMOTION_STATUS } from "@/constants/promotionStatusMap";
+import { PROMOTION_STATUS } from "@/constants/promotionStatusMap";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 interface PlayersTableProps {
@@ -271,11 +271,7 @@ const getClaimBonusColumn = (
     const player = row.original;
     const playerStatus = player.status;
 
-    const isPromotionCompleted = promotion
-      ? getPromotionStatus(promotion) === PROMOTION_REPORT_STATUS.Completed
-      : false;
-
-    const canClaim = playerStatus === PROMOTION_STATUS.TURN_OVER_MET && isPromotionCompleted;
+    const canClaim = playerStatus === PROMOTION_STATUS.TURN_OVER_MET;
 
     const handleClaimBonus = async () => {
       if (!canClaim) {
