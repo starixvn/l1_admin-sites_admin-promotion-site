@@ -270,14 +270,12 @@ const getClaimBonusColumn = (
   cell: ({ row }) => {
     const player = row.original;
     const playerStatus = player.status;
-    const isExpired = player.progress.current >= player.progress.required && playerStatus === PROMOTION_STATUS.EXPIRED;
-    
-    // Check if promotion is completed
+
     const isPromotionCompleted = promotion
       ? getPromotionStatus(promotion) === PROMOTION_REPORT_STATUS.Completed
       : false;
 
-    const canClaim = isExpired && isPromotionCompleted;
+    const canClaim = playerStatus === PROMOTION_STATUS.TURN_OVER_MET && isPromotionCompleted;
 
     const handleClaimBonus = async () => {
       if (!canClaim) {

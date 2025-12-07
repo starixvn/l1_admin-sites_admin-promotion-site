@@ -35,6 +35,7 @@ jest.mock("@/helper/common", () => ({
   getStatusColor: jest.fn((status) => {
     switch (status) {
       case "Active": return "text-green-600";
+      case "Turnover Met": return "text-blue-600";
       case "Inactive": return "text-red-600";
       default: return "text-gray-600";
     }
@@ -42,6 +43,7 @@ jest.mock("@/helper/common", () => ({
   getStatusDot: jest.fn((status) => {
     switch (status) {
       case "Active": return "bg-green-500";
+      case "Turnover Met": return "bg-blue-500";
       case "Inactive": return "bg-red-500";
       default: return "bg-gray-500";
     }
@@ -156,7 +158,7 @@ const mockPlayers: Player[] = [
   {
     id: "player2",
     username: "testuser2",
-    status: "Inactive",
+    status: "Turnover Met",
     siteName: "TestSite2",
     currency: "EUR",
     dateJoined: "2024-01-02T00:00:00Z",
@@ -164,7 +166,7 @@ const mockPlayers: Player[] = [
     baseBonusWin: 200,
     turnover: 1000,
     baseTurnover: 1000,
-    progress: { current: 8, required: 10 },
+    progress: { current: 10, required: 10 },
     bonusClaimed: 100,
     baseBonusClaimed: 100,
     lastActivity: "2024-01-16T00:00:00Z",
